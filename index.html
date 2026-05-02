@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Tlaloc — automated weather updates, named for Tláloc the Mexica deity of water, rain, fertility, and storms."
+    />
+    <title>Tlaloc — Weather Updates</title>
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="container">
+        <h1 class="site-title">
+          <span class="site-title__icon" aria-hidden="true">🌧️</span>
+          Tlaloc
+        </h1>
+        <p class="site-tagline">Automated weather updates</p>
+      </div>
+    </header>
+
+    <main class="main-content">
+      <div class="container">
+        <section class="weather-current" aria-labelledby="current-heading">
+          <h2 id="current-heading">Current Conditions</h2>
+          <div class="weather-card" id="weather-card">
+            <p class="weather-card__status" id="weather-status">
+              Loading weather data&hellip;
+            </p>
+          </div>
+        </section>
+
+        <section class="weather-forecast" aria-labelledby="forecast-heading">
+          <h2 id="forecast-heading">Forecast</h2>
+          <div class="forecast-grid" id="forecast-grid">
+            <!-- Forecast items injected by main.js -->
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container">
+        <p>
+          Named for
+          <a
+            href="https://en.wikipedia.org/wiki/Tlaloc"
+            target="_blank"
+            rel="noopener noreferrer"
+            >Tláloc</a
+          >, the Mexica deity of water, rain, fertility, and storms.
+        </p>
+      </div>
+    </footer>
+
+    <script src="js/main.js"></script>
+  </body>
+</html>
