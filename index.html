@@ -23,21 +23,58 @@
 
     <main class="main-content">
       <div class="container">
-        <section class="weather-current" aria-labelledby="current-heading">
-          <h2 id="current-heading">Current Conditions</h2>
-          <div class="weather-card" id="weather-card">
-            <p class="weather-card__status" id="weather-status">
-              Loading weather data&hellip;
-            </p>
-          </div>
-        </section>
+<!-- BEGIN WEATHER CONTENT -->
+<section aria-labelledby="current-weather-heading">
+  <h2 id="current-weather-heading">Current Weather</h2>
+  <div class="weather-card">
+    <div class="weather-card__temp">85.6°F</div>
+    <div class="weather-card__description">☁️ Cloudy</div>
+    <div class="weather-card__details">
+      <div class="weather-detail">
+        <span class="weather-detail__label">Feels Like</span>
+        <span class="weather-detail__value">85.5°F</span>
+      </div>
+      <div class="weather-detail">
+        <span class="weather-detail__label">Humidity</span>
+        <span class="weather-detail__value">18%</span>
+      </div>
+      <div class="weather-detail">
+        <span class="weather-detail__label">Wind</span>
+        <span class="weather-detail__value">1.7 mph W</span>
+      </div>
+      <div class="weather-detail">
+        <span class="weather-detail__label">Precipitation</span>
+        <span class="weather-detail__value">0.0 in</span>
+      </div>
+    </div>
+  </div>
+  <p><small>Updated: <time datetime="2026-05-02T20:30:00Z">May 2, 2026 at 8:30 PM UTC</time></small></p>
+</section>
 
-        <section class="weather-forecast" aria-labelledby="forecast-heading">
-          <h2 id="forecast-heading">Forecast</h2>
-          <div class="forecast-grid" id="forecast-grid">
-            <!-- Forecast items injected by main.js -->
-          </div>
-        </section>
+<section aria-labelledby="forecast-heading">
+  <h2 id="forecast-heading">3-Day Forecast</h2>
+  <div class="forecast-grid">
+    <div class="forecast-item">
+      <div class="forecast-item__day">Friday, May 2</div>
+      <div class="forecast-item__icon">🌧️</div>
+      <div class="forecast-item__temp-high">87.0°F</div>
+      <div class="forecast-item__temp-low">64.0°F</div>
+    </div>
+    <div class="forecast-item">
+      <div class="forecast-item__day">Saturday, May 3</div>
+      <div class="forecast-item__icon">🌦️</div>
+      <div class="forecast-item__temp-high">81.3°F</div>
+      <div class="forecast-item__temp-low">56.2°F</div>
+    </div>
+    <div class="forecast-item">
+      <div class="forecast-item__day">Sunday, May 4</div>
+      <div class="forecast-item__icon">🌧️</div>
+      <div class="forecast-item__temp-high">82.0°F</div>
+      <div class="forecast-item__temp-low">58.2°F</div>
+    </div>
+  </div>
+</section>
+        <!-- END WEATHER CONTENT -->
       </div>
     </main>
 
@@ -54,7 +91,5 @@
         </p>
       </div>
     </footer>
-
-    <script src="js/main.js"></script>
   </body>
 </html>
