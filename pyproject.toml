@@ -1,0 +1,16 @@
+[project]
+name = "tlaloc"
+version = "0.1.0"
+description = "Automated weather updates via Claude AI, published to GitHub Pages"
+requires-python = ">=3.11"
+dependencies = [
+    "anthropic>=0.50.0",
+    "python-dotenv>=1.0.0",
+]
+
+[project.scripts]
+tlaloc = "tlaloc.main:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
