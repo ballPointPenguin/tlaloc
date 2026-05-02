@@ -1,0 +1,328 @@
+/* ============================================================
+   CSS Custom Properties (Design Tokens)
+   ============================================================ */
+:root {
+  /* Colors */
+  --color-bg: #0d1b2a;
+  --color-surface: #1b2d42;
+  --color-surface-raised: #243447;
+  --color-border: #2e4460;
+  --color-text: #e0eaf4;
+  --color-text-muted: #8aaac8;
+  --color-accent: #4ea8de;
+  --color-accent-hover: #74bde8;
+  --color-link: #4ea8de;
+  --color-link-hover: #74bde8;
+
+  /* Typography */
+  --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial,
+    sans-serif;
+  --font-mono: ui-monospace, "Cascadia Code", "Source Code Pro", Menlo, Consolas,
+    monospace;
+  --font-size-base: 1rem;
+  --font-size-sm: 0.875rem;
+  --font-size-lg: 1.125rem;
+  --font-size-xl: 1.5rem;
+  --font-size-2xl: 2rem;
+  --font-size-3xl: 2.5rem;
+  --line-height-base: 1.6;
+
+  /* Spacing */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+
+  /* Layout */
+  --container-max: 900px;
+  --radius: 0.5rem;
+  --radius-lg: 1rem;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 3px rgb(0 0 0 / 0.3);
+  --shadow-md: 0 4px 12px rgb(0 0 0 / 0.4);
+
+  /* Transitions */
+  --transition-fast: 150ms ease;
+  --transition-base: 250ms ease;
+}
+
+/* ============================================================
+   Reset / Base
+   ============================================================ */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 100%;
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-base);
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+img,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+/* ============================================================
+   Typography
+   ============================================================ */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  line-height: 1.2;
+  font-weight: 700;
+}
+
+a {
+  color: var(--color-link);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  transition: color var(--transition-fast);
+}
+
+a:hover,
+a:focus-visible {
+  color: var(--color-link-hover);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+/* ============================================================
+   Layout — Container
+   ============================================================ */
+.container {
+  width: 100%;
+  max-width: var(--container-max);
+  margin-inline: auto;
+  padding-inline: var(--space-4);
+}
+
+/* ============================================================
+   Site Header
+   ============================================================ */
+.site-header {
+  background-color: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+  padding-block: var(--space-6);
+  box-shadow: var(--shadow-sm);
+}
+
+.site-title {
+  font-size: var(--font-size-3xl);
+  color: var(--color-accent);
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.site-title__icon {
+  font-size: var(--font-size-2xl);
+}
+
+.site-tagline {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-lg);
+  margin-top: var(--space-1);
+}
+
+/* ============================================================
+   Main Content
+   ============================================================ */
+.main-content {
+  flex: 1;
+  padding-block: var(--space-8);
+}
+
+.main-content section + section {
+  margin-top: var(--space-12);
+}
+
+.main-content h2 {
+  font-size: var(--font-size-xl);
+  color: var(--color-accent);
+  margin-bottom: var(--space-4);
+  padding-bottom: var(--space-2);
+  border-bottom: 1px solid var(--color-border);
+}
+
+/* ============================================================
+   Weather Card
+   ============================================================ */
+.weather-card {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+  box-shadow: var(--shadow-md);
+}
+
+.weather-card__status {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-lg);
+}
+
+.weather-card__temp {
+  font-size: var(--font-size-3xl);
+  font-weight: 700;
+  color: var(--color-accent);
+}
+
+.weather-card__description {
+  font-size: var(--font-size-lg);
+  color: var(--color-text-muted);
+  text-transform: capitalize;
+  margin-top: var(--space-2);
+}
+
+.weather-card__details {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+  gap: var(--space-4);
+  margin-top: var(--space-6);
+}
+
+.weather-detail {
+  background-color: var(--color-surface-raised);
+  border-radius: var(--radius);
+  padding: var(--space-4);
+}
+
+.weather-detail__label {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.weather-detail__value {
+  font-size: var(--font-size-xl);
+  font-weight: 700;
+  margin-top: var(--space-1);
+}
+
+/* ============================================================
+   Forecast Grid
+   ============================================================ */
+.forecast-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr));
+  gap: var(--space-4);
+}
+
+.forecast-item {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: var(--space-4);
+  text-align: center;
+  box-shadow: var(--shadow-sm);
+  transition: background-color var(--transition-fast),
+    border-color var(--transition-fast);
+}
+
+.forecast-item:hover {
+  background-color: var(--color-surface-raised);
+  border-color: var(--color-accent);
+}
+
+.forecast-item__day {
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-muted);
+}
+
+.forecast-item__icon {
+  font-size: var(--font-size-2xl);
+  margin-block: var(--space-2);
+}
+
+.forecast-item__temp-high {
+  font-size: var(--font-size-lg);
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.forecast-item__temp-low {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}
+
+/* ============================================================
+   Site Footer
+   ============================================================ */
+.site-footer {
+  background-color: var(--color-surface);
+  border-top: 1px solid var(--color-border);
+  padding-block: var(--space-6);
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+}
+
+/* ============================================================
+   Utility — Loading / Error states
+   ============================================================ */
+.is-loading {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.alert {
+  padding: var(--space-4) var(--space-6);
+  border-radius: var(--radius);
+  border-left: 4px solid;
+}
+
+.alert--error {
+  background-color: rgb(220 38 38 / 0.1);
+  border-color: #dc2626;
+  color: #fca5a5;
+}
+
+.alert--info {
+  background-color: rgb(78 168 222 / 0.1);
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
+/* ============================================================
+   Responsive
+   ============================================================ */
+@media (max-width: 600px) {
+  .site-title {
+    font-size: var(--font-size-2xl);
+  }
+
+  .forecast-grid {
+    grid-template-columns: repeat(auto-fit, minmax(6rem, 1fr));
+  }
+}
