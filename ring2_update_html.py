@@ -62,6 +62,8 @@ TOOLS = [
             "Replace the weather content block in index.html. "
             "The html argument is spliced between <!-- BEGIN WEATHER CONTENT --> "
             "and <!-- END WEATHER CONTENT --> markers. "
+            "Include the location name (from the get_weather response) in the "
+            "Current Conditions heading, e.g. 'Current Conditions - Minneapolis, Minnesota'. "
             "Use these CSS classes: "
             "weather-card, weather-card__temp, weather-card__description, "
             "weather-card__details, weather-detail, weather-detail__label, "
@@ -140,8 +142,8 @@ def main():
         {
             "role": "user",
             "content": (
-                "Fetch the current weather for Mexico City, Mexico "
-                "(latitude 19.4326, longitude -99.1332) "
+                "Fetch the current weather for Minneapolis, Minnesota "
+                "(latitude 44.9778, longitude -93.2650) "
                 "and update the Tlaloc weather page with the current conditions "
                 "and 3-day forecast."
             ),
