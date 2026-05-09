@@ -1,6 +1,7 @@
 import json
 import re
 import urllib.request
+from datetime import datetime
 from pathlib import Path
 
 import anthropic
@@ -23,6 +24,10 @@ You generate weather content for the Tlaloc weather page (a static GitHub Pages 
 When asked to update the page:
 1. Call get_weather for the requested location.
 2. Call update_weather_content with the generated HTML and an ISO 8601 timestamp.
+
+The get_weather response includes a daily.weekday array with the correct day names derived
+from the actual API dates. Always use those values for forecast day labels (e.g. "Saturday").
+Never infer weekday names from your training data.
 
 WMO weather code → emoji reference:
   0=☀️  1=🌤️  2=⛅  3=☁️  45/48=🌫️
@@ -98,11 +103,16 @@ def get_weather(latitude: float, longitude: float, location_name: str) -> dict:
     )
     with urllib.request.urlopen(url) as resp:
         data = json.loads(resp.read())
+    daily = data.get("daily")
+    if daily and "time" in daily:
+        daily["weekday"] = [
+            datetime.strptime(d, "%Y-%m-%d").strftime("%A") for d in daily["time"]
+        ]
     return {
         "location": location_name,
         "current": data["current"],
         "current_units": data["current_units"],
-        "daily": data.get("daily"),
+        "daily": daily,
         "daily_units": data.get("daily_units"),
     }
 
