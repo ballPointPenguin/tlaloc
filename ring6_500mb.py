@@ -18,7 +18,7 @@ INDEX_HTML = Path(__file__).parent / "index.html"
 WPC_ANALYSIS_CHART_URL = "https://www.wpc.ncep.noaa.gov/sfc/namvort.gif"
 MAX_ANTHROPIC_IMAGE_BYTES = 5 * 1024 * 1024
 
-WPC_ANALYSIS_SENTINEL_RE = re.compile(
+HEIGHTS_500MB_SENTINEL_RE = re.compile(
     r"([ \t]*<!-- BEGIN 500MB CONTENT -->).*?([ \t]*<!-- END 500MB CONTENT -->)",
     re.DOTALL,
 )
@@ -133,7 +133,7 @@ def update_500mb_content(interpretation: str, generated_at: str) -> dict:
         f"{html}\n"
         "        <!-- END 500MB CONTENT -->"
     )
-    updated, count = WPC_ANALYSIS_SENTINEL_RE.subn(replacement, source)
+    updated, count = HEIGHTS_500MB_SENTINEL_RE.subn(replacement, source)
     if count == 0:
         return {"success": False, "error": "500 mb sentinel comments not found in index.html"}
     INDEX_HTML.write_text(updated)
