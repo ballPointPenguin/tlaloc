@@ -21,7 +21,9 @@ GOES_AIRMASS_SATELLITES = ("GOES19", "GOES16")
 GOES_AIRMASS_LABELS = {"GOES19": "GOES-19", "GOES16": "GOES-16"}
 MAX_ANTHROPIC_IMAGE_BYTES = 5 * 1024 * 1024
 URL_PROBE_TIMEOUT_SECONDS = 10
-AIRMASS_LOOKBACK_STEPS = 36
+AIRMASS_LOOKBACK_HOURS = 6
+AIRMASS_LOOKBACK_STEPS = AIRMASS_LOOKBACK_HOURS * 6
+AIRMASS_MINUTE_PROBE_OFFSETS = (1, 0)
 
 AIRMASS_SENTINEL_RE = re.compile(
     r"([ \t]*<!-- BEGIN AIRMASS CONTENT -->).*?([ \t]*<!-- END AIRMASS CONTENT -->)",
@@ -232,10 +234,10 @@ def iter_airmass_candidate_urls(now_utc: datetime):
     for satellite in GOES_AIRMASS_SATELLITES:
         base_url = GOES_AIRMASS_BASE_URL_TEMPLATE.format(satellite=satellite)
         yield f"{base_url}/latest.jpg", satellite
-        for step in range(AIRMASS_LOOKBACK_STEPS):  # 36 × 10-minute cadence steps (6 hours).
+        for step in range(AIRMASS_LOOKBACK_STEPS):
             scan_time = aligned - timedelta(minutes=10 * step)
             # Probe :01 first, then :00, because recent AirMass products are commonly stamped :01.
-            for minute_adjustment in (1, 0):
+            for minute_adjustment in AIRMASS_MINUTE_PROBE_OFFSETS:
                 candidate_scan_time = scan_time + timedelta(minutes=minute_adjustment)
                 if candidate_scan_time > normalized:
                     continue
