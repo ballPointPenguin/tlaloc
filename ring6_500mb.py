@@ -273,13 +273,19 @@ def fetch_wpc_chart(url: str) -> tuple[str, str, int, str]:
             raise RuntimeError(f"Failed to download 500 mb chart from {url}: {exc}") from exc
         try:
             discovered_url = discover_wpc_500mb_chart_url()
-            encoded, media_type, size = _download_chart(discovered_url)
-            return encoded, media_type, size, discovered_url
-        except (HTTPError, URLError, OSError, ValueError, RuntimeError) as fallback_exc:
+        except RuntimeError as discovery_exc:
             raise RuntimeError(
                 f"Failed to download 500 mb chart from {url} (original error: {exc}). "
-                f"Fallback URL discovery/download failed with: {fallback_exc}"
-            ) from exc
+                f"Fallback URL discovery failed with: {discovery_exc}"
+            ) from discovery_exc
+        try:
+            encoded, media_type, size = _download_chart(discovered_url)
+            return encoded, media_type, size, discovered_url
+        except (HTTPError, URLError, OSError, ValueError) as fallback_exc:
+            raise RuntimeError(
+                f"Failed to download 500 mb chart from {url} (original error: {exc}). "
+                f"Fallback download failed for {discovered_url}: {fallback_exc}"
+            ) from fallback_exc
     except (URLError, OSError, ValueError) as exc:
         raise RuntimeError(f"Failed to download 500 mb chart from {url}: {exc}") from exc
 
