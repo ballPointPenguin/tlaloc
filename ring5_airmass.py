@@ -1,7 +1,7 @@
 import json
 import re
 import base64
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from html import escape
 from pathlib import Path
 from urllib.error import HTTPError, URLError
@@ -15,8 +15,12 @@ load_dotenv()
 client = anthropic.Anthropic()
 
 INDEX_HTML = Path(__file__).parent / "index.html"
-AIRMASS_RGB_URL = "https://cdn.star.nesdis.noaa.gov/GOES16/ABI/CONUS/AirMass/latest.jpg"
+GOES_AIRMASS_BASE_URL_TEMPLATE = "https://cdn.star.nesdis.noaa.gov/{satellite}/ABI/CONUS/AirMass"
+GOES_AIRMASS_FILENAME_TEMPLATE = "{stamp}_{satellite}-ABI-CONUS-AirMass-2500x1500.jpg"
+GOES_AIRMASS_SATELLITES = ("GOES19", "GOES16")
 MAX_ANTHROPIC_IMAGE_BYTES = 5 * 1024 * 1024
+CURRENT_AIRMASS_IMAGE_URL = f"{GOES_AIRMASS_BASE_URL_TEMPLATE.format(satellite='GOES19')}/latest.jpg"
+CURRENT_AIRMASS_SATELLITE = "GOES-19"
 
 AIRMASS_SENTINEL_RE = re.compile(
     r"([ \t]*<!-- BEGIN AIRMASS CONTENT -->).*?([ \t]*<!-- END AIRMASS CONTENT -->)",
@@ -27,7 +31,7 @@ SYSTEM = """\
 You generate synoptic meteorology content for the Tlaloc weather page (a static GitHub Pages site).
 
 When asked to update the page:
-1. Review the provided GOES-16 CONUS Air Mass RGB satellite image.
+1. Review the provided GOES East CONUS Air Mass RGB satellite image.
    Color heuristics: reds/oranges indicate dry stratospheric intrusions or high-PV air;
    greens indicate tropical moist air; dark blues indicate cold dry upper troposphere;
    white indicates high cold cloud tops.
@@ -68,7 +72,7 @@ TOOLS = [
         "name": "update_airmass_content",
         "description": (
             "Replace the Air Mass RGB content block in index.html. "
-            "The interpretation is rendered below a live GOES-16 Air Mass RGB image between "
+            "The interpretation is rendered below a live GOES East Air Mass RGB image between "
             "<!-- BEGIN AIRMASS CONTENT --> and <!-- END AIRMASS CONTENT --> markers. "
             "The generated HTML reuses these CSS classes: synoptic-card, synoptic-card__image, "
             "synoptic-card__body, synoptic-card__text, synoptic-card__timestamp."
@@ -114,8 +118,8 @@ def build_airmass_html(interpretation: str, generated_at: str) -> str:
   <div class="synoptic-card">
     <img
       class="synoptic-card__image"
-      src="{AIRMASS_RGB_URL}"
-      alt="GOES-16 CONUS Air Mass RGB satellite image"
+      src="{CURRENT_AIRMASS_IMAGE_URL}"
+      alt="{CURRENT_AIRMASS_SATELLITE} CONUS Air Mass RGB satellite image"
     />
     <div class="synoptic-card__body">
       <p class="synoptic-card__text">{safe_interpretation}</p>
@@ -195,11 +199,52 @@ def fetch_airmass_image(url: str) -> tuple[str, str, int]:
     return encoded, media_type, len(image_bytes)
 
 
+def image_url_exists(url: str) -> bool:
+    request = Request(url, headers={"User-Agent": "tlaloc-weather-bot/1.0"})
+    try:
+        with urlopen(request, timeout=15) as response:
+            content_type_header = response.headers.get("Content-Type", "")
+            media_type = content_type_header.split(";", 1)[0].strip().lower()
+            return media_type.startswith("image/")
+    except HTTPError as exc:
+        if exc.code == 404:
+            return False
+        raise RuntimeError(f"Failed to check Air Mass image URL {url}: {exc}") from exc
+    except (URLError, OSError) as exc:
+        raise RuntimeError(f"Failed to check Air Mass image URL {url}: {exc}") from exc
+
+
+def iter_airmass_candidate_urls(now_utc: datetime):
+    normalized = now_utc.astimezone(timezone.utc).replace(second=0, microsecond=0)
+    minute_offset = (normalized.minute - 1) % 10
+    aligned = normalized - timedelta(minutes=minute_offset)
+    for satellite in GOES_AIRMASS_SATELLITES:
+        base_url = GOES_AIRMASS_BASE_URL_TEMPLATE.format(satellite=satellite)
+        yield f"{base_url}/latest.jpg", satellite
+        for step in range(36):
+            scan_time = aligned - timedelta(minutes=10 * step)
+            stamp = scan_time.strftime("%Y%j%H%M")
+            filename = GOES_AIRMASS_FILENAME_TEMPLATE.format(stamp=stamp, satellite=satellite)
+            yield f"{base_url}/{filename}", satellite
+
+
+def resolve_airmass_image_url(now_utc: datetime | None = None) -> tuple[str, str]:
+    probe_time = now_utc or datetime.now(timezone.utc)
+    for url, satellite in iter_airmass_candidate_urls(probe_time):
+        if image_url_exists(url):
+            return url, satellite.replace("GOES", "GOES-")
+    raise RuntimeError("Failed to locate a recent GOES CONUS Air Mass image URL")
+
+
 def main():
+    global CURRENT_AIRMASS_IMAGE_URL, CURRENT_AIRMASS_SATELLITE
+
     generated_at = datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace(
         "+00:00", "Z"
     )
-    image_data, image_media_type, image_size = fetch_airmass_image(AIRMASS_RGB_URL)
+    CURRENT_AIRMASS_IMAGE_URL, CURRENT_AIRMASS_SATELLITE = resolve_airmass_image_url()
+    image_data, image_media_type, image_size = fetch_airmass_image(CURRENT_AIRMASS_IMAGE_URL)
+    print(f"Resolved Air Mass image URL: {CURRENT_AIRMASS_IMAGE_URL}")
     print(f"Fetched Air Mass image bytes: {image_size}")
     messages = [
         {
@@ -216,7 +261,8 @@ def main():
                 {
                     "type": "text",
                     "text": (
-                        "Interpret this GOES-16 CONUS Air Mass RGB satellite image and update the "
+                        f"Interpret this {CURRENT_AIRMASS_SATELLITE} CONUS Air Mass RGB satellite "
+                        "image and update the "
                         "Tlaloc page with a brief synoptic summary. Focus on stratospheric dry air "
                         "intrusions, upper-level moisture, jet dynamics, thermal structure, and "
                         "any PV streamers. Use this exact ISO 8601 timestamp when calling tools: "
