@@ -1,8 +1,11 @@
 import json
 import re
+import base64
 from datetime import datetime, timezone
 from html import escape
 from pathlib import Path
+from urllib.error import HTTPError, URLError
+from urllib.request import Request, urlopen
 
 import anthropic
 from dotenv import load_dotenv
@@ -13,6 +16,7 @@ client = anthropic.Anthropic()
 
 INDEX_HTML = Path(__file__).parent / "index.html"
 HEIGHTS_500MB_URL = "https://www.wpc.ncep.noaa.gov/500/500z_ana.gif"
+MAX_ANTHROPIC_IMAGE_BYTES = 5 * 1024 * 1024
 
 HEIGHTS_500MB_SENTINEL_RE = re.compile(
     r"([ \t]*<!-- BEGIN 500MB CONTENT -->).*?([ \t]*<!-- END 500MB CONTENT -->)",
@@ -144,10 +148,69 @@ def run_tool(name: str, inputs: dict) -> dict:
     raise ValueError(f"Unknown tool: {name}")
 
 
+def fetch_500mb_chart(url: str) -> tuple[str, str, int]:
+    """Download and validate the 500 mb chart, then return it as base64 payload data.
+
+    Args:
+        url: Chart URL to download.
+
+    Returns:
+        Tuple of (base64_data, media_type, size_bytes).
+
+    Raises:
+        ValueError: If size/type constraints fail or content is empty.
+        RuntimeError: If the chart cannot be downloaded.
+    """
+    request = Request(url, headers={"User-Agent": "tlaloc-weather-bot/1.0"})
+    try:
+        with urlopen(request, timeout=30) as response:
+            content_length = response.headers.get("Content-Length")
+            if content_length:
+                content_length_value = int(content_length)
+            else:
+                content_length_value = None
+
+            if content_length_value and content_length_value > MAX_ANTHROPIC_IMAGE_BYTES:
+                raise ValueError(
+                    f"500 mb chart size ({content_length_value} bytes) exceeds Anthropic's 5MB limit. "
+                    "Unable to process this image."
+                )
+
+            content_type_header = response.headers.get("Content-Type", "")
+            media_type = content_type_header.split(";", 1)[0].strip().lower()
+            if not media_type.startswith("image/"):
+                raise ValueError(
+                    "Unexpected 500 mb chart content type: "
+                    f"parsed={media_type!r}, header={content_type_header!r}"
+                )
+
+            image_bytes = bytearray()
+            while True:
+                chunk = response.read(64 * 1024)
+                if not chunk:
+                    break
+                image_bytes.extend(chunk)
+                if len(image_bytes) > MAX_ANTHROPIC_IMAGE_BYTES:
+                    raise ValueError(
+                        f"Downloaded 500 mb chart size ({len(image_bytes)} bytes) exceeds "
+                        "Anthropic's 5MB limit. Unable to process this image."
+                    )
+    except (HTTPError, URLError, OSError) as exc:
+        raise RuntimeError(f"Failed to download 500 mb chart from {url}: {exc}") from exc
+
+    if not image_bytes:
+        raise ValueError("500 mb chart download returned no data")
+
+    encoded = base64.b64encode(image_bytes).decode("ascii")
+    return encoded, media_type, len(image_bytes)
+
+
 def main():
     generated_at = datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace(
         "+00:00", "Z"
     )
+    image_data, image_media_type, image_size = fetch_500mb_chart(HEIGHTS_500MB_URL)
+    print(f"Fetched 500 mb chart bytes: {image_size}")
     messages = [
         {
             "role": "user",
@@ -155,8 +218,9 @@ def main():
                 {
                     "type": "image",
                     "source": {
-                        "type": "url",
-                        "url": HEIGHTS_500MB_URL,
+                        "type": "base64",
+                        "media_type": image_media_type,
+                        "data": image_data,
                     },
                 },
                 {
