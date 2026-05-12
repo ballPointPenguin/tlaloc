@@ -228,7 +228,15 @@ def image_url_exists(url: str) -> bool:
 
 
 def iter_airmass_candidate_urls(now_utc: datetime):
-    """Yield (url, satellite) probes ordered by preferred recency and satellite."""
+    """Yield candidate (url, satellite) pairs for Air Mass image probing.
+
+    Args:
+        now_utc: Current UTC time used to align candidate timestamps.
+
+    Yields:
+        Tuples of (candidate_url, satellite_code), ordered by preferred recency
+        and satellite fallback priority.
+    """
     normalized = now_utc.astimezone(timezone.utc).replace(second=0, microsecond=0)
     aligned = normalized - timedelta(minutes=normalized.minute % 10)
     for satellite in GOES_AIRMASS_SATELLITES:
@@ -236,7 +244,7 @@ def iter_airmass_candidate_urls(now_utc: datetime):
         yield f"{base_url}/latest.jpg", satellite
         for step in range(AIRMASS_LOOKBACK_STEPS):
             scan_time = aligned - timedelta(minutes=10 * step)
-            # Probe :01 first, then :00, because recent AirMass products are commonly stamped :01.
+            # Probe :01 first, then :00, because recent Air Mass products are commonly stamped :01.
             for minute_adjustment in AIRMASS_MINUTE_PROBE_OFFSETS:
                 candidate_scan_time = scan_time + timedelta(minutes=minute_adjustment)
                 if candidate_scan_time > normalized:
@@ -247,7 +255,15 @@ def iter_airmass_candidate_urls(now_utc: datetime):
 
 
 def resolve_airmass_image_url(now_utc: datetime | None = None) -> tuple[str, str]:
-    """Resolve a usable GOES CONUS Air Mass URL, preferring GOES-19 then GOES-16."""
+    """Resolve a usable GOES CONUS Air Mass image URL.
+
+    Args:
+        now_utc: Optional UTC timestamp used to generate candidate URLs.
+
+    Returns:
+        A tuple of (image_url, satellite_label), preferring GOES-19 and
+        falling back to GOES-16 when needed.
+    """
     probe_time = now_utc or datetime.now(timezone.utc)
     for url, satellite in iter_airmass_candidate_urls(probe_time):
         if image_url_exists(url):
@@ -259,7 +275,13 @@ def main():
     generated_at = datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace(
         "+00:00", "Z"
     )
-    airmass_image_url, airmass_satellite_label = resolve_airmass_image_url()
+    try:
+        airmass_image_url, airmass_satellite_label = resolve_airmass_image_url()
+    except RuntimeError as exc:
+        raise RuntimeError(
+            "Unable to resolve a current GOES CONUS Air Mass image URL after trying GOES-19 "
+            "and GOES-16 candidates over the configured lookback window."
+        ) from exc
     image_data, image_media_type, image_size = fetch_airmass_image(airmass_image_url)
     print(f"Resolved Air Mass image URL: {airmass_image_url}")
     print(f"Fetched Air Mass image bytes: {image_size}")
