@@ -21,6 +21,11 @@ WPC_ANALYSIS_CHART_URL = "https://www.wpc.ncep.noaa.gov/sfc/namfnd_500_vort.gif"
 WPC_SFC2_PAGE_URL = "https://www.wpc.ncep.noaa.gov/html/sfc2.shtml"
 MAX_ANTHROPIC_IMAGE_BYTES = 5 * 1024 * 1024
 ALLOWED_WPC_HOSTS = {"www.wpc.ncep.noaa.gov", "wpc.ncep.noaa.gov"}
+IMAGE_EXT_RE = r"\.(gif|png|jpg|jpeg)(?:\?|$)"
+DISCOVER_IMAGE_URL_RE = re.compile(
+    r"""(?:https?://[^\s"'<>]+|/[^\s"'<>]+)\.(?:gif|png|jpg|jpeg)(?:\?[^\s"'<>]*)?""",
+    re.IGNORECASE,
+)
 
 WPC_ANALYSIS_SENTINEL_RE = re.compile(
     r"([ \t]*<!-- BEGIN WPC ANALYSIS CONTENT -->).*?([ \t]*<!-- END WPC ANALYSIS CONTENT -->)",
@@ -172,7 +177,7 @@ def is_allowed_wpc_url(url: str) -> bool:
     if not parsed.netloc:
         return False
     host = parsed.hostname.lower() if parsed.hostname else ""
-    return host in ALLOWED_WPC_HOSTS or host.endswith(".noaa.gov")
+    return host in ALLOWED_WPC_HOSTS
 
 
 def _get_wpc_url_priority(url: str) -> tuple[int, int, str]:
@@ -240,11 +245,7 @@ def discover_wpc_500mb_chart_url(page_url: str = WPC_SFC2_PAGE_URL) -> str:
     discovered_links = set(parser.links)
     # Some WPC pages embed image paths in inline scripts/text instead of src/href attributes.
     # This regex extracts absolute/relative image URLs ending in common raster extensions.
-    for match in re.finditer(
-        r"""(?:https?://[^\s"'<>]+|/[^\s"'<>]+)\.(?:gif|png|jpg|jpeg)(?:\?[^\s"'<>]*)?""",
-        html,
-        flags=re.IGNORECASE,
-    ):
+    for match in DISCOVER_IMAGE_URL_RE.finditer(html):
         discovered_links.add(match.group(0))
 
     for raw_link in discovered_links:
@@ -254,7 +255,7 @@ def discover_wpc_500mb_chart_url(page_url: str = WPC_SFC2_PAGE_URL) -> str:
         lower_url = candidate_url.lower()
         if "/sfc/" not in lower_url:
             continue
-        if not re.search(r"\.(gif|png|jpg|jpeg)(?:\?|$)", lower_url):
+        if not re.search(IMAGE_EXT_RE, lower_url):
             continue
         if "500" in lower_url:
             candidate_set.add(candidate_url)
@@ -283,14 +284,16 @@ def fetch_wpc_chart(url: str) -> tuple[str, str, int, str]:
     try:
         encoded, media_type, size = _download_chart(url)
         return encoded, media_type, size, url
-    except HTTPError as exc:
-        if exc.code != 404:
-            raise RuntimeError(f"Failed to download 500 mb chart from {url}: {exc}") from exc
+    except HTTPError as original_http_error:
+        if original_http_error.code != 404:
+            raise RuntimeError(
+                f"Failed to download 500 mb chart from {url}: {original_http_error}"
+            ) from original_http_error
         try:
             discovered_url = discover_wpc_500mb_chart_url()
         except RuntimeError as discovery_exc:
             raise RuntimeError(
-                f"Failed to download 500 mb chart from {url} (original error: {exc}). "
+                f"Failed to download 500 mb chart from {url} (original error: {original_http_error}). "
                 f"Fallback discovery stage failed with: {discovery_exc}"
             ) from discovery_exc
         try:
@@ -298,7 +301,7 @@ def fetch_wpc_chart(url: str) -> tuple[str, str, int, str]:
             return encoded, media_type, size, discovered_url
         except (HTTPError, URLError, OSError, ValueError) as fallback_exc:
             raise RuntimeError(
-                f"Failed to download 500 mb chart from {url} (original error: {exc}). "
+                f"Failed to download 500 mb chart from {url} (original error: {original_http_error}). "
                 f"Fallback download stage failed for {discovered_url}: {fallback_exc}"
             ) from fallback_exc
     except (URLError, OSError, ValueError) as exc:
