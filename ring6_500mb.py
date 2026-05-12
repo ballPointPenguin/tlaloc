@@ -3,6 +3,7 @@ import re
 import base64
 from datetime import datetime, timezone
 from html import escape
+from html.parser import HTMLParser
 from pathlib import Path
 from urllib.error import HTTPError, URLError
 from urllib.parse import urljoin
@@ -19,7 +20,6 @@ INDEX_HTML = Path(__file__).parent / "index.html"
 WPC_ANALYSIS_CHART_URL = "https://www.wpc.ncep.noaa.gov/sfc/namfnd_500_vort.gif"
 WPC_SFC2_PAGE_URL = "https://www.wpc.ncep.noaa.gov/html/sfc2.shtml"
 MAX_ANTHROPIC_IMAGE_BYTES = 5 * 1024 * 1024
-CURRENT_WPC_ANALYSIS_CHART_URL = WPC_ANALYSIS_CHART_URL
 
 WPC_ANALYSIS_SENTINEL_RE = re.compile(
     r"([ \t]*<!-- BEGIN WPC ANALYSIS CONTENT -->).*?([ \t]*<!-- END WPC ANALYSIS CONTENT -->)",
@@ -107,7 +107,7 @@ def interpret_500mb_chart(interpretation: str, generated_at: str) -> dict:
     }
 
 
-def build_500mb_html(interpretation: str, generated_at: str) -> str:
+def build_500mb_html(interpretation: str, generated_at: str, chart_url: str) -> str:
     safe_interpretation = escape(" ".join(interpretation.split()))
     human_timestamp = format_timestamp(generated_at)
     return f"""<section aria-labelledby="wpc-analysis-heading">
@@ -115,7 +115,7 @@ def build_500mb_html(interpretation: str, generated_at: str) -> str:
   <div class="synoptic-card">
     <img
       class="synoptic-card__image"
-      src="{CURRENT_WPC_ANALYSIS_CHART_URL}"
+      src="{chart_url}"
       alt="NOAA WPC North America vorticity analysis chart"
     />
     <div class="synoptic-card__body">
@@ -128,9 +128,9 @@ def build_500mb_html(interpretation: str, generated_at: str) -> str:
 </section>"""
 
 
-def update_500mb_content(interpretation: str, generated_at: str) -> dict:
+def update_500mb_content(interpretation: str, generated_at: str, chart_url: str) -> dict:
     source = INDEX_HTML.read_text()
-    html = build_500mb_html(interpretation, generated_at)
+    html = build_500mb_html(interpretation, generated_at, chart_url)
     replacement = (
         "        <!-- BEGIN WPC ANALYSIS CONTENT -->\n"
         f"{html}\n"
@@ -143,12 +143,25 @@ def update_500mb_content(interpretation: str, generated_at: str) -> dict:
     return {"success": True, "path": str(INDEX_HTML), "generated_at": generated_at}
 
 
-def run_tool(name: str, inputs: dict) -> dict:
+def run_tool(name: str, inputs: dict, chart_url: str) -> dict:
     if name == "interpret_500mb_chart":
         return interpret_500mb_chart(**inputs)
     if name == "update_500mb_content":
-        return update_500mb_content(**inputs)
+        return update_500mb_content(**inputs, chart_url=chart_url)
     raise ValueError(f"Unknown tool: {name}")
+
+
+class _ImageLinkExtractor(HTMLParser):
+    def __init__(self) -> None:
+        super().__init__()
+        self.links: list[str] = []
+
+    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        for attr_name, attr_value in attrs:
+            if attr_value is None:
+                continue
+            if attr_name.lower() in {"src", "href"}:
+                self.links.append(attr_value.strip())
 
 
 def _download_chart(url: str) -> tuple[str, str, int]:
@@ -198,16 +211,28 @@ def discover_wpc_500mb_chart_url(page_url: str = WPC_SFC2_PAGE_URL) -> str:
     with urlopen(request, timeout=30) as response:
         html = response.read().decode("utf-8", errors="ignore")
 
-    candidates = []
-    for match in re.finditer(r"""(?:src|href)\s*=\s*["']([^"']+)["']""", html, flags=re.IGNORECASE):
-        candidate_url = urljoin(page_url, match.group(1).strip())
+    parser = _ImageLinkExtractor()
+    parser.feed(html)
+
+    candidate_set = set()
+    for raw_link in parser.links:
+        candidate_url = urljoin(page_url, raw_link)
         lower_url = candidate_url.lower()
         if "/sfc/" not in lower_url:
             continue
         if not re.search(r"\.(gif|png|jpg|jpeg)(?:\?|$)", lower_url):
             continue
         if "500" in lower_url and "vort" in lower_url:
-            candidates.append(candidate_url)
+            candidate_set.add(candidate_url)
+
+    candidates = sorted(
+        candidate_set,
+        key=lambda url: (
+            0 if "namfnd" in url.lower() else 1,
+            0 if "500_vort" in url.lower() else 1,
+            url.lower(),
+        ),
+    )
 
     if not candidates:
         raise RuntimeError(f"No 500 mb vorticity chart URL found on {page_url}")
@@ -248,14 +273,12 @@ def fetch_wpc_chart(url: str) -> tuple[str, str, int, str]:
 
 
 def main():
-    global CURRENT_WPC_ANALYSIS_CHART_URL
     generated_at = datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace(
         "+00:00", "Z"
     )
     image_data, image_media_type, image_size, resolved_chart_url = fetch_wpc_chart(
         WPC_ANALYSIS_CHART_URL
     )
-    CURRENT_WPC_ANALYSIS_CHART_URL = resolved_chart_url
     print(f"Fetched WPC analysis chart bytes: {image_size}")
     print(f"Using WPC analysis chart URL: {resolved_chart_url}")
     messages = [
@@ -303,7 +326,7 @@ def main():
             if block.type != "tool_use":
                 continue
             print(f"tool call: {block.name}({json.dumps(block.input, indent=2)})\n")
-            result = run_tool(block.name, block.input)
+            result = run_tool(block.name, block.input, resolved_chart_url)
             print(f"tool result: {json.dumps(result, indent=2)}\n")
             tool_results.append({
                 "type": "tool_result",
