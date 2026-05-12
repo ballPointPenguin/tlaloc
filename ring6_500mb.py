@@ -149,7 +149,7 @@ def run_tool(name: str, inputs: dict) -> dict:
 
 
 def fetch_wpc_chart(url: str) -> tuple[str, str, int]:
-    """Download and validate the 500 mb chart, then return it as base64 payload data.
+    """Download and validate the WPC analysis chart, then return it as base64 payload data.
 
     Args:
         url: Chart URL to download.
