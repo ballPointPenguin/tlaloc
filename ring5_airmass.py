@@ -209,6 +209,7 @@ def fetch_airmass_image(url: str) -> tuple[str, str, int]:
 
 
 def image_url_exists(url: str) -> bool:
+    """Return True when URL is reachable and serves image content."""
     request = Request(url, headers={"User-Agent": "tlaloc-weather-bot/1.0"})
     try:
         with urlopen(request, timeout=URL_PROBE_TIMEOUT_SECONDS) as response:
@@ -224,13 +225,15 @@ def image_url_exists(url: str) -> bool:
 
 
 def iter_airmass_candidate_urls(now_utc: datetime):
+    """Yield (url, satellite) probes ordered by preferred recency and satellite."""
     normalized = now_utc.astimezone(timezone.utc).replace(second=0, microsecond=0)
     aligned = normalized - timedelta(minutes=normalized.minute % 10)
     for satellite in GOES_AIRMASS_SATELLITES:
         base_url = GOES_AIRMASS_BASE_URL_TEMPLATE.format(satellite=satellite)
         yield f"{base_url}/latest.jpg", satellite
-        for step in range(AIRMASS_LOOKBACK_STEPS):  # Look back 6 hours (36 × 10 minutes).
+        for step in range(AIRMASS_LOOKBACK_STEPS):  # 36 × 10-minute steps (~6 hours).
             scan_time = aligned - timedelta(minutes=10 * step)
+            # Probe both :00 and :01 products because publication minute can vary.
             for minute_adjustment in (1, 0):
                 candidate_scan_time = scan_time + timedelta(minutes=minute_adjustment)
                 if candidate_scan_time > normalized:
@@ -241,6 +244,7 @@ def iter_airmass_candidate_urls(now_utc: datetime):
 
 
 def resolve_airmass_image_url(now_utc: datetime | None = None) -> tuple[str, str]:
+    """Resolve a usable GOES CONUS Air Mass URL, preferring GOES-19 then GOES-16."""
     probe_time = now_utc or datetime.now(timezone.utc)
     for url, satellite in iter_airmass_candidate_urls(probe_time):
         if image_url_exists(url):
