@@ -169,7 +169,10 @@ def fetch_airmass_image(url: str) -> tuple[str, str, int]:
             content_type_header = response.headers.get("Content-Type", "")
             media_type = content_type_header.split(";", 1)[0].strip().lower()
             if not media_type.startswith("image/"):
-                raise ValueError(f"Unexpected Air Mass content type: {media_type}")
+                raise ValueError(
+                    "Unexpected Air Mass content type: "
+                    f"parsed={media_type!r}, header={content_type_header!r}"
+                )
 
             image_bytes = bytearray()
             while True:
