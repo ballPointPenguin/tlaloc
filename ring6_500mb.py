@@ -23,9 +23,10 @@ MAX_ANTHROPIC_IMAGE_BYTES = 5 * 1024 * 1024
 ALLOWED_WPC_HOSTS = {"www.wpc.ncep.noaa.gov", "wpc.ncep.noaa.gov"}
 IMAGE_EXT_RE = r"\.(gif|png|jpg|jpeg)(?:\?|$)"
 DISCOVER_IMAGE_URL_RE = re.compile(
-    r"""(?:https?://[^\s"'<>]+|/[^\s"'<>]+)\.(?:gif|png|jpg|jpeg)(?:\?[^\s"'<>]*)?""",
+    r"""(?:https?://[^\s"'<>]+|//[^\s"'<>]+|/[^\s"'<>]+)\.(?:gif|png|jpg|jpeg)(?:\?[^\s"'<>]*)?""",
     re.IGNORECASE,
 )
+WPC_500_TOKEN_RE = re.compile(r"(?:500mb|500_mb|_500|500_|500\.)", re.IGNORECASE)
 
 WPC_ANALYSIS_SENTINEL_RE = re.compile(
     r"([ \t]*<!-- BEGIN WPC ANALYSIS CONTENT -->).*?([ \t]*<!-- END WPC ANALYSIS CONTENT -->)",
@@ -176,7 +177,7 @@ def is_allowed_wpc_url(url: str) -> bool:
         return False
     if not parsed.netloc:
         return False
-    host = parsed.hostname.lower() if parsed.hostname else ""
+    host = (parsed.hostname or "").lower()
     return host in ALLOWED_WPC_HOSTS
 
 
@@ -257,7 +258,8 @@ def discover_wpc_500mb_chart_url(page_url: str = WPC_SFC2_PAGE_URL) -> str:
             continue
         if not re.search(IMAGE_EXT_RE, lower_url):
             continue
-        if "500" in lower_url:
+        parsed_candidate = urlparse(candidate_url)
+        if WPC_500_TOKEN_RE.search(parsed_candidate.path):
             candidate_set.add(candidate_url)
 
     candidates = sorted(candidate_set, key=_get_wpc_url_priority)
