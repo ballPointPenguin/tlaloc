@@ -26,7 +26,9 @@ DISCOVER_IMAGE_URL_RE = re.compile(
     r"""(?:https?://[^\s"'<>]+|//[^\s"'<>]+|/[^\s"'<>]+)\.(?:gif|png|jpg|jpeg)(?:\?[^\s"'<>]*)?""",
     re.IGNORECASE,
 )
-WPC_500_TOKEN_RE = re.compile(r"(?:500mb|500_mb|_500|500_|500\.)", re.IGNORECASE)
+WPC_500_TOKEN_RE = re.compile(
+    r"(?:500|vort|hgt|height|h5|anl|analysis|namfnd)", re.IGNORECASE
+)
 
 WPC_ANALYSIS_SENTINEL_RE = re.compile(
     r"([ \t]*<!-- BEGIN WPC ANALYSIS CONTENT -->).*?([ \t]*<!-- END WPC ANALYSIS CONTENT -->)",
@@ -186,8 +188,10 @@ def _get_wpc_url_priority(url: str) -> tuple[int, int, str]:
     # Prefer WPC's canonical North America chart naming when present.
     lower_url = url.lower()
     return (
-        0 if "namfnd" in lower_url else 1,
+        0 if "500" in lower_url else 1,
         0 if "vort" in lower_url else 1,
+        0 if "namfnd" in lower_url else 1,
+        0 if "/sfc/" in lower_url else 1,
         lower_url,
     )
 
@@ -234,7 +238,7 @@ def _download_chart(url: str) -> tuple[str, str, int]:
     return encoded, media_type, len(image_bytes)
 
 
-def discover_wpc_500mb_chart_url(page_url: str = WPC_SFC2_PAGE_URL) -> str:
+def discover_wpc_500mb_chart_urls(page_url: str = WPC_SFC2_PAGE_URL) -> list[str]:
     request = Request(page_url, headers={"User-Agent": "tlaloc-weather-bot/1.0"})
     with urlopen(request, timeout=30) as response:
         html = response.read().decode("utf-8", errors="ignore")
@@ -254,20 +258,28 @@ def discover_wpc_500mb_chart_url(page_url: str = WPC_SFC2_PAGE_URL) -> str:
         if not is_allowed_wpc_url(candidate_url):
             continue
         lower_url = candidate_url.lower()
-        if "/sfc/" not in lower_url:
-            continue
         if not re.search(IMAGE_EXT_RE, lower_url):
             continue
         parsed_candidate = urlparse(candidate_url)
         if WPC_500_TOKEN_RE.search(parsed_candidate.path):
             candidate_set.add(candidate_url)
 
-    candidates = sorted(candidate_set, key=_get_wpc_url_priority)
+    return sorted(candidate_set, key=_get_wpc_url_priority)
 
-    if not candidates:
-        raise RuntimeError(f"No 500 mb chart URL found on {page_url}")
 
-    return candidates[0]
+def validate_and_download_first_chart(candidates: list[str]) -> tuple[str, str, int, str]:
+    failures = []
+    for candidate_url in candidates:
+        try:
+            encoded, media_type, size = _download_chart(candidate_url)
+            return encoded, media_type, size, candidate_url
+        except (HTTPError, URLError, OSError, ValueError) as exc:
+            failures.append(f"{candidate_url} -> {exc}")
+
+    details = "\n".join(failures[:5])
+    if len(failures) > 5:
+        details += f"\n... and {len(failures) - 5} more failures"
+    raise RuntimeError(f"No valid fallback chart URL downloaded.\n{details}")
 
 
 def fetch_wpc_chart(url: str) -> tuple[str, str, int, str]:
@@ -292,19 +304,23 @@ def fetch_wpc_chart(url: str) -> tuple[str, str, int, str]:
                 f"Failed to download 500 mb chart from {url}: {original_http_error}"
             ) from original_http_error
         try:
-            discovered_url = discover_wpc_500mb_chart_url()
+            discovered_urls = discover_wpc_500mb_chart_urls()
+            if not discovered_urls:
+                raise RuntimeError(f"No 500 mb chart URL found on {WPC_SFC2_PAGE_URL}")
+            print(f"Discovered {len(discovered_urls)} fallback chart candidates from {WPC_SFC2_PAGE_URL}")
+            for candidate_url in discovered_urls[:5]:
+                print(f"Fallback candidate: {candidate_url}")
         except RuntimeError as discovery_exc:
             raise RuntimeError(
                 f"Failed to download 500 mb chart from {url} (original error: {original_http_error}). "
                 f"Fallback discovery stage failed with: {discovery_exc}"
             ) from discovery_exc
         try:
-            encoded, media_type, size = _download_chart(discovered_url)
-            return encoded, media_type, size, discovered_url
-        except (HTTPError, URLError, OSError, ValueError) as fallback_exc:
+            return validate_and_download_first_chart(discovered_urls)
+        except RuntimeError as fallback_exc:
             raise RuntimeError(
                 f"Failed to download 500 mb chart from {url} (original error: {original_http_error}). "
-                f"Fallback download stage failed for {discovered_url}: {fallback_exc}"
+                f"Fallback download stage failed after validating discovered URLs: {fallback_exc}"
             ) from fallback_exc
     except (URLError, OSError, ValueError) as exc:
         raise RuntimeError(f"Failed to download 500 mb chart from {url}: {exc}") from exc
