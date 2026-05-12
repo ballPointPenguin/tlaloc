@@ -4,6 +4,7 @@ import base64
 from datetime import datetime, timezone
 from html import escape
 from pathlib import Path
+from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
 import anthropic
@@ -151,32 +152,35 @@ def run_tool(name: str, inputs: dict) -> dict:
 
 def fetch_airmass_image(url: str) -> tuple[str, str, int]:
     request = Request(url, headers={"User-Agent": "tlaloc-weather-bot/1.0"})
-    with urlopen(request, timeout=30) as response:
-        content_length = response.headers.get("Content-Length")
-        if content_length and int(content_length) > MAX_ANTHROPIC_IMAGE_BYTES:
-            raise ValueError(
-                "Air Mass image exceeds Anthropic 5MB limit before download "
-                f"({content_length} bytes)"
-            )
-
-        media_type = response.headers.get_content_type() or "image/jpeg"
-        image_bytes = bytearray()
-        while True:
-            chunk = response.read(64 * 1024)
-            if not chunk:
-                break
-            image_bytes.extend(chunk)
-            if len(image_bytes) > MAX_ANTHROPIC_IMAGE_BYTES:
+    try:
+        with urlopen(request, timeout=30) as response:
+            content_length = response.headers.get("Content-Length")
+            if content_length and int(content_length) > MAX_ANTHROPIC_IMAGE_BYTES:
                 raise ValueError(
-                    "Air Mass image exceeds Anthropic 5MB limit after download "
-                    f"({len(image_bytes)} bytes)"
+                    "Air Mass image exceeds Anthropic 5MB limit before download "
+                    f"({content_length} bytes)"
                 )
+
+            media_type = response.headers.get_content_type()
+            if not media_type.startswith("image/"):
+                raise ValueError(f"Unexpected Air Mass content type: {media_type}")
+
+            image_bytes = bytearray()
+            while True:
+                chunk = response.read(64 * 1024)
+                if not chunk:
+                    break
+                image_bytes.extend(chunk)
+                if len(image_bytes) > MAX_ANTHROPIC_IMAGE_BYTES:
+                    raise ValueError(
+                        "Air Mass image exceeds Anthropic 5MB limit after download "
+                        f"({len(image_bytes)} bytes)"
+                    )
+    except (HTTPError, URLError, TimeoutError) as exc:
+        raise RuntimeError(f"Failed to download Air Mass image from {url}: {exc}") from exc
 
     if not image_bytes:
         raise ValueError("Air Mass image download returned no data")
-
-    if not media_type.startswith("image/"):
-        media_type = "image/jpeg"
 
     encoded = base64.b64encode(bytes(image_bytes)).decode("ascii")
     return encoded, media_type, len(image_bytes)
