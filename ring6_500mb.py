@@ -113,7 +113,7 @@ def build_500mb_html(interpretation: str, generated_at: str) -> str:
     <img
       class="synoptic-card__image"
       src="{HEIGHTS_500MB_URL}"
-      alt="NOAA WPC 500 mb geopotential height and absolute vorticity analysis for North America"
+      alt="NOAA WPC North America vorticity analysis chart"
     />
     <div class="synoptic-card__body">
       <p class="synoptic-card__text">{safe_interpretation}</p>
