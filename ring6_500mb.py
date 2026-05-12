@@ -19,7 +19,7 @@ WPC_ANALYSIS_CHART_URL = "https://www.wpc.ncep.noaa.gov/sfc/namvort.gif"
 MAX_ANTHROPIC_IMAGE_BYTES = 5 * 1024 * 1024
 
 WPC_ANALYSIS_SENTINEL_RE = re.compile(
-    r"([ \t]*<!-- BEGIN 500MB CONTENT -->).*?([ \t]*<!-- END 500MB CONTENT -->)",
+    r"([ \t]*<!-- BEGIN WPC ANALYSIS CONTENT -->).*?([ \t]*<!-- END WPC ANALYSIS CONTENT -->)",
     re.DOTALL,
 )
 
@@ -67,7 +67,7 @@ TOOLS = [
         "description": (
             "Replace the 500 mb content block in index.html. "
             "The interpretation is rendered below a live NOAA WPC 500 mb chart image between "
-            "<!-- BEGIN 500MB CONTENT --> and <!-- END 500MB CONTENT --> markers. "
+            "<!-- BEGIN WPC ANALYSIS CONTENT --> and <!-- END WPC ANALYSIS CONTENT --> markers. "
             "The generated HTML reuses these CSS classes: synoptic-card, synoptic-card__image, "
             "synoptic-card__body, synoptic-card__text, synoptic-card__timestamp."
         ),
@@ -129,9 +129,9 @@ def update_500mb_content(interpretation: str, generated_at: str) -> dict:
     source = INDEX_HTML.read_text()
     html = build_500mb_html(interpretation, generated_at)
     replacement = (
-        "        <!-- BEGIN 500MB CONTENT -->\n"
+        "        <!-- BEGIN WPC ANALYSIS CONTENT -->\n"
         f"{html}\n"
-        "        <!-- END 500MB CONTENT -->"
+        "        <!-- END WPC ANALYSIS CONTENT -->"
     )
     updated, count = WPC_ANALYSIS_SENTINEL_RE.subn(replacement, source)
     if count == 0:
