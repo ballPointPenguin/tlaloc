@@ -29,6 +29,7 @@ DISCOVER_IMAGE_URL_RE = re.compile(
 WPC_500_TOKEN_RE = re.compile(
     r"(?:500|vort|hgt|height|h5|anl|analysis|namfnd)", re.IGNORECASE
 )
+MAX_DIAGNOSTIC_URLS = 5
 
 WPC_ANALYSIS_SENTINEL_RE = re.compile(
     r"([ \t]*<!-- BEGIN WPC ANALYSIS CONTENT -->).*?([ \t]*<!-- END WPC ANALYSIS CONTENT -->)",
@@ -183,13 +184,13 @@ def is_allowed_wpc_url(url: str) -> bool:
     return host in ALLOWED_WPC_HOSTS
 
 
-def _get_wpc_url_priority(url: str) -> tuple[int, int, str]:
+def _get_wpc_url_priority(url: str) -> tuple[int, int, int, int, str]:
     # Lower tuple values are higher priority.
     # Prefer WPC's canonical North America chart naming when present.
     lower_url = url.lower()
     return (
+        0 if WPC_500_TOKEN_RE.search(lower_url) else 1,
         0 if "500" in lower_url else 1,
-        0 if "vort" in lower_url else 1,
         0 if "namfnd" in lower_url else 1,
         0 if "/sfc/" in lower_url else 1,
         lower_url,
@@ -276,9 +277,9 @@ def validate_and_download_first_chart(candidates: list[str]) -> tuple[str, str, 
         except (HTTPError, URLError, OSError, ValueError) as exc:
             failures.append(f"{candidate_url} -> {exc}")
 
-    details = "\n".join(failures[:5])
-    if len(failures) > 5:
-        details += f"\n... and {len(failures) - 5} more failures"
+    details = "\n".join(failures[:MAX_DIAGNOSTIC_URLS])
+    if len(failures) > MAX_DIAGNOSTIC_URLS:
+        details += f"\n... and {len(failures) - MAX_DIAGNOSTIC_URLS} more failures"
     raise RuntimeError(f"No valid fallback chart URL downloaded.\n{details}")
 
 
@@ -308,7 +309,7 @@ def fetch_wpc_chart(url: str) -> tuple[str, str, int, str]:
             if not discovered_urls:
                 raise RuntimeError(f"No 500 mb chart URL found on {WPC_SFC2_PAGE_URL}")
             print(f"Discovered {len(discovered_urls)} fallback chart candidates from {WPC_SFC2_PAGE_URL}")
-            for candidate_url in discovered_urls[:5]:
+            for candidate_url in discovered_urls[:MAX_DIAGNOSTIC_URLS]:
                 print(f"Fallback candidate: {candidate_url}")
         except RuntimeError as discovery_exc:
             raise RuntimeError(
