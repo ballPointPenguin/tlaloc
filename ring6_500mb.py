@@ -175,6 +175,17 @@ def is_allowed_wpc_url(url: str) -> bool:
     return host in ALLOWED_WPC_HOSTS or host.endswith(".noaa.gov")
 
 
+def _get_wpc_url_priority(url: str) -> tuple[int, int, str]:
+    # Lower tuple values are higher priority.
+    # Prefer WPC's canonical North America chart naming when present.
+    lower_url = url.lower()
+    return (
+        0 if "namfnd" in lower_url else 1,
+        0 if "vort" in lower_url else 1,
+        lower_url,
+    )
+
+
 def _download_chart(url: str) -> tuple[str, str, int]:
     request = Request(url, headers={"User-Agent": "tlaloc-weather-bot/1.0"})
     with urlopen(request, timeout=30) as response:
@@ -228,6 +239,7 @@ def discover_wpc_500mb_chart_url(page_url: str = WPC_SFC2_PAGE_URL) -> str:
     candidate_set = set()
     discovered_links = set(parser.links)
     # Some WPC pages embed image paths in inline scripts/text instead of src/href attributes.
+    # This regex extracts absolute/relative image URLs ending in common raster extensions.
     for match in re.finditer(
         r"""(?:https?://[^\s"'<>]+|/[^\s"'<>]+)\.(?:gif|png|jpg|jpeg)(?:\?[^\s"'<>]*)?""",
         html,
@@ -247,17 +259,7 @@ def discover_wpc_500mb_chart_url(page_url: str = WPC_SFC2_PAGE_URL) -> str:
         if "500" in lower_url:
             candidate_set.add(candidate_url)
 
-    def _url_priority(url: str) -> tuple[int, int, str]:
-        # Lower tuple values are higher priority.
-        # Prefer WPC's canonical North America chart naming when present.
-        lower_url = url.lower()
-        return (
-            0 if "namfnd" in lower_url else 1,
-            0 if "vort" in lower_url else 1,
-            lower_url,
-        )
-
-    candidates = sorted(candidate_set, key=_url_priority)
+    candidates = sorted(candidate_set, key=_get_wpc_url_priority)
 
     if not candidates:
         raise RuntimeError(f"No 500 mb chart URL found on {page_url}")
