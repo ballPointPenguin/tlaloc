@@ -18,7 +18,7 @@ INDEX_HTML = Path(__file__).parent / "index.html"
 WPC_ANALYSIS_CHART_URL = "https://www.wpc.ncep.noaa.gov/sfc/namvort.gif"
 MAX_ANTHROPIC_IMAGE_BYTES = 5 * 1024 * 1024
 
-HEIGHTS_500MB_SENTINEL_RE = re.compile(
+WPC_ANALYSIS_SENTINEL_RE = re.compile(
     r"([ \t]*<!-- BEGIN 500MB CONTENT -->).*?([ \t]*<!-- END 500MB CONTENT -->)",
     re.DOTALL,
 )
@@ -133,9 +133,9 @@ def update_500mb_content(interpretation: str, generated_at: str) -> dict:
         f"{html}\n"
         "        <!-- END 500MB CONTENT -->"
     )
-    updated, count = HEIGHTS_500MB_SENTINEL_RE.subn(replacement, source)
+    updated, count = WPC_ANALYSIS_SENTINEL_RE.subn(replacement, source)
     if count == 0:
-        return {"success": False, "error": "500 mb sentinel comments not found in index.html"}
+        return {"success": False, "error": "WPC analysis sentinel comments not found in index.html"}
     INDEX_HTML.write_text(updated)
     return {"success": True, "path": str(INDEX_HTML), "generated_at": generated_at}
 
@@ -148,7 +148,7 @@ def run_tool(name: str, inputs: dict) -> dict:
     raise ValueError(f"Unknown tool: {name}")
 
 
-def fetch_500mb_chart(url: str) -> tuple[str, str, int]:
+def fetch_wpc_chart(url: str) -> tuple[str, str, int]:
     """Download and validate the 500 mb chart, then return it as base64 payload data.
 
     Args:
@@ -209,7 +209,7 @@ def main():
     generated_at = datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace(
         "+00:00", "Z"
     )
-    image_data, image_media_type, image_size = fetch_500mb_chart(WPC_ANALYSIS_CHART_URL)
+    image_data, image_media_type, image_size = fetch_wpc_chart(WPC_ANALYSIS_CHART_URL)
     print(f"Fetched WPC analysis chart bytes: {image_size}")
     messages = [
         {
