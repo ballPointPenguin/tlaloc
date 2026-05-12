@@ -6,7 +6,7 @@ from html import escape
 from html.parser import HTMLParser
 from pathlib import Path
 from urllib.error import HTTPError, URLError
-from urllib.parse import urljoin
+from urllib.parse import urljoin, urlparse
 from urllib.request import Request, urlopen
 
 import anthropic
@@ -20,6 +20,7 @@ INDEX_HTML = Path(__file__).parent / "index.html"
 WPC_ANALYSIS_CHART_URL = "https://www.wpc.ncep.noaa.gov/sfc/namfnd_500_vort.gif"
 WPC_SFC2_PAGE_URL = "https://www.wpc.ncep.noaa.gov/html/sfc2.shtml"
 MAX_ANTHROPIC_IMAGE_BYTES = 5 * 1024 * 1024
+ALLOWED_WPC_HOSTS = {"www.wpc.ncep.noaa.gov", "wpc.ncep.noaa.gov"}
 
 WPC_ANALYSIS_SENTINEL_RE = re.compile(
     r"([ \t]*<!-- BEGIN WPC ANALYSIS CONTENT -->).*?([ \t]*<!-- END WPC ANALYSIS CONTENT -->)",
@@ -164,6 +165,16 @@ class _ImageLinkExtractor(HTMLParser):
                 self.links.append(attr_value.strip())
 
 
+def is_allowed_wpc_url(url: str) -> bool:
+    parsed = urlparse(url)
+    if parsed.scheme not in {"http", "https"}:
+        return False
+    if not parsed.netloc:
+        return False
+    host = parsed.hostname.lower() if parsed.hostname else ""
+    return host in ALLOWED_WPC_HOSTS or host.endswith(".noaa.gov")
+
+
 def _download_chart(url: str) -> tuple[str, str, int]:
     request = Request(url, headers={"User-Agent": "tlaloc-weather-bot/1.0"})
     with urlopen(request, timeout=30) as response:
@@ -226,6 +237,8 @@ def discover_wpc_500mb_chart_url(page_url: str = WPC_SFC2_PAGE_URL) -> str:
 
     for raw_link in discovered_links:
         candidate_url = urljoin(page_url, raw_link)
+        if not is_allowed_wpc_url(candidate_url):
+            continue
         lower_url = candidate_url.lower()
         if "/sfc/" not in lower_url:
             continue
@@ -276,7 +289,7 @@ def fetch_wpc_chart(url: str) -> tuple[str, str, int, str]:
         except RuntimeError as discovery_exc:
             raise RuntimeError(
                 f"Failed to download 500 mb chart from {url} (original error: {exc}). "
-                f"Fallback URL discovery failed with: {discovery_exc}"
+                f"Fallback discovery stage failed with: {discovery_exc}"
             ) from discovery_exc
         try:
             encoded, media_type, size = _download_chart(discovered_url)
@@ -284,7 +297,7 @@ def fetch_wpc_chart(url: str) -> tuple[str, str, int, str]:
         except (HTTPError, URLError, OSError, ValueError) as fallback_exc:
             raise RuntimeError(
                 f"Failed to download 500 mb chart from {url} (original error: {exc}). "
-                f"Fallback download failed for {discovered_url}: {fallback_exc}"
+                f"Fallback download stage failed for {discovered_url}: {fallback_exc}"
             ) from fallback_exc
     except (URLError, OSError, ValueError) as exc:
         raise RuntimeError(f"Failed to download 500 mb chart from {url}: {exc}") from exc
