@@ -176,7 +176,7 @@ class _ImageLinkExtractor(HTMLParser):
 
 def is_allowed_wpc_url(url: str) -> bool:
     parsed = urlparse(url)
-    if parsed.scheme not in {"http", "https"}:
+    if parsed.scheme != "https":
         return False
     if not parsed.netloc:
         return False
@@ -261,8 +261,7 @@ def discover_wpc_500mb_chart_urls(page_url: str = WPC_SFC2_PAGE_URL) -> list[str
         lower_url = candidate_url.lower()
         if not re.search(IMAGE_EXT_RE, lower_url):
             continue
-        parsed_candidate = urlparse(candidate_url)
-        if WPC_500_TOKEN_RE.search(parsed_candidate.path):
+        if WPC_500_TOKEN_RE.search(urlparse(candidate_url).path):
             candidate_set.add(candidate_url)
 
     return sorted(candidate_set, key=_get_wpc_url_priority)
