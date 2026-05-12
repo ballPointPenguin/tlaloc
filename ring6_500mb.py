@@ -15,11 +15,11 @@ load_dotenv()
 client = anthropic.Anthropic()
 
 INDEX_HTML = Path(__file__).parent / "index.html"
-HEIGHTS_500MB_URL = "https://www.wpc.ncep.noaa.gov/500/500z_ana.gif"
+WPC_ANALYSIS_CHART_URL = "https://www.wpc.ncep.noaa.gov/sfc/namvort.gif"
 MAX_ANTHROPIC_IMAGE_BYTES = 5 * 1024 * 1024
 
-HEIGHTS_500MB_SENTINEL_RE = re.compile(
-    r"([ \t]*<!-- BEGIN 500MB CONTENT -->).*?([ \t]*<!-- END 500MB CONTENT -->)",
+WPC_ANALYSIS_SENTINEL_RE = re.compile(
+    r"([ \t]*<!-- BEGIN WPC ANALYSIS CONTENT -->).*?([ \t]*<!-- END WPC ANALYSIS CONTENT -->)",
     re.DOTALL,
 )
 
@@ -65,9 +65,9 @@ TOOLS = [
     {
         "name": "update_500mb_content",
         "description": (
-            "Replace the 500 mb content block in index.html. "
-            "The interpretation is rendered below a live NOAA WPC 500 mb chart image between "
-            "<!-- BEGIN 500MB CONTENT --> and <!-- END 500MB CONTENT --> markers. "
+            "Replace the WPC analysis content block in index.html. "
+            "The interpretation is rendered below a live NOAA WPC analysis chart image between "
+            "<!-- BEGIN WPC ANALYSIS CONTENT --> and <!-- END WPC ANALYSIS CONTENT --> markers. "
             "The generated HTML reuses these CSS classes: synoptic-card, synoptic-card__image, "
             "synoptic-card__body, synoptic-card__text, synoptic-card__timestamp."
         ),
@@ -107,13 +107,13 @@ def interpret_500mb_chart(interpretation: str, generated_at: str) -> dict:
 def build_500mb_html(interpretation: str, generated_at: str) -> str:
     safe_interpretation = escape(" ".join(interpretation.split()))
     human_timestamp = format_timestamp(generated_at)
-    return f"""<section aria-labelledby="heights-500mb-heading">
-  <h2 id="heights-500mb-heading">500 mb Heights / Vorticity</h2>
+    return f"""<section aria-labelledby="wpc-analysis-heading">
+  <h2 id="wpc-analysis-heading">WPC Analysis</h2>
   <div class="synoptic-card">
     <img
       class="synoptic-card__image"
-      src="{HEIGHTS_500MB_URL}"
-      alt="NOAA WPC 500 mb geopotential height and absolute vorticity analysis for North America"
+      src="{WPC_ANALYSIS_CHART_URL}"
+      alt="NOAA WPC North America vorticity analysis chart"
     />
     <div class="synoptic-card__body">
       <p class="synoptic-card__text">{safe_interpretation}</p>
@@ -129,13 +129,13 @@ def update_500mb_content(interpretation: str, generated_at: str) -> dict:
     source = INDEX_HTML.read_text()
     html = build_500mb_html(interpretation, generated_at)
     replacement = (
-        "        <!-- BEGIN 500MB CONTENT -->\n"
+        "        <!-- BEGIN WPC ANALYSIS CONTENT -->\n"
         f"{html}\n"
-        "        <!-- END 500MB CONTENT -->"
+        "        <!-- END WPC ANALYSIS CONTENT -->"
     )
-    updated, count = HEIGHTS_500MB_SENTINEL_RE.subn(replacement, source)
+    updated, count = WPC_ANALYSIS_SENTINEL_RE.subn(replacement, source)
     if count == 0:
-        return {"success": False, "error": "500 mb sentinel comments not found in index.html"}
+        return {"success": False, "error": "WPC analysis sentinel comments not found in index.html"}
     INDEX_HTML.write_text(updated)
     return {"success": True, "path": str(INDEX_HTML), "generated_at": generated_at}
 
@@ -148,8 +148,8 @@ def run_tool(name: str, inputs: dict) -> dict:
     raise ValueError(f"Unknown tool: {name}")
 
 
-def fetch_500mb_chart(url: str) -> tuple[str, str, int]:
-    """Download and validate the 500 mb chart, then return it as base64 payload data.
+def fetch_wpc_chart(url: str) -> tuple[str, str, int]:
+    """Download and validate the WPC analysis chart, then return it as base64 payload data.
 
     Args:
         url: Chart URL to download.
@@ -209,8 +209,8 @@ def main():
     generated_at = datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace(
         "+00:00", "Z"
     )
-    image_data, image_media_type, image_size = fetch_500mb_chart(HEIGHTS_500MB_URL)
-    print(f"Fetched 500 mb chart bytes: {image_size}")
+    image_data, image_media_type, image_size = fetch_wpc_chart(WPC_ANALYSIS_CHART_URL)
+    print(f"Fetched WPC analysis chart bytes: {image_size}")
     messages = [
         {
             "role": "user",
