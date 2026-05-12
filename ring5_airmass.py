@@ -1,8 +1,10 @@
 import json
 import re
+import base64
 from datetime import datetime, timezone
 from html import escape
 from pathlib import Path
+from urllib.request import Request, urlopen
 
 import anthropic
 from dotenv import load_dotenv
@@ -13,6 +15,7 @@ client = anthropic.Anthropic()
 
 INDEX_HTML = Path(__file__).parent / "index.html"
 AIRMASS_RGB_URL = "https://cdn.star.nesdis.noaa.gov/GOES16/ABI/CONUS/AirMass/latest.jpg"
+MAX_ANTHROPIC_IMAGE_BYTES = 5 * 1024 * 1024
 
 AIRMASS_SENTINEL_RE = re.compile(
     r"([ \t]*<!-- BEGIN AIRMASS CONTENT -->).*?([ \t]*<!-- END AIRMASS CONTENT -->)",
@@ -146,10 +149,45 @@ def run_tool(name: str, inputs: dict) -> dict:
     raise ValueError(f"Unknown tool: {name}")
 
 
+def fetch_airmass_image(url: str) -> tuple[str, str, int]:
+    request = Request(url, headers={"User-Agent": "tlaloc-weather-bot/1.0"})
+    with urlopen(request, timeout=30) as response:
+        content_length = response.headers.get("Content-Length")
+        if content_length and int(content_length) > MAX_ANTHROPIC_IMAGE_BYTES:
+            raise ValueError(
+                "Air Mass image exceeds Anthropic 5MB limit before download "
+                f"({content_length} bytes)"
+            )
+
+        media_type = response.headers.get_content_type() or "image/jpeg"
+        image_bytes = bytearray()
+        while True:
+            chunk = response.read(64 * 1024)
+            if not chunk:
+                break
+            image_bytes.extend(chunk)
+            if len(image_bytes) > MAX_ANTHROPIC_IMAGE_BYTES:
+                raise ValueError(
+                    "Air Mass image exceeds Anthropic 5MB limit after download "
+                    f"({len(image_bytes)} bytes)"
+                )
+
+    if not image_bytes:
+        raise ValueError("Air Mass image download returned no data")
+
+    if not media_type.startswith("image/"):
+        media_type = "image/jpeg"
+
+    encoded = base64.b64encode(bytes(image_bytes)).decode("ascii")
+    return encoded, media_type, len(image_bytes)
+
+
 def main():
     generated_at = datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace(
         "+00:00", "Z"
     )
+    image_data, image_media_type, image_size = fetch_airmass_image(AIRMASS_RGB_URL)
+    print(f"Fetched Air Mass image bytes: {image_size}")
     messages = [
         {
             "role": "user",
@@ -157,8 +195,9 @@ def main():
                 {
                     "type": "image",
                     "source": {
-                        "type": "url",
-                        "url": AIRMASS_RGB_URL,
+                        "type": "base64",
+                        "media_type": image_media_type,
+                        "data": image_data,
                     },
                 },
                 {
