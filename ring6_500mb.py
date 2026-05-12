@@ -65,7 +65,7 @@ TOOLS = [
     {
         "name": "update_500mb_content",
         "description": (
-            "Replace the 500 mb content block in index.html. "
+            "Replace the WPC analysis content block in index.html. "
             "The interpretation is rendered below a live NOAA WPC 500 mb chart image between "
             "<!-- BEGIN WPC ANALYSIS CONTENT --> and <!-- END WPC ANALYSIS CONTENT --> markers. "
             "The generated HTML reuses these CSS classes: synoptic-card, synoptic-card__image, "
@@ -107,8 +107,8 @@ def interpret_500mb_chart(interpretation: str, generated_at: str) -> dict:
 def build_500mb_html(interpretation: str, generated_at: str) -> str:
     safe_interpretation = escape(" ".join(interpretation.split()))
     human_timestamp = format_timestamp(generated_at)
-    return f"""<section aria-labelledby="heights-500mb-heading">
-  <h2 id="heights-500mb-heading">500 mb Heights / Vorticity</h2>
+    return f"""<section aria-labelledby="wpc-analysis-heading">
+  <h2 id="wpc-analysis-heading">WPC Analysis</h2>
   <div class="synoptic-card">
     <img
       class="synoptic-card__image"
