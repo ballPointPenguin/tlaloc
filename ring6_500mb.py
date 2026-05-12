@@ -15,7 +15,7 @@ load_dotenv()
 client = anthropic.Anthropic()
 
 INDEX_HTML = Path(__file__).parent / "index.html"
-HEIGHTS_500MB_URL = "https://www.wpc.ncep.noaa.gov/500/500z_ana.gif"
+HEIGHTS_500MB_URL = "https://www.wpc.ncep.noaa.gov/sfc/namvort.gif"
 MAX_ANTHROPIC_IMAGE_BYTES = 5 * 1024 * 1024
 
 HEIGHTS_500MB_SENTINEL_RE = re.compile(
