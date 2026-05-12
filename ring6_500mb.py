@@ -15,7 +15,7 @@ load_dotenv()
 client = anthropic.Anthropic()
 
 INDEX_HTML = Path(__file__).parent / "index.html"
-HEIGHTS_500MB_URL = "https://www.wpc.ncep.noaa.gov/sfc/namvort.gif"
+WPC_ANALYSIS_CHART_URL = "https://www.wpc.ncep.noaa.gov/sfc/namvort.gif"
 MAX_ANTHROPIC_IMAGE_BYTES = 5 * 1024 * 1024
 
 HEIGHTS_500MB_SENTINEL_RE = re.compile(
@@ -112,7 +112,7 @@ def build_500mb_html(interpretation: str, generated_at: str) -> str:
   <div class="synoptic-card">
     <img
       class="synoptic-card__image"
-      src="{HEIGHTS_500MB_URL}"
+      src="{WPC_ANALYSIS_CHART_URL}"
       alt="NOAA WPC North America vorticity analysis chart"
     />
     <div class="synoptic-card__body">
@@ -209,7 +209,7 @@ def main():
     generated_at = datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace(
         "+00:00", "Z"
     )
-    image_data, image_media_type, image_size = fetch_500mb_chart(HEIGHTS_500MB_URL)
+    image_data, image_media_type, image_size = fetch_500mb_chart(WPC_ANALYSIS_CHART_URL)
     print(f"Fetched 500 mb chart bytes: {image_size}")
     messages = [
         {
