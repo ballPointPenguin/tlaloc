@@ -149,18 +149,30 @@ def run_tool(name: str, inputs: dict) -> dict:
 
 
 def fetch_500mb_chart(url: str) -> tuple[str, str, int]:
+    """Download and validate the 500 mb chart, then return it as base64 payload data.
+
+    Args:
+        url: Chart URL to download.
+
+    Returns:
+        Tuple of (base64_data, media_type, size_bytes).
+
+    Raises:
+        ValueError: If size/type constraints fail or content is empty.
+        RuntimeError: If the chart cannot be downloaded.
+    """
     request = Request(url, headers={"User-Agent": "tlaloc-weather-bot/1.0"})
     try:
         with urlopen(request, timeout=30) as response:
             content_length = response.headers.get("Content-Length")
             if content_length:
-                content_length_int = int(content_length)
+                content_length_value = int(content_length)
             else:
-                content_length_int = None
+                content_length_value = None
 
-            if content_length_int and content_length_int > MAX_ANTHROPIC_IMAGE_BYTES:
+            if content_length_value and content_length_value > MAX_ANTHROPIC_IMAGE_BYTES:
                 raise ValueError(
-                    f"500 mb chart size ({content_length_int} bytes) exceeds Anthropic's 5MB limit. "
+                    f"500 mb chart size ({content_length_value} bytes) exceeds Anthropic's 5MB limit. "
                     "Unable to process this image."
                 )
 
