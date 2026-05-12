@@ -18,6 +18,7 @@ INDEX_HTML = Path(__file__).parent / "index.html"
 GOES_AIRMASS_BASE_URL_TEMPLATE = "https://cdn.star.nesdis.noaa.gov/{satellite}/ABI/CONUS/AirMass"
 GOES_AIRMASS_FILENAME_TEMPLATE = "{stamp}_{satellite}-ABI-CONUS-AirMass-2500x1500.jpg"
 GOES_AIRMASS_SATELLITES = ("GOES19", "GOES16")
+GOES_AIRMASS_LABELS = {"GOES19": "GOES-19", "GOES16": "GOES-16"}
 MAX_ANTHROPIC_IMAGE_BYTES = 5 * 1024 * 1024
 URL_PROBE_TIMEOUT_SECONDS = 10
 AIRMASS_LOOKBACK_STEPS = 36
@@ -231,7 +232,7 @@ def iter_airmass_candidate_urls(now_utc: datetime):
     for satellite in GOES_AIRMASS_SATELLITES:
         base_url = GOES_AIRMASS_BASE_URL_TEMPLATE.format(satellite=satellite)
         yield f"{base_url}/latest.jpg", satellite
-        for step in range(AIRMASS_LOOKBACK_STEPS):  # 36 × 10-minute steps (6 hours).
+        for step in range(AIRMASS_LOOKBACK_STEPS):  # 36 × 10-minute cadence steps (6 hours).
             scan_time = aligned - timedelta(minutes=10 * step)
             # Probe :01 first, then :00, because recent AirMass products are commonly stamped :01.
             for minute_adjustment in (1, 0):
@@ -248,7 +249,7 @@ def resolve_airmass_image_url(now_utc: datetime | None = None) -> tuple[str, str
     probe_time = now_utc or datetime.now(timezone.utc)
     for url, satellite in iter_airmass_candidate_urls(probe_time):
         if image_url_exists(url):
-            return url, satellite.replace("GOES", "GOES-")
+            return url, GOES_AIRMASS_LABELS.get(satellite, satellite)
     raise RuntimeError("Failed to locate a recent GOES CONUS Air Mass image URL")
 
 
