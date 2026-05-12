@@ -5,6 +5,7 @@ from datetime import datetime, timezone
 from html import escape
 from pathlib import Path
 from urllib.error import HTTPError, URLError
+from urllib.parse import urljoin
 from urllib.request import Request, urlopen
 
 import anthropic
@@ -16,7 +17,9 @@ client = anthropic.Anthropic()
 
 INDEX_HTML = Path(__file__).parent / "index.html"
 WPC_ANALYSIS_CHART_URL = "https://www.wpc.ncep.noaa.gov/sfc/namfnd_500_vort.gif"
+WPC_SFC2_PAGE_URL = "https://www.wpc.ncep.noaa.gov/html/sfc2.shtml"
 MAX_ANTHROPIC_IMAGE_BYTES = 5 * 1024 * 1024
+CURRENT_WPC_ANALYSIS_CHART_URL = WPC_ANALYSIS_CHART_URL
 
 WPC_ANALYSIS_SENTINEL_RE = re.compile(
     r"([ \t]*<!-- BEGIN WPC ANALYSIS CONTENT -->).*?([ \t]*<!-- END WPC ANALYSIS CONTENT -->)",
@@ -112,7 +115,7 @@ def build_500mb_html(interpretation: str, generated_at: str) -> str:
   <div class="synoptic-card">
     <img
       class="synoptic-card__image"
-      src="{WPC_ANALYSIS_CHART_URL}"
+      src="{CURRENT_WPC_ANALYSIS_CHART_URL}"
       alt="NOAA WPC North America vorticity analysis chart"
     />
     <div class="synoptic-card__body">
@@ -148,55 +151,40 @@ def run_tool(name: str, inputs: dict) -> dict:
     raise ValueError(f"Unknown tool: {name}")
 
 
-def fetch_wpc_chart(url: str) -> tuple[str, str, int]:
-    """Download and validate the WPC analysis chart, then return it as base64 payload data.
-
-    Args:
-        url: Chart URL to download.
-
-    Returns:
-        Tuple of (base64_data, media_type, size_bytes).
-
-    Raises:
-        ValueError: If size/type constraints fail or content is empty.
-        RuntimeError: If the chart cannot be downloaded.
-    """
+def _download_chart(url: str) -> tuple[str, str, int]:
     request = Request(url, headers={"User-Agent": "tlaloc-weather-bot/1.0"})
-    try:
-        with urlopen(request, timeout=30) as response:
-            content_length = response.headers.get("Content-Length")
-            if content_length:
-                content_length_value = int(content_length)
-            else:
-                content_length_value = None
+    with urlopen(request, timeout=30) as response:
+        content_length = response.headers.get("Content-Length")
+        if content_length:
+            content_length_value = int(content_length)
+        else:
+            content_length_value = None
 
-            if content_length_value and content_length_value > MAX_ANTHROPIC_IMAGE_BYTES:
+        if content_length_value and content_length_value > MAX_ANTHROPIC_IMAGE_BYTES:
+            raise ValueError(
+                f"500 mb chart size ({content_length_value} bytes) exceeds Anthropic's 5MB limit. "
+                "Unable to process this image."
+            )
+
+        content_type_header = response.headers.get("Content-Type", "")
+        media_type = content_type_header.split(";", 1)[0].strip().lower()
+        if not media_type.startswith("image/"):
+            raise ValueError(
+                "Unexpected 500 mb chart content type: "
+                f"parsed={media_type!r}, header={content_type_header!r}"
+            )
+
+        image_bytes = bytearray()
+        while True:
+            chunk = response.read(64 * 1024)
+            if not chunk:
+                break
+            image_bytes.extend(chunk)
+            if len(image_bytes) > MAX_ANTHROPIC_IMAGE_BYTES:
                 raise ValueError(
-                    f"500 mb chart size ({content_length_value} bytes) exceeds Anthropic's 5MB limit. "
-                    "Unable to process this image."
+                    f"Downloaded 500 mb chart size ({len(image_bytes)} bytes) exceeds "
+                    "Anthropic's 5MB limit. Unable to process this image."
                 )
-
-            content_type_header = response.headers.get("Content-Type", "")
-            media_type = content_type_header.split(";", 1)[0].strip().lower()
-            if not media_type.startswith("image/"):
-                raise ValueError(
-                    "Unexpected 500 mb chart content type: "
-                    f"parsed={media_type!r}, header={content_type_header!r}"
-                )
-
-            image_bytes = bytearray()
-            while True:
-                chunk = response.read(64 * 1024)
-                if not chunk:
-                    break
-                image_bytes.extend(chunk)
-                if len(image_bytes) > MAX_ANTHROPIC_IMAGE_BYTES:
-                    raise ValueError(
-                        f"Downloaded 500 mb chart size ({len(image_bytes)} bytes) exceeds "
-                        "Anthropic's 5MB limit. Unable to process this image."
-                    )
-    except (HTTPError, URLError, OSError) as exc:
-        raise RuntimeError(f"Failed to download 500 mb chart from {url}: {exc}") from exc
 
     if not image_bytes:
         raise ValueError("500 mb chart download returned no data")
@@ -205,12 +193,71 @@ def fetch_wpc_chart(url: str) -> tuple[str, str, int]:
     return encoded, media_type, len(image_bytes)
 
 
+def discover_wpc_500mb_chart_url(page_url: str = WPC_SFC2_PAGE_URL) -> str:
+    request = Request(page_url, headers={"User-Agent": "tlaloc-weather-bot/1.0"})
+    with urlopen(request, timeout=30) as response:
+        html = response.read().decode("utf-8", errors="ignore")
+
+    candidates = []
+    for match in re.finditer(r"""(?:src|href)\s*=\s*["']([^"']+)["']""", html, flags=re.IGNORECASE):
+        candidate_url = urljoin(page_url, match.group(1).strip())
+        lower_url = candidate_url.lower()
+        if "/sfc/" not in lower_url:
+            continue
+        if not re.search(r"\.(gif|png|jpg|jpeg)(?:\?|$)", lower_url):
+            continue
+        if "500" in lower_url and "vort" in lower_url:
+            candidates.append(candidate_url)
+
+    if not candidates:
+        raise RuntimeError(f"No 500 mb vorticity chart URL found on {page_url}")
+
+    return candidates[0]
+
+
+def fetch_wpc_chart(url: str) -> tuple[str, str, int, str]:
+    """Download and validate the WPC analysis chart, then return it as base64 payload data.
+
+    Args:
+        url: Chart URL to download.
+
+    Returns:
+        Tuple of (base64_data, media_type, size_bytes, resolved_url).
+
+    Raises:
+        ValueError: If size/type constraints fail or content is empty.
+        RuntimeError: If the chart cannot be downloaded.
+    """
+    try:
+        encoded, media_type, size = _download_chart(url)
+        return encoded, media_type, size, url
+    except HTTPError as exc:
+        if exc.code != 404:
+            raise RuntimeError(f"Failed to download 500 mb chart from {url}: {exc}") from exc
+        try:
+            discovered_url = discover_wpc_500mb_chart_url()
+            encoded, media_type, size = _download_chart(discovered_url)
+            return encoded, media_type, size, discovered_url
+        except (HTTPError, URLError, OSError, ValueError, RuntimeError) as fallback_exc:
+            raise RuntimeError(
+                f"Failed to download 500 mb chart from {url}: {exc}. "
+                f"Fallback URL discovery/download also failed: {fallback_exc}"
+            ) from fallback_exc
+    except (URLError, OSError, ValueError) as exc:
+        raise RuntimeError(f"Failed to download 500 mb chart from {url}: {exc}") from exc
+
+
 def main():
+    global CURRENT_WPC_ANALYSIS_CHART_URL
     generated_at = datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace(
         "+00:00", "Z"
     )
-    image_data, image_media_type, image_size = fetch_wpc_chart(WPC_ANALYSIS_CHART_URL)
+    image_data, image_media_type, image_size, resolved_chart_url = fetch_wpc_chart(
+        WPC_ANALYSIS_CHART_URL
+    )
+    CURRENT_WPC_ANALYSIS_CHART_URL = resolved_chart_url
     print(f"Fetched WPC analysis chart bytes: {image_size}")
+    print(f"Using WPC analysis chart URL: {resolved_chart_url}")
     messages = [
         {
             "role": "user",
