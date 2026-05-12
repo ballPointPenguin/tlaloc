@@ -1,8 +1,11 @@
 import json
 import re
+import base64
 from datetime import datetime, timezone
 from html import escape
 from pathlib import Path
+from urllib.error import HTTPError, URLError
+from urllib.request import Request, urlopen
 
 import anthropic
 from dotenv import load_dotenv
@@ -13,6 +16,7 @@ client = anthropic.Anthropic()
 
 INDEX_HTML = Path(__file__).parent / "index.html"
 AIRMASS_RGB_URL = "https://cdn.star.nesdis.noaa.gov/GOES16/ABI/CONUS/AirMass/latest.jpg"
+MAX_ANTHROPIC_IMAGE_BYTES = 5 * 1024 * 1024
 
 AIRMASS_SENTINEL_RE = re.compile(
     r"([ \t]*<!-- BEGIN AIRMASS CONTENT -->).*?([ \t]*<!-- END AIRMASS CONTENT -->)",
@@ -146,10 +150,57 @@ def run_tool(name: str, inputs: dict) -> dict:
     raise ValueError(f"Unknown tool: {name}")
 
 
+def fetch_airmass_image(url: str) -> tuple[str, str, int]:
+    request = Request(url, headers={"User-Agent": "tlaloc-weather-bot/1.0"})
+    try:
+        with urlopen(request, timeout=30) as response:
+            content_length = response.headers.get("Content-Length")
+            if content_length:
+                content_length_int = int(content_length)
+            else:
+                content_length_int = None
+
+            if content_length_int and content_length_int > MAX_ANTHROPIC_IMAGE_BYTES:
+                raise ValueError(
+                    f"Air Mass image size ({content_length_int} bytes) exceeds Anthropic's 5MB limit. "
+                    "Unable to process this image."
+                )
+
+            content_type_header = response.headers.get("Content-Type", "")
+            media_type = content_type_header.split(";", 1)[0].strip().lower()
+            if not media_type.startswith("image/"):
+                raise ValueError(
+                    "Unexpected Air Mass content type: "
+                    f"parsed={media_type!r}, header={content_type_header!r}"
+                )
+
+            image_bytes = bytearray()
+            while True:
+                chunk = response.read(64 * 1024)
+                if not chunk:
+                    break
+                image_bytes.extend(chunk)
+                if len(image_bytes) > MAX_ANTHROPIC_IMAGE_BYTES:
+                    raise ValueError(
+                        f"Downloaded Air Mass image size ({len(image_bytes)} bytes) exceeds "
+                        "Anthropic's 5MB limit. Unable to process this image."
+                    )
+    except (HTTPError, URLError, OSError) as exc:
+        raise RuntimeError(f"Failed to download Air Mass image from {url}: {exc}") from exc
+
+    if not image_bytes:
+        raise ValueError("Air Mass image download returned no data")
+
+    encoded = base64.b64encode(image_bytes).decode("ascii")
+    return encoded, media_type, len(image_bytes)
+
+
 def main():
     generated_at = datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace(
         "+00:00", "Z"
     )
+    image_data, image_media_type, image_size = fetch_airmass_image(AIRMASS_RGB_URL)
+    print(f"Fetched Air Mass image bytes: {image_size}")
     messages = [
         {
             "role": "user",
@@ -157,8 +208,9 @@ def main():
                 {
                     "type": "image",
                     "source": {
-                        "type": "url",
-                        "url": AIRMASS_RGB_URL,
+                        "type": "base64",
+                        "media_type": image_media_type,
+                        "data": image_data,
                     },
                 },
                 {
