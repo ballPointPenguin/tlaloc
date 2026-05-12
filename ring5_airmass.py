@@ -231,9 +231,9 @@ def iter_airmass_candidate_urls(now_utc: datetime):
     for satellite in GOES_AIRMASS_SATELLITES:
         base_url = GOES_AIRMASS_BASE_URL_TEMPLATE.format(satellite=satellite)
         yield f"{base_url}/latest.jpg", satellite
-        for step in range(AIRMASS_LOOKBACK_STEPS):  # 36 × 10-minute steps (~6 hours).
+        for step in range(AIRMASS_LOOKBACK_STEPS):  # 36 × 10-minute steps (6 hours).
             scan_time = aligned - timedelta(minutes=10 * step)
-            # Probe both :00 and :01 products because publication minute can vary.
+            # Probe :01 first, then :00, because recent AirMass products are commonly stamped :01.
             for minute_adjustment in (1, 0):
                 candidate_scan_time = scan_time + timedelta(minutes=minute_adjustment)
                 if candidate_scan_time > normalized:
