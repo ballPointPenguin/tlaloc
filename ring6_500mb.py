@@ -27,7 +27,7 @@ DISCOVER_IMAGE_URL_RE = re.compile(
     re.IGNORECASE,
 )
 WPC_500_TOKEN_RE = re.compile(
-    r"(?:500|vort|hgt|height|h5|anl|analysis|namfnd)", re.IGNORECASE
+    r"(?:500|vort|hgt|height|h5|anl|analysis)", re.IGNORECASE
 )
 MAX_DIAGNOSTIC_URLS = 5
 
@@ -311,6 +311,11 @@ def fetch_wpc_chart(url: str) -> tuple[str, str, int, str]:
             print(f"Discovered {len(discovered_urls)} fallback chart candidates from {WPC_SFC2_PAGE_URL}")
             for candidate_url in discovered_urls[:MAX_DIAGNOSTIC_URLS]:
                 print(f"Fallback candidate: {candidate_url}")
+            if len(discovered_urls) > MAX_DIAGNOSTIC_URLS:
+                print(
+                    f"... plus {len(discovered_urls) - MAX_DIAGNOSTIC_URLS} additional "
+                    "candidate URLs that will also be validated"
+                )
         except RuntimeError as discovery_exc:
             raise RuntimeError(
                 f"Failed to download 500 mb chart from {url} (original error: {original_http_error}). "
