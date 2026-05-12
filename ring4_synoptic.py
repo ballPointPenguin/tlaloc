@@ -1,7 +1,5 @@
-import base64
 import json
 import re
-import urllib.request
 from datetime import datetime, timezone
 from html import escape
 from pathlib import Path
@@ -86,11 +84,6 @@ TOOLS = [
 ]
 
 
-def fetch_surface_analysis_chart() -> bytes:
-    with urllib.request.urlopen(SURFACE_ANALYSIS_URL) as resp:
-        return resp.read()
-
-
 def format_timestamp(generated_at: str) -> str:
     dt = datetime.fromisoformat(generated_at.replace("Z", "+00:00")).astimezone(timezone.utc)
     time_text = dt.strftime("%I:%M %p").lstrip("0")
@@ -154,8 +147,6 @@ def main():
     generated_at = datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace(
         "+00:00", "Z"
     )
-    image_bytes = fetch_surface_analysis_chart()
-    image_data = base64.b64encode(image_bytes).decode("utf-8")
     messages = [
         {
             "role": "user",
@@ -163,9 +154,8 @@ def main():
                 {
                     "type": "image",
                     "source": {
-                        "type": "base64",
-                        "media_type": "image/gif",
-                        "data": image_data,
+                        "type": "url",
+                        "url": SURFACE_ANALYSIS_URL,
                     },
                 },
                 {

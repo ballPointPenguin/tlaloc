@@ -24,7 +24,7 @@ jobs:
         run: |
           uv run python ring2_update_html.py
           uv run python ring4_synoptic.py
-          uv run python ring5_water_vapor.py
+          uv run python ring5_airmass.py
           uv run python ring6_500mb.py
 
       - name: Commit and push
