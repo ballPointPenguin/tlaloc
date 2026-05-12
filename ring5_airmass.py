@@ -155,13 +155,19 @@ def fetch_airmass_image(url: str) -> tuple[str, str, int]:
     try:
         with urlopen(request, timeout=30) as response:
             content_length = response.headers.get("Content-Length")
-            if content_length and int(content_length) > MAX_ANTHROPIC_IMAGE_BYTES:
+            if content_length:
+                content_length_int = int(content_length)
+            else:
+                content_length_int = None
+
+            if content_length_int and content_length_int > MAX_ANTHROPIC_IMAGE_BYTES:
                 raise ValueError(
-                    f"Air Mass image size ({content_length} bytes) exceeds Anthropic's 5MB limit. "
+                    f"Air Mass image size ({content_length_int} bytes) exceeds Anthropic's 5MB limit. "
                     "Unable to process this image."
                 )
 
-            media_type = response.headers.get_content_type()
+            content_type_header = response.headers.get("Content-Type", "")
+            media_type = content_type_header.split(";", 1)[0].strip().lower()
             if not media_type.startswith("image/"):
                 raise ValueError(f"Unexpected Air Mass content type: {media_type}")
 
@@ -176,7 +182,7 @@ def fetch_airmass_image(url: str) -> tuple[str, str, int]:
                         f"Downloaded Air Mass image size ({len(image_bytes)} bytes) exceeds "
                         "Anthropic's 5MB limit. Unable to process this image."
                     )
-    except (HTTPError, URLError, TimeoutError) as exc:
+    except (HTTPError, URLError, OSError) as exc:
         raise RuntimeError(f"Failed to download Air Mass image from {url}: {exc}") from exc
 
     if not image_bytes:
