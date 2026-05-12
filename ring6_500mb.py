@@ -215,14 +215,23 @@ def discover_wpc_500mb_chart_url(page_url: str = WPC_SFC2_PAGE_URL) -> str:
     parser.feed(html)
 
     candidate_set = set()
-    for raw_link in parser.links:
+    discovered_links = set(parser.links)
+    # Some WPC pages embed image paths in inline scripts/text instead of src/href attributes.
+    for match in re.finditer(
+        r"""(?:https?://[^\s"'<>]+|/[^\s"'<>]+)\.(?:gif|png|jpg|jpeg)(?:\?[^\s"'<>]*)?""",
+        html,
+        flags=re.IGNORECASE,
+    ):
+        discovered_links.add(match.group(0))
+
+    for raw_link in discovered_links:
         candidate_url = urljoin(page_url, raw_link)
         lower_url = candidate_url.lower()
         if "/sfc/" not in lower_url:
             continue
         if not re.search(r"\.(gif|png|jpg|jpeg)(?:\?|$)", lower_url):
             continue
-        if "500" in lower_url and "vort" in lower_url:
+        if "500" in lower_url:
             candidate_set.add(candidate_url)
 
     def _url_priority(url: str) -> tuple[int, int, str]:
@@ -231,14 +240,14 @@ def discover_wpc_500mb_chart_url(page_url: str = WPC_SFC2_PAGE_URL) -> str:
         lower_url = url.lower()
         return (
             0 if "namfnd" in lower_url else 1,
-            0 if "500_vort" in lower_url else 1,
+            0 if "vort" in lower_url else 1,
             lower_url,
         )
 
     candidates = sorted(candidate_set, key=_url_priority)
 
     if not candidates:
-        raise RuntimeError(f"No 500 mb vorticity chart URL found on {page_url}")
+        raise RuntimeError(f"No 500 mb chart URL found on {page_url}")
 
     return candidates[0]
 
