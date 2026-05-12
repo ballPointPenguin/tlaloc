@@ -157,7 +157,9 @@ class _ImageLinkExtractor(HTMLParser):
         self.links: list[str] = []
 
     def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
-        for attr_name, attr_value in ((n, v) for n, v in attrs if v is not None):
+        for attr_name, attr_value in attrs:
+            if attr_value is None:
+                continue
             if attr_name.lower() in {"src", "href"}:
                 self.links.append(attr_value.strip())
 
@@ -224,6 +226,8 @@ def discover_wpc_500mb_chart_url(page_url: str = WPC_SFC2_PAGE_URL) -> str:
             candidate_set.add(candidate_url)
 
     def _url_priority(url: str) -> tuple[int, int, str]:
+        # Lower tuple values are higher priority.
+        # Prefer WPC's canonical North America chart naming when present.
         lower_url = url.lower()
         return (
             0 if "namfnd" in lower_url else 1,
@@ -264,8 +268,8 @@ def fetch_wpc_chart(url: str) -> tuple[str, str, int, str]:
             return encoded, media_type, size, discovered_url
         except (HTTPError, URLError, OSError, ValueError, RuntimeError) as fallback_exc:
             raise RuntimeError(
-                f"Failed to download 500 mb chart from {url}: {exc}. "
-                f"Fallback URL discovery/download also failed: {fallback_exc}"
+                f"Failed to download 500 mb chart from {url} (original error: {exc}). "
+                f"Fallback URL discovery/download failed with: {fallback_exc}"
             ) from exc
     except (URLError, OSError, ValueError) as exc:
         raise RuntimeError(f"Failed to download 500 mb chart from {url}: {exc}") from exc
