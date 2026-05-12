@@ -66,7 +66,7 @@ TOOLS = [
         "name": "update_500mb_content",
         "description": (
             "Replace the WPC analysis content block in index.html. "
-            "The interpretation is rendered below a live NOAA WPC 500 mb chart image between "
+            "The interpretation is rendered below a live NOAA WPC analysis chart image between "
             "<!-- BEGIN WPC ANALYSIS CONTENT --> and <!-- END WPC ANALYSIS CONTENT --> markers. "
             "The generated HTML reuses these CSS classes: synoptic-card, synoptic-card__image, "
             "synoptic-card__body, synoptic-card__text, synoptic-card__timestamp."
