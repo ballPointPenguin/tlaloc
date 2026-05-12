@@ -157,9 +157,7 @@ class _ImageLinkExtractor(HTMLParser):
         self.links: list[str] = []
 
     def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
-        for attr_name, attr_value in attrs:
-            if attr_value is None:
-                continue
+        for attr_name, attr_value in ((n, v) for n, v in attrs if v is not None):
             if attr_name.lower() in {"src", "href"}:
                 self.links.append(attr_value.strip())
 
@@ -225,14 +223,15 @@ def discover_wpc_500mb_chart_url(page_url: str = WPC_SFC2_PAGE_URL) -> str:
         if "500" in lower_url and "vort" in lower_url:
             candidate_set.add(candidate_url)
 
-    candidates = sorted(
-        candidate_set,
-        key=lambda url: (
-            0 if "namfnd" in url.lower() else 1,
-            0 if "500_vort" in url.lower() else 1,
-            url.lower(),
-        ),
-    )
+    def _url_priority(url: str) -> tuple[int, int, str]:
+        lower_url = url.lower()
+        return (
+            0 if "namfnd" in lower_url else 1,
+            0 if "500_vort" in lower_url else 1,
+            lower_url,
+        )
+
+    candidates = sorted(candidate_set, key=_url_priority)
 
     if not candidates:
         raise RuntimeError(f"No 500 mb vorticity chart URL found on {page_url}")
@@ -267,7 +266,7 @@ def fetch_wpc_chart(url: str) -> tuple[str, str, int, str]:
             raise RuntimeError(
                 f"Failed to download 500 mb chart from {url}: {exc}. "
                 f"Fallback URL discovery/download also failed: {fallback_exc}"
-            ) from fallback_exc
+            ) from exc
     except (URLError, OSError, ValueError) as exc:
         raise RuntimeError(f"Failed to download 500 mb chart from {url}: {exc}") from exc
 
