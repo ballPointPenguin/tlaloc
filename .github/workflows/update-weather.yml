@@ -15,7 +15,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.ref_name }}
 
       - uses: astral-sh/setup-uv@v6
 
@@ -39,4 +39,4 @@ jobs:
           git add index.html
           git diff --staged --quiet && echo "No changes to commit" && exit 0
           git commit -m "chore: update weather $(date -u +%Y-%m-%dT%H:%MZ)"
-          git push
+          git push origin HEAD:${{ github.ref_name }}
