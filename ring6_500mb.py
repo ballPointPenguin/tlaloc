@@ -1,7 +1,6 @@
 import json
 import re
-import base64
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from html import escape
 from pathlib import Path
 from urllib.error import HTTPError, URLError
@@ -15,8 +14,8 @@ load_dotenv()
 client = anthropic.Anthropic()
 
 INDEX_HTML = Path(__file__).parent / "index.html"
-WPC_ANALYSIS_CHART_URL = "https://www.wpc.ncep.noaa.gov/sfc/namvort.gif"
-MAX_ANTHROPIC_IMAGE_BYTES = 5 * 1024 * 1024
+COD_500MB_URL_TEMPLATE = "https://weather.cod.edu/wxdata/upper/US/500/US500.{date}.{hour}.gif"
+SYNOPTIC_LOOKBACK = 4
 
 WPC_ANALYSIS_SENTINEL_RE = re.compile(
     r"([ \t]*<!-- BEGIN WPC ANALYSIS CONTENT -->).*?([ \t]*<!-- END WPC ANALYSIS CONTENT -->)",
@@ -27,7 +26,7 @@ SYSTEM = """\
 You generate synoptic meteorology content for the Tlaloc weather page (a static GitHub Pages site).
 
 When asked to update the page:
-1. Review the provided NOAA WPC 500 mb geopotential height and absolute vorticity analysis chart.
+1. Review the provided College of DuPage 500 mb geopotential height and wind analysis chart.
 2. Identify the most important mid-tropospheric features: the trough/ridge pattern and its
    orientation (positively tilted, neutral, or negatively tilted), any shortwave troughs embedded
    in the flow and whether they are phasing or separating, areas of significant height falls or
@@ -43,9 +42,9 @@ TOOLS = [
     {
         "name": "interpret_500mb_chart",
         "description": (
-            "Return your brief interpretation of the provided 500 mb heights/vorticity chart. "
-            "Summarize the trough/ridge structure, tilt, shortwave phasing, and height falls "
-            "in 2-4 sentences."
+            "Return your brief interpretation of the provided 500 mb heights/wind chart. "
+            "Summarize the trough/ridge structure and tilt, shortwave phasing, and jet "
+            "stream orientation in 2-4 sentences."
         ),
         "input_schema": {
             "type": "object",
@@ -65,9 +64,9 @@ TOOLS = [
     {
         "name": "update_500mb_content",
         "description": (
-            "Replace the WPC analysis content block in index.html. "
-            "The interpretation is rendered below a live NOAA WPC analysis chart image between "
-            "<!-- BEGIN WPC ANALYSIS CONTENT --> and <!-- END WPC ANALYSIS CONTENT --> markers. "
+            "Replace the 500mb analysis content block in index.html. "
+            "The interpretation is rendered below a College of DuPage 500 mb analysis chart "
+            "between <!-- BEGIN WPC ANALYSIS CONTENT --> and <!-- END WPC ANALYSIS CONTENT --> markers. "
             "The generated HTML reuses these CSS classes: synoptic-card, synoptic-card__image, "
             "synoptic-card__body, synoptic-card__text, synoptic-card__timestamp."
         ),
@@ -104,16 +103,16 @@ def interpret_500mb_chart(interpretation: str, generated_at: str) -> dict:
     }
 
 
-def build_500mb_html(interpretation: str, generated_at: str) -> str:
+def build_500mb_html(interpretation: str, generated_at: str, chart_url: str) -> str:
     safe_interpretation = escape(" ".join(interpretation.split()))
     human_timestamp = format_timestamp(generated_at)
     return f"""<section aria-labelledby="wpc-analysis-heading">
-  <h2 id="wpc-analysis-heading">WPC Analysis</h2>
+  <h2 id="wpc-analysis-heading">500mb Analysis</h2>
   <div class="synoptic-card">
     <img
       class="synoptic-card__image"
-      src="{WPC_ANALYSIS_CHART_URL}"
-      alt="NOAA WPC North America vorticity analysis chart"
+      src="{chart_url}"
+      alt="College of DuPage 500 mb geopotential height and wind analysis chart"
     />
     <div class="synoptic-card__body">
       <p class="synoptic-card__text">{safe_interpretation}</p>
@@ -125,9 +124,9 @@ def build_500mb_html(interpretation: str, generated_at: str) -> str:
 </section>"""
 
 
-def update_500mb_content(interpretation: str, generated_at: str) -> dict:
+def update_500mb_content(interpretation: str, generated_at: str, chart_url: str) -> dict:
     source = INDEX_HTML.read_text()
-    html = build_500mb_html(interpretation, generated_at)
+    html = build_500mb_html(interpretation, generated_at, chart_url)
     replacement = (
         "        <!-- BEGIN WPC ANALYSIS CONTENT -->\n"
         f"{html}\n"
@@ -140,77 +139,47 @@ def update_500mb_content(interpretation: str, generated_at: str) -> dict:
     return {"success": True, "path": str(INDEX_HTML), "generated_at": generated_at}
 
 
-def run_tool(name: str, inputs: dict) -> dict:
+def run_tool(name: str, inputs: dict, chart_url: str) -> dict:
     if name == "interpret_500mb_chart":
         return interpret_500mb_chart(**inputs)
     if name == "update_500mb_content":
-        return update_500mb_content(**inputs)
+        return update_500mb_content(**inputs, chart_url=chart_url)
     raise ValueError(f"Unknown tool: {name}")
 
 
-def fetch_wpc_chart(url: str) -> tuple[str, str, int]:
-    """Download and validate the WPC analysis chart, then return it as base64 payload data.
+def resolve_500mb_chart_url(now_utc: datetime | None = None) -> str:
+    probe_time = now_utc or datetime.now(timezone.utc)
+    hour = 12 if probe_time.hour >= 12 else 0
+    aligned = probe_time.replace(hour=hour, minute=0, second=0, microsecond=0)
 
-    Args:
-        url: Chart URL to download.
+    for step in range(SYNOPTIC_LOOKBACK):
+        t = aligned - timedelta(hours=12 * step)
+        url = COD_500MB_URL_TEMPLATE.format(date=t.strftime("%Y%m%d"), hour=t.strftime("%H"))
+        try:
+            request = Request(url, headers={"User-Agent": "tlaloc-weather-bot/1.0"})
+            with urlopen(request, timeout=10) as response:
+                if response.status == 200:
+                    return url
+        except HTTPError as exc:
+            if exc.code == 404:
+                continue
+            raise RuntimeError(f"Error probing {url}: {exc}") from exc
+        except (URLError, OSError) as exc:
+            raise RuntimeError(f"Error probing {url}: {exc}") from exc
 
-    Returns:
-        Tuple of (base64_data, media_type, size_bytes).
-
-    Raises:
-        ValueError: If size/type constraints fail or content is empty.
-        RuntimeError: If the chart cannot be downloaded.
-    """
-    request = Request(url, headers={"User-Agent": "tlaloc-weather-bot/1.0"})
-    try:
-        with urlopen(request, timeout=30) as response:
-            content_length = response.headers.get("Content-Length")
-            if content_length:
-                content_length_value = int(content_length)
-            else:
-                content_length_value = None
-
-            if content_length_value and content_length_value > MAX_ANTHROPIC_IMAGE_BYTES:
-                raise ValueError(
-                    f"500 mb chart size ({content_length_value} bytes) exceeds Anthropic's 5MB limit. "
-                    "Unable to process this image."
-                )
-
-            content_type_header = response.headers.get("Content-Type", "")
-            media_type = content_type_header.split(";", 1)[0].strip().lower()
-            if not media_type.startswith("image/"):
-                raise ValueError(
-                    "Unexpected 500 mb chart content type: "
-                    f"parsed={media_type!r}, header={content_type_header!r}"
-                )
-
-            image_bytes = bytearray()
-            while True:
-                chunk = response.read(64 * 1024)
-                if not chunk:
-                    break
-                image_bytes.extend(chunk)
-                if len(image_bytes) > MAX_ANTHROPIC_IMAGE_BYTES:
-                    raise ValueError(
-                        f"Downloaded 500 mb chart size ({len(image_bytes)} bytes) exceeds "
-                        "Anthropic's 5MB limit. Unable to process this image."
-                    )
-    except (HTTPError, URLError, OSError) as exc:
-        raise RuntimeError(f"Failed to download 500 mb chart from {url}: {exc}") from exc
-
-    if not image_bytes:
-        raise ValueError("500 mb chart download returned no data")
-
-    encoded = base64.b64encode(image_bytes).decode("ascii")
-    return encoded, media_type, len(image_bytes)
+    raise RuntimeError(
+        f"No COD 500mb chart found; tried {SYNOPTIC_LOOKBACK} synoptic times back from "
+        f"{probe_time.strftime('%Y-%m-%dT%H:00Z')}"
+    )
 
 
 def main():
     generated_at = datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace(
         "+00:00", "Z"
     )
-    image_data, image_media_type, image_size = fetch_wpc_chart(WPC_ANALYSIS_CHART_URL)
-    print(f"Fetched WPC analysis chart bytes: {image_size}")
+    chart_url = resolve_500mb_chart_url()
+    print(f"Using COD 500mb chart URL: {chart_url}")
+
     messages = [
         {
             "role": "user",
@@ -218,19 +187,17 @@ def main():
                 {
                     "type": "image",
                     "source": {
-                        "type": "base64",
-                        "media_type": image_media_type,
-                        "data": image_data,
+                        "type": "url",
+                        "url": chart_url,
                     },
                 },
                 {
                     "type": "text",
                     "text": (
-                        "Interpret this NOAA WPC 500 mb geopotential height and vorticity "
-                        "analysis chart and update the Tlaloc page with a brief synoptic "
-                        "summary. Focus on trough/ridge structure and tilt, shortwave phasing, "
-                        "and significant height falls. Use this exact ISO 8601 timestamp when "
-                        f"calling tools: {generated_at}"
+                        "Interpret this 500 mb geopotential height and wind analysis chart and "
+                        "update the Tlaloc page with a brief synoptic summary. Focus on trough/ridge "
+                        "structure and tilt, shortwave phasing, and jet stream orientation. "
+                        f"Use this exact ISO 8601 timestamp when calling tools: {generated_at}"
                     ),
                 },
             ],
@@ -256,7 +223,7 @@ def main():
             if block.type != "tool_use":
                 continue
             print(f"tool call: {block.name}({json.dumps(block.input, indent=2)})\n")
-            result = run_tool(block.name, block.input)
+            result = run_tool(block.name, block.input, chart_url)
             print(f"tool result: {json.dumps(result, indent=2)}\n")
             tool_results.append({
                 "type": "tool_result",
