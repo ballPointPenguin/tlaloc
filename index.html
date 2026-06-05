@@ -24,54 +24,54 @@
     <main class="main-content">
       <div class="container">
 <!-- BEGIN WEATHER CONTENT -->
-<section aria-labelledby="current-heading">
-  <h2 id="current-heading">Current Conditions - Minneapolis, Minnesota</h2>
-  <div class="weather-card">
-    <div class="weather-card__temp">42°F</div>
-    <div class="weather-card__description">Clear</div>
+<section aria-labelledby="current-conditions-heading">
+  <h2 id="current-conditions-heading">Current Conditions - Minneapolis, Minnesota</h2>
+  <article class="weather-card">
+    <div class="weather-card__temp">79.6°F</div>
+    <div class="weather-card__description">Cloudy</div>
     <div class="weather-card__details">
       <div class="weather-detail">
         <span class="weather-detail__label">Feels Like:</span>
-        <span class="weather-detail__value">38°F</span>
+        <span class="weather-detail__value">80.2°F</span>
       </div>
       <div class="weather-detail">
         <span class="weather-detail__label">Humidity:</span>
-        <span class="weather-detail__value">88%</span>
+        <span class="weather-detail__value">53%</span>
       </div>
       <div class="weather-detail">
         <span class="weather-detail__label">Wind:</span>
-        <span class="weather-detail__value">2.7 mph</span>
+        <span class="weather-detail__value">7.7 mph N</span>
       </div>
       <div class="weather-detail">
         <span class="weather-detail__label">Precipitation:</span>
         <span class="weather-detail__value">0.0 in</span>
       </div>
     </div>
-  </div>
-  <small>Updated: <time datetime="2026-05-20T06:45:00Z">2026-05-20 at 06:45 UTC</time></small>
+  </article>
+  <p><small>Updated: <time datetime="2026-06-05T23:45:00Z">2026-06-05 at 11:45 PM</time></small></p>
 </section>
 
 <section aria-labelledby="forecast-heading">
   <h2 id="forecast-heading">3-Day Forecast</h2>
   <div class="forecast-grid">
-    <div class="forecast-item">
-      <div class="forecast-item__day">Wednesday</div>
-      <div class="forecast-item__icon">☁️</div>
-      <div class="forecast-item__temp-high">61°F</div>
-      <div class="forecast-item__temp-low">39°F</div>
-    </div>
-    <div class="forecast-item">
-      <div class="forecast-item__day">Thursday</div>
-      <div class="forecast-item__icon">☁️</div>
-      <div class="forecast-item__temp-high">67°F</div>
-      <div class="forecast-item__temp-low">43°F</div>
-    </div>
-    <div class="forecast-item">
+    <article class="forecast-item">
       <div class="forecast-item__day">Friday</div>
       <div class="forecast-item__icon">🌦️</div>
-      <div class="forecast-item__temp-high">63°F</div>
-      <div class="forecast-item__temp-low">51°F</div>
-    </div>
+      <div class="forecast-item__temp-high">82.5°F</div>
+      <div class="forecast-item__temp-low">64.3°F</div>
+    </article>
+    <article class="forecast-item">
+      <div class="forecast-item__day">Saturday</div>
+      <div class="forecast-item__icon">🌦️</div>
+      <div class="forecast-item__temp-high">89.5°F</div>
+      <div class="forecast-item__temp-low">60.8°F</div>
+    </article>
+    <article class="forecast-item">
+      <div class="forecast-item__day">Sunday</div>
+      <div class="forecast-item__icon">🌦️</div>
+      <div class="forecast-item__temp-high">87.1°F</div>
+      <div class="forecast-item__temp-low">65.0°F</div>
+    </article>
   </div>
 </section>
         <!-- END WEATHER CONTENT -->
@@ -85,9 +85,9 @@
       alt="NOAA WPC current surface analysis chart for North America"
     />
     <div class="synoptic-card__body">
-      <p class="synoptic-card__text">A deep 964 mb low is centered over the south-central United States, with a cold front trailing southwestward into Texas and a warm front extending northeastward toward the Great Lakes, producing a tight pressure gradient and likely severe weather threat across the central Plains and Mississippi Valley. A broad ridge of high pressure, with centers near 1023–1028 mb, dominates the northern and central Plains, driving a strong southerly flow ahead of the central low. Along the Pacific Coast, a weakening frontal system and associated low near 1009–1012 mb are pushing onshore into the Pacific Northwest. An outflow boundary is analyzed across the Gulf Coast region, and a 1024 mb anticyclone sits well offshore the Southeast Atlantic seaboard.</p>
+      <p class="synoptic-card__text">A sprawling trough of low pressure dominates the western and central United States, with multiple surface lows embedded across the Great Basin, Rockies, and southern Plains; a cold front extends from the northern Plains through the Great Lakes, with warm front segments draped across the Upper Midwest. High pressure is well-established over the southeastern U.S. and along the Atlantic seaboard, with a separate high centered over the Desert Southwest. Isobar spacing is generally slack across the interior, indicating weak pressure gradients and diffuse flow over much of the continent, while tighter gradients near the coasts support stronger surface winds there. Moist, warm air is in place across the Gulf Coast and Mississippi Valley ahead of the frontal boundary.</p>
       <p class="synoptic-card__timestamp">
-        <small>Interpreted: <time datetime="2026-05-20T06:52:57Z">May 20, 2026 at 6:52 AM UTC</time></small>
+        <small>Interpreted: <time datetime="2026-06-05T23:55:19Z">June 5, 2026 at 11:55 PM UTC</time></small>
       </p>
     </div>
   </div>
@@ -99,13 +99,13 @@
   <div class="synoptic-card">
     <img
       class="synoptic-card__image"
-      src="https://cdn.star.nesdis.noaa.gov/GOES19/ABI/CONUS/AirMass/20261400641_GOES19-ABI-CONUS-AirMass-2500x1500.jpg"
+      src="https://cdn.star.nesdis.noaa.gov/GOES19/ABI/CONUS/AirMass/20261562351_GOES19-ABI-CONUS-AirMass-2500x1500.jpg"
       alt="GOES-19 CONUS Air Mass RGB satellite image"
     />
     <div class="synoptic-card__body">
-      <p class="synoptic-card__text">A pronounced stratospheric dry air intrusion is evident as a broad arc of red-orange tones wrapping cyclonically around an upper-level circulation centered over the western Atlantic near the Southeast U.S. coast, consistent with a PV streamer or cutoff low structure drawing high-PV stratospheric air equatorward. Deep tropical moisture, depicted in rich greens, dominates the Gulf of Mexico and southern tier states, with active deep convection visible as bright white cold cloud tops over central Mexico and along the Gulf Coast into the Lower Mississippi Valley. The northern CONUS and Canada are capped by cold, dry upper-tropospheric air shown in blue-purple tones, delineating a sharp thermal and moisture gradient that marks the position of the polar jet. The juxtaposition of the PV streamer and the abundant low-level Gulf moisture is supporting the ongoing convective activity along the southern Plains and Gulf Coast.</p>
+      <p class="synoptic-card__text">A broad stratospheric dry air intrusion dominates the western CONUS, with deep reds and dark red-purples across the Desert Southwest, Great Basin, and California indicating high-PV air descending into the mid-to-upper troposphere. An upper-level trough or possible closed low is evident over the south-central Plains, marked by a cyclonic swirl of cold high cloud tops (whites and yellows) curving southward into Texas and northern Mexico, suggestive of active jet dynamics and strong vorticity advection on its downstream flank. Rich green tones across the Gulf Coast and Southeast indicate a deep tropical moist airmass at upper levels surging northward from the Gulf of Mexico, with a sharp moisture gradient along the Mid-Atlantic coast separating this from drier, cooler upper-tropospheric air (teal-blue) to the northeast. Vigorous deep convection with cold white tops is visible over Mexico and Central America, consistent with early-season tropical moisture and organized convective systems.</p>
       <p class="synoptic-card__timestamp">
-        <small>Interpreted: <time datetime="2026-05-20T06:53:17Z">May 20, 2026 at 6:53 AM UTC</time></small>
+        <small>Interpreted: <time datetime="2026-06-05T23:55:38Z">June 5, 2026 at 11:55 PM UTC</time></small>
       </p>
     </div>
   </div>
@@ -117,13 +117,13 @@
   <div class="synoptic-card">
     <img
       class="synoptic-card__image"
-      src="https://weather.cod.edu/wxdata/upper/US/500/US500.20260520.00.gif"
+      src="https://weather.cod.edu/wxdata/upper/US/500/US500.20260605.12.gif"
       alt="College of DuPage 500 mb geopotential height and wind analysis chart"
     />
     <div class="synoptic-card__body">
-      <p class="synoptic-card__text">A deep longwave trough is centered over the central United States at 0000 UTC 20 May 2026, with its axis oriented from the upper Midwest southwestward toward the southern Rockies, indicating a negatively tilted configuration. A strong jet streak of 95 to 115 knots is embedded along the base of the trough, arcing west-southwest to east-northeast from the central Plains through the Ohio Valley and Great Lakes. Ridging is evident over the Pacific Northwest and the southeastern United States, reflecting an amplified, meridional flow pattern across the CONUS. No clear shortwave separation is apparent; the trough appears as a consolidated longwave feature.</p>
+      <p class="synoptic-card__text">A broad longwave trough is entrenched over the Pacific Northwest and western Canada, with a well-defined jet streak oriented west-to-east along its equatorward flank and wind speeds exceeding 100 knots. A cutoff low is evident over the southern Plains, isolated from the main westerly flow and producing anomalously low heights across the Southwest and southern Rockies. A ridge axis extends from the central Plains northward into the northern Rockies, separating the western cutoff feature from a secondary shortwave trough digging into the Great Lakes and Ohio Valley region with a slight negative tilt. Overall the pattern is strongly amplified and meridional, with little indication of progressive zonal flow across the CONUS.</p>
       <p class="synoptic-card__timestamp">
-        <small>Interpreted: <time datetime="2026-05-20T06:53:39Z">May 20, 2026 at 6:53 AM UTC</time></small>
+        <small>Interpreted: <time datetime="2026-06-05T23:56:02Z">June 5, 2026 at 11:56 PM UTC</time></small>
       </p>
     </div>
   </div>
