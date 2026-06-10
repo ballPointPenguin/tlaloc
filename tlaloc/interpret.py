@@ -42,10 +42,14 @@ VISION_FOCUS = {
 }
 
 TEXT_SYSTEM = """\
-You distill official NWS text products for a meteorological briefing. Extract the
-synoptically significant content: the systems and hazards being discussed, where the
-forecaster's attention is focused, and any notable uncertainty. Drop boilerplate,
-headers, and administrative text. Plain text only, no markdown, at most 120 words.
+You distill official weather and climate products — forecast discussions, outlooks,
+or data tables — for a meteorological briefing. For discussions and outlooks, extract
+the synoptically significant content: the systems and hazards being discussed, where
+the forecaster's attention is focused, and any notable uncertainty. For data tables,
+state the current value and recent trend plainly (e.g. for an ONI table, the current
+ENSO phase and which way it is drifting). Drop boilerplate, headers, and
+administrative text, and don't comment on the product's format — just brief its
+content. Plain text only, no markdown, at most 120 words.
 """
 
 
