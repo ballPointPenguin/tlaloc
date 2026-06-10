@@ -269,11 +269,13 @@ def collect_enso_state() -> SourceReport:
         credit="NOAA Climate Prediction Center",
     )
     try:
-        oni = fetch_text(ONI_URL, MAX_TEXT_CHARS)
+        # The ONI table is chronological from 1950 and larger than the default
+        # text cap; fetch it whole so the tail is genuinely the most recent data.
+        oni = fetch_text(ONI_URL, max_chars=200_000)
     except SourceError as exc:
         return report.fail(str(exc))
     lines = oni.splitlines()
-    if len(lines) < 2:
+    if len(lines) < 9:
         return report.fail(f"ONI table at {ONI_URL} has unexpected shape")
     # Header plus the most recent ~8 overlapping seasons is plenty of context.
     report.raw_text = "\n".join([lines[0]] + lines[-8:])
