@@ -2,6 +2,11 @@ name: Daily Synoptic Analysis
 
 on:
   workflow_dispatch:
+    inputs:
+      collect_only:
+        description: "Only check data sources (no Claude calls, no commit)"
+        type: boolean
+        default: false
   schedule:
     # Daily after the 12Z upper-air analyses are published
     - cron: "30 13 * * *"
@@ -25,20 +30,20 @@ jobs:
       - name: Install dependencies
         run: uv sync
 
-      # On pull requests, verify all data sources are reachable without
-      # spending API tokens or modifying the page.
+      # On pull requests (and collect-only dispatches), verify all data
+      # sources are reachable without spending API tokens or modifying the page.
       - name: Check data sources
-        if: github.event_name == 'pull_request'
+        if: github.event_name == 'pull_request' || inputs.collect_only == true
         run: uv run python -m tlaloc --collect-only
 
       - name: Run synoptic analysis
-        if: github.event_name != 'pull_request'
+        if: github.event_name != 'pull_request' && inputs.collect_only != true
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: uv run python -m tlaloc
 
       - name: Commit and push
-        if: github.event_name != 'pull_request'
+        if: github.event_name != 'pull_request' && inputs.collect_only != true
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"

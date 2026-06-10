@@ -165,16 +165,17 @@ def collect_airmass_rgb() -> SourceReport:
 # ---------------------------------------------------------------------------
 
 NWS_PRODUCT_LATEST = "https://api.weather.gov/products/types/{type_id}/locations/{location}/latest"
-NWS_PRODUCT_TYPE_LIST = "https://api.weather.gov/products/types/{type_id}"
+NWS_PRODUCT_LIST = "https://api.weather.gov/products/types/{type_id}/locations/{location}"
 
 
 def fetch_nws_product_text(type_id: str, location: str) -> str:
     """Fetch the latest text product of a given type from api.weather.gov.
 
-    Tries the location-scoped /latest endpoint first (fast path), then falls
-    back to the type-wide product listing — center products like PMDSPD or
-    SWODY1 have a single issuer, so the newest entry of the type is the right
-    one even if the location code doesn't match the API's indexing.
+    The API splits the six-character AWIPS PIL into a 3-letter product type
+    (NNN) and a 3-letter location (XXX): SWODY1 -> type SWO, location DY1,
+    just like AFD/MPX. Tries the /latest endpoint first; if its response
+    shape is unexpected, falls back to listing products and fetching the
+    newest one.
     """
     latest_url = NWS_PRODUCT_LATEST.format(type_id=type_id, location=location)
     try:
@@ -183,16 +184,16 @@ def fetch_nws_product_text(type_id: str, location: str) -> str:
         if isinstance(text, str) and text.strip():
             return text.strip()[:MAX_TEXT_CHARS]
     except SourceError:
-        pass  # fall through to the type-wide listing
+        pass  # fall through to the list endpoint
 
-    listing = fetch_json(NWS_PRODUCT_TYPE_LIST.format(type_id=type_id))
+    listing = fetch_json(NWS_PRODUCT_LIST.format(type_id=type_id, location=location))
     entries = listing.get("@graph") or []
     if not entries or not isinstance(entries[0], dict) or "@id" not in entries[0]:
-        raise SourceError(f"No {type_id} products listed by api.weather.gov")
+        raise SourceError(f"No {type_id}/{location} products listed by api.weather.gov")
     product = fetch_json(entries[0]["@id"])
     text = product.get("productText")
     if not isinstance(text, str) or not text.strip():
-        raise SourceError(f"Latest {type_id} product has no text body")
+        raise SourceError(f"Latest {type_id}/{location} product has no text body")
     return text.strip()[:MAX_TEXT_CHARS]
 
 
@@ -204,7 +205,7 @@ def collect_wpc_discussion() -> SourceReport:
         credit="NOAA Weather Prediction Center",
     )
     try:
-        report.raw_text = fetch_nws_product_text("PMDSPD", "KWNH")
+        report.raw_text = fetch_nws_product_text("PMD", "SPD")
     except SourceError as exc:
         return report.fail(str(exc))
     return report
@@ -218,7 +219,7 @@ def collect_spc_outlook() -> SourceReport:
         credit="NOAA Storm Prediction Center",
     )
     try:
-        report.raw_text = fetch_nws_product_text("SWODY1", "KWNS")
+        report.raw_text = fetch_nws_product_text("SWO", "DY1")
     except SourceError as exc:
         return report.fail(str(exc))
     return report
