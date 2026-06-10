@@ -5,9 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta
       name="description"
-      content="Tlaloc — automated weather updates, named for Tláloc the Mexica deity of water, rain, fertility, and storms."
+      content="Tlaloc — daily synoptic pattern analysis for North America, named for Tláloc the Mexica deity of water, rain, fertility, and storms."
     />
-    <title>Tlaloc — Weather Updates</title>
+    <title>Tlaloc — Daily Synoptic Analysis</title>
     <link rel="stylesheet" href="css/style.css" />
   </head>
   <body>
@@ -17,118 +17,20 @@
           <span class="site-title__icon" aria-hidden="true">🌧️</span>
           Tlaloc
         </h1>
-        <p class="site-tagline">Automated weather updates</p>
+        <p class="site-tagline">Daily synoptic pattern analysis for North America</p>
       </div>
     </header>
 
     <main class="main-content">
       <div class="container">
-<!-- BEGIN WEATHER CONTENT -->
-<section aria-labelledby="current-conditions-heading">
-  <h2 id="current-conditions-heading">Current Conditions - Minneapolis, Minnesota</h2>
-  <article class="weather-card">
-    <div class="weather-card__temp">79.6°F</div>
-    <div class="weather-card__description">Cloudy</div>
-    <div class="weather-card__details">
-      <div class="weather-detail">
-        <span class="weather-detail__label">Feels Like:</span>
-        <span class="weather-detail__value">80.2°F</span>
-      </div>
-      <div class="weather-detail">
-        <span class="weather-detail__label">Humidity:</span>
-        <span class="weather-detail__value">53%</span>
-      </div>
-      <div class="weather-detail">
-        <span class="weather-detail__label">Wind:</span>
-        <span class="weather-detail__value">7.7 mph N</span>
-      </div>
-      <div class="weather-detail">
-        <span class="weather-detail__label">Precipitation:</span>
-        <span class="weather-detail__value">0.0 in</span>
-      </div>
-    </div>
-  </article>
-  <p><small>Updated: <time datetime="2026-06-05T23:45:00Z">2026-06-05 at 11:45 PM</time></small></p>
-</section>
-
-<section aria-labelledby="forecast-heading">
-  <h2 id="forecast-heading">3-Day Forecast</h2>
-  <div class="forecast-grid">
-    <article class="forecast-item">
-      <div class="forecast-item__day">Friday</div>
-      <div class="forecast-item__icon">🌦️</div>
-      <div class="forecast-item__temp-high">82.5°F</div>
-      <div class="forecast-item__temp-low">64.3°F</div>
-    </article>
-    <article class="forecast-item">
-      <div class="forecast-item__day">Saturday</div>
-      <div class="forecast-item__icon">🌦️</div>
-      <div class="forecast-item__temp-high">89.5°F</div>
-      <div class="forecast-item__temp-low">60.8°F</div>
-    </article>
-    <article class="forecast-item">
-      <div class="forecast-item__day">Sunday</div>
-      <div class="forecast-item__icon">🌦️</div>
-      <div class="forecast-item__temp-high">87.1°F</div>
-      <div class="forecast-item__temp-low">65.0°F</div>
-    </article>
+        <!-- BEGIN TLALOC CONTENT -->
+<section aria-labelledby="pending-heading">
+  <h2 id="pending-heading">Analysis Pending</h2>
+  <div class="alert alert--info">
+    <p>The first synoptic analysis has not been generated yet. It is produced daily by an automated pipeline.</p>
   </div>
 </section>
-        <!-- END WEATHER CONTENT -->
-        <!-- BEGIN SYNOPTIC CONTENT -->
-<section aria-labelledby="synoptic-heading">
-  <h2 id="synoptic-heading">Surface Analysis</h2>
-  <div class="synoptic-card">
-    <img
-      class="synoptic-card__image"
-      src="https://www.wpc.ncep.noaa.gov/sfc/namussfcwbg.gif"
-      alt="NOAA WPC current surface analysis chart for North America"
-    />
-    <div class="synoptic-card__body">
-      <p class="synoptic-card__text">A sprawling trough of low pressure dominates the western and central United States, with multiple surface lows embedded across the Great Basin, Rockies, and southern Plains; a cold front extends from the northern Plains through the Great Lakes, with warm front segments draped across the Upper Midwest. High pressure is well-established over the southeastern U.S. and along the Atlantic seaboard, with a separate high centered over the Desert Southwest. Isobar spacing is generally slack across the interior, indicating weak pressure gradients and diffuse flow over much of the continent, while tighter gradients near the coasts support stronger surface winds there. Moist, warm air is in place across the Gulf Coast and Mississippi Valley ahead of the frontal boundary.</p>
-      <p class="synoptic-card__timestamp">
-        <small>Interpreted: <time datetime="2026-06-05T23:55:19Z">June 5, 2026 at 11:55 PM UTC</time></small>
-      </p>
-    </div>
-  </div>
-</section>
-        <!-- END SYNOPTIC CONTENT -->
-        <!-- BEGIN AIRMASS CONTENT -->
-<section aria-labelledby="airmass-heading">
-  <h2 id="airmass-heading">Air Mass RGB</h2>
-  <div class="synoptic-card">
-    <img
-      class="synoptic-card__image"
-      src="https://cdn.star.nesdis.noaa.gov/GOES19/ABI/CONUS/AirMass/20261562351_GOES19-ABI-CONUS-AirMass-2500x1500.jpg"
-      alt="GOES-19 CONUS Air Mass RGB satellite image"
-    />
-    <div class="synoptic-card__body">
-      <p class="synoptic-card__text">A broad stratospheric dry air intrusion dominates the western CONUS, with deep reds and dark red-purples across the Desert Southwest, Great Basin, and California indicating high-PV air descending into the mid-to-upper troposphere. An upper-level trough or possible closed low is evident over the south-central Plains, marked by a cyclonic swirl of cold high cloud tops (whites and yellows) curving southward into Texas and northern Mexico, suggestive of active jet dynamics and strong vorticity advection on its downstream flank. Rich green tones across the Gulf Coast and Southeast indicate a deep tropical moist airmass at upper levels surging northward from the Gulf of Mexico, with a sharp moisture gradient along the Mid-Atlantic coast separating this from drier, cooler upper-tropospheric air (teal-blue) to the northeast. Vigorous deep convection with cold white tops is visible over Mexico and Central America, consistent with early-season tropical moisture and organized convective systems.</p>
-      <p class="synoptic-card__timestamp">
-        <small>Interpreted: <time datetime="2026-06-05T23:55:38Z">June 5, 2026 at 11:55 PM UTC</time></small>
-      </p>
-    </div>
-  </div>
-</section>
-        <!-- END AIRMASS CONTENT -->
-        <!-- BEGIN WPC ANALYSIS CONTENT -->
-<section aria-labelledby="wpc-analysis-heading">
-  <h2 id="wpc-analysis-heading">500mb Analysis</h2>
-  <div class="synoptic-card">
-    <img
-      class="synoptic-card__image"
-      src="https://weather.cod.edu/wxdata/upper/US/500/US500.20260605.12.gif"
-      alt="College of DuPage 500 mb geopotential height and wind analysis chart"
-    />
-    <div class="synoptic-card__body">
-      <p class="synoptic-card__text">A broad longwave trough is entrenched over the Pacific Northwest and western Canada, with a well-defined jet streak oriented west-to-east along its equatorward flank and wind speeds exceeding 100 knots. A cutoff low is evident over the southern Plains, isolated from the main westerly flow and producing anomalously low heights across the Southwest and southern Rockies. A ridge axis extends from the central Plains northward into the northern Rockies, separating the western cutoff feature from a secondary shortwave trough digging into the Great Lakes and Ohio Valley region with a slight negative tilt. Overall the pattern is strongly amplified and meridional, with little indication of progressive zonal flow across the CONUS.</p>
-      <p class="synoptic-card__timestamp">
-        <small>Interpreted: <time datetime="2026-06-05T23:56:02Z">June 5, 2026 at 11:56 PM UTC</time></small>
-      </p>
-    </div>
-  </div>
-</section>
-        <!-- END WPC ANALYSIS CONTENT -->
+        <!-- END TLALOC CONTENT -->
       </div>
     </main>
 
@@ -142,6 +44,10 @@
             rel="noopener noreferrer"
             >Tláloc</a
           >, the Mexica deity of water, rain, fertility, and storms.
+        </p>
+        <p>
+          Data: NOAA WPC, SPC, NHC, CPC, NESDIS/GOES, and College of DuPage NEXLAB.
+          Interpretation and synthesis generated with Claude.
         </p>
       </div>
     </footer>
