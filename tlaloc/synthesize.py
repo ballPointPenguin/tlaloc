@@ -75,6 +75,7 @@ TOOLS = [
             "watching a region right now? — note MCDs are only issued when something is "
             "happening, so absence is normal)."
         ),
+        "strict": True,
         "input_schema": {
             "type": "object",
             "properties": {
@@ -85,14 +86,18 @@ TOOLS = [
                 },
             },
             "required": ["product"],
+            "additionalProperties": False,
         },
     },
     {
         "name": "publish_synthesis",
         "description": (
             "Deliver the final synthesis for the Tlaloc page. Call this exactly once, "
-            "after any supplementary fetches, with the complete write-up."
+            "after any supplementary fetches, with the complete write-up. All three "
+            "fields are required; climate_context must be its own paragraph, separate "
+            "from the narrative."
         ),
+        "strict": True,
         "input_schema": {
             "type": "object",
             "properties": {
@@ -116,6 +121,7 @@ TOOLS = [
                 },
             },
             "required": ["headline", "narrative", "climate_context"],
+            "additionalProperties": False,
         },
     },
 ]
@@ -179,11 +185,23 @@ def synthesize(client: anthropic.Anthropic, reports: list[SourceReport]) -> Synt
                 continue
             print(f"  synthesis tool call: {block.name}({json.dumps(block.input)[:200]})")
             if block.name == "publish_synthesis":
-                synthesis = Synthesis(
-                    headline=block.input["headline"].strip(),
-                    narrative=block.input["narrative"].strip(),
-                    climate_context=block.input["climate_context"].strip(),
-                )
+                fields = {
+                    key: str(block.input.get(key, "")).strip()
+                    for key in ("headline", "narrative", "climate_context")
+                }
+                missing = [key for key, value in fields.items() if not value]
+                if missing:
+                    tool_results.append({
+                        "type": "tool_result",
+                        "tool_use_id": block.id,
+                        "content": (
+                            f"Rejected: missing required field(s) {', '.join(missing)}. "
+                            "Call publish_synthesis again with every field populated."
+                        ),
+                        "is_error": True,
+                    })
+                    continue
+                synthesis = Synthesis(**fields)
                 tool_results.append({
                     "type": "tool_result",
                     "tool_use_id": block.id,
