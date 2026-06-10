@@ -60,7 +60,7 @@ covering points 1-3, and a separate climate-context paragraph for point 4.
 
 SUPPLEMENTARY_PRODUCTS = {
     "spc_day2_outlook": ("SWODY2", "KWNS", "SPC Day 2 Convective Outlook"),
-    "wpc_extended_discussion": ("PMDEPD", "KWBC", "WPC Extended Forecast Discussion (days 3-7)"),
+    "wpc_extended_discussion": ("PMDEPD", "KWNH", "WPC Extended Forecast Discussion (days 3-7)"),
     "spc_mesoscale_discussion": ("SWOMCD", "KWNS", "Latest SPC Mesoscale Discussion"),
 }
 
