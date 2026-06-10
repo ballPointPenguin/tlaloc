@@ -1,14 +1,25 @@
-import os
+import argparse
+import sys
+
 from dotenv import load_dotenv
-import anthropic
-
-load_dotenv()
 
 
-def main():
-    client = anthropic.Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
-    print("Tlaloc — weather update tool")
-    print(f"Anthropic client ready: {client.__class__.__name__}")
+def main() -> None:
+    load_dotenv()
+    parser = argparse.ArgumentParser(
+        prog="tlaloc",
+        description="Daily synoptic pattern analysis for North America",
+    )
+    parser.add_argument(
+        "--collect-only",
+        action="store_true",
+        help="Fetch and report on all data sources without calling Claude or writing the page",
+    )
+    args = parser.parse_args()
+
+    from .pipeline import run
+
+    sys.exit(run(collect_only=args.collect_only))
 
 
 if __name__ == "__main__":

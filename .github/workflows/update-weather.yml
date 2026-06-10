@@ -1,7 +1,10 @@
-name: Update Weather
+name: Daily Synoptic Analysis
 
 on:
   workflow_dispatch:
+  schedule:
+    # Daily after the 12Z upper-air analyses are published
+    - cron: "30 13 * * *"
   pull_request:
     types: [opened, synchronize, reopened]
 
@@ -22,21 +25,24 @@ jobs:
       - name: Install dependencies
         run: uv sync
 
-      - name: Fetch weather and update HTML
+      # On pull requests, verify all data sources are reachable without
+      # spending API tokens or modifying the page.
+      - name: Check data sources
+        if: github.event_name == 'pull_request'
+        run: uv run python -m tlaloc --collect-only
+
+      - name: Run synoptic analysis
+        if: github.event_name != 'pull_request'
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-        run: |
-          uv run python ring2_update_html.py
-          uv run python ring4_synoptic.py
-          uv run python ring5_airmass.py
-          uv run python ring6_500mb.py
+        run: uv run python -m tlaloc
 
       - name: Commit and push
-        if: github.event_name == 'workflow_dispatch'
+        if: github.event_name != 'pull_request'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add index.html
           git diff --staged --quiet && echo "No changes to commit" && exit 0
-          git commit -m "chore: update weather $(date -u +%Y-%m-%dT%H:%MZ)"
+          git commit -m "chore: daily synoptic analysis $(date -u +%Y-%m-%dT%H:%MZ)"
           git push origin HEAD:${{ github.ref_name }}
