@@ -90,10 +90,22 @@ def render_source_notes(reports: list[SourceReport]) -> str:
 </section>"""
 
 
+def render_analysis_datetime(generated_at: datetime) -> str:
+    iso, human = format_timestamp(generated_at)
+    return (
+        f'<p class="analysis-datetime">'
+        f"<small>Analysis generated: <time datetime=\"{iso}\">{human}</time></small>"
+        f"</p>"
+    )
+
+
 def render_content(
     synthesis: Synthesis, reports: list[SourceReport], generated_at: datetime
 ) -> str:
-    sections = [render_synthesis_section(synthesis, generated_at)]
+    sections = [
+        render_analysis_datetime(generated_at),
+        render_synthesis_section(synthesis, generated_at),
+    ]
     for report in reports:
         if report.kind == "image" and report.status == "ok":
             sections.append(render_image_section(report))

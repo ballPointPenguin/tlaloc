@@ -342,6 +342,16 @@ a:focus-visible {
 }
 
 /* ============================================================
+   Analysis Datetime
+   ============================================================ */
+.analysis-datetime {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+  text-align: right;
+  margin-bottom: var(--space-4);
+}
+
+/* ============================================================
    Source Notes
    ============================================================ */
 .source-notes {
