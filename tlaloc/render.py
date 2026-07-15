@@ -151,6 +151,7 @@ ARCHIVE_PAGE_TEMPLATE = """\
         <nav class="site-nav" aria-label="Site">
           <a href="../">Latest analysis</a>
           <a href="./">Archive</a>
+          <a href="../glossary.html">Glossary</a>
         </nav>
       </div>
     </header>

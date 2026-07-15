@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Glossary of the agencies, charts, concepts, units, and acronyms used in Tlaloc's daily synoptic analysis."
+    />
+    <title>Tlaloc — Glossary</title>
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="container">
+        <h1 class="site-title">
+          <span class="site-title__icon" aria-hidden="true">🌧️</span>
+          Tlaloc
+        </h1>
+        <p class="site-tagline">Daily synoptic pattern analysis for North America</p>
+        <nav class="site-nav" aria-label="Site">
+          <a href="./">Latest analysis</a>
+          <a href="archive/">Archive</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="main-content">
+      <div class="container">
+        <section aria-labelledby="glossary-intro-heading">
+          <h2 id="glossary-intro-heading">Glossary</h2>
+          <p class="glossary-intro">
+            The daily analysis assumes some fluency with operational meteorology.
+            This page unpacks the agencies, charts, concepts, units, and acronyms
+            that appear most often.
+          </p>
+        </section>
+
+        <section aria-labelledby="agencies-heading">
+          <h2 id="agencies-heading">Agencies &amp; Products</h2>
+          <dl class="glossary-list">
+            <dt>NOAA</dt>
+            <dd>
+              National Oceanic and Atmospheric Administration — the US agency whose
+              centers produce most of the data Tlaloc reads.
+            </dd>
+            <dt>NWS</dt>
+            <dd>
+              National Weather Service, the NOAA branch responsible for public
+              forecasts and warnings. Its national centers each own a specialty below.
+            </dd>
+            <dt>WPC</dt>
+            <dd>
+              Weather Prediction Center. Draws the official US surface analysis and
+              writes the short-range (days 1&ndash;2) and extended (days 3&ndash;7)
+              forecast discussions, with emphasis on heavy rain and winter weather.
+            </dd>
+            <dt>SPC</dt>
+            <dd>
+              Storm Prediction Center. Owns severe-thunderstorm and tornado
+              forecasting: the daily convective outlooks, mesoscale discussions, and
+              severe-weather watches.
+            </dd>
+            <dt>Convective outlook categories</dt>
+            <dd>
+              SPC ranks severe-thunderstorm risk in five steps: Marginal (MRGL),
+              Slight (SLGT), Enhanced (ENH), Moderate (MDT), and High (HIGH).
+              &ldquo;Slight&rdquo; is already a day worth watching; Moderate and High
+              days are rare and serious.
+            </dd>
+            <dt>Mesoscale Discussion (MCD)</dt>
+            <dd>
+              A short SPC bulletin issued while forecasters actively monitor a
+              developing regional threat — often the step before a watch is issued.
+              MCDs exist only when something is happening, so &ldquo;no active
+              MCDs&rdquo; is itself useful information.
+            </dd>
+            <dt>NHC</dt>
+            <dd>
+              National Hurricane Center. Issues the Tropical Weather Outlooks (TWOs)
+              for the Atlantic and East Pacific basins, giving each disturbance a
+              formation probability through 48 hours and 7 days.
+            </dd>
+            <dt>CPC</dt>
+            <dd>
+              Climate Prediction Center. Covers the beyond-a-week timescale: the
+              6&ndash;10 and 8&ndash;14 day outlooks and the official ENSO
+              monitoring, including the ONI table Tlaloc reads.
+            </dd>
+            <dt>NESDIS / STAR</dt>
+            <dd>
+              The NOAA satellite service and its science branch, which publish the
+              GOES imagery Tlaloc uses.
+            </dd>
+            <dt>ECCC</dt>
+            <dd>
+              Environment and Climate Change Canada, whose Canadian Meteorological
+              Centre draws an independent surface analysis of North America with
+              detailed frontal structure over Canada.
+            </dd>
+            <dt>SMN</dt>
+            <dd>
+              Servicio Meteorológico Nacional, Mexico's national weather service
+              (under CONAGUA, the national water commission).
+            </dd>
+            <dt>College of DuPage (COD) NEXLAB</dt>
+            <dd>
+              A university weather lab whose site republishes analysis charts —
+              including the 500 mb chart Tlaloc reads — in a clean, consistent form.
+            </dd>
+          </dl>
+        </section>
+
+        <section aria-labelledby="charts-heading">
+          <h2 id="charts-heading">Charts &amp; Imagery</h2>
+          <dl class="glossary-list">
+            <dt>Surface analysis</dt>
+            <dd>
+              A hand-analyzed snapshot of conditions at ground level: high- and
+              low-pressure centers with central pressures, fronts, and isobars.
+              It is an analysis of what <em>is</em>, not a forecast.
+            </dd>
+            <dt>Isobar</dt>
+            <dd>
+              A line of constant surface pressure. Tightly packed isobars mean a
+              strong pressure gradient and wind; widely spaced (&ldquo;slack&rdquo;)
+              isobars mean light winds.
+            </dd>
+            <dt>Fronts</dt>
+            <dd>
+              Boundaries between air masses. Cold fronts (blue triangles) mark
+              advancing cold air; warm fronts (red half-circles) advancing warm air;
+              a stationary front (alternating symbols) isn't moving — a common focus
+              for repeated rounds of rain; an occluded front (purple) marks a mature
+              cyclone where the cold front has caught the warm front.
+            </dd>
+            <dt>500 mb chart</dt>
+            <dd>
+              A map of the atmosphere at the 500-millibar pressure level, roughly
+              5.5&ndash;6 km up — near the level that steers surface weather. The
+              contours are geopotential heights: where the 500 mb surface sits high
+              (ridges, warm), and where it dips (troughs, cold).
+            </dd>
+            <dt>Geopotential height / dam</dt>
+            <dd>
+              The altitude of a pressure surface, given in decameters (dam; 1 dam =
+              10 m). &ldquo;5800 dam at 500 mb&rdquo; describes a very warm, strong
+              summer ridge.
+            </dd>
+            <dt>Air Mass RGB</dt>
+            <dd>
+              A composite satellite product built from infrared and water-vapor
+              channels, color-coded by air mass: reds/oranges show dry, high-PV
+              stratospheric intrusions; greens tropical moist air; dark blues cold,
+              dry upper-tropospheric air; bright white high, cold cloud tops (deep
+              convection).
+            </dd>
+            <dt>GOES East / GOES West</dt>
+            <dd>
+              NOAA's two operational geostationary satellites, parked over the
+              Americas' east and west flanks. Tlaloc uses GOES East, in both its
+              CONUS sector and the Full Disk view that spans Canada, Mexico, Central
+              America, and both tropical basins.
+            </dd>
+            <dt>CONUS / Full Disk</dt>
+            <dd>
+              Satellite sector names: CONUS is the contiguous United States frame;
+              Full Disk is the entire Earth face visible to the satellite.
+            </dd>
+          </dl>
+        </section>
+
+        <section aria-labelledby="concepts-heading">
+          <h2 id="concepts-heading">Synoptic Concepts</h2>
+          <dl class="glossary-list">
+            <dt>Synoptic scale</dt>
+            <dd>
+              The scale of whole weather systems — roughly 1000 km and up, the size
+              of cyclones, ridges, and troughs. &ldquo;Mesoscale&rdquo; is the next
+              size down: individual storm complexes, squall lines, sea breezes.
+            </dd>
+            <dt>Trough / ridge</dt>
+            <dd>
+              The waves in the upper-level flow. A trough is a southward dip
+              (low heights, cold, stormy); a ridge is a northward bulge (high
+              heights, warm, quiet). The alternation of troughs and ridges
+              <em>is</em> the day's pattern.
+            </dd>
+            <dt>Longwave vs. shortwave</dt>
+            <dd>
+              Longwaves are the continent-scale waves that define the regime and
+              move slowly; shortwaves are smaller ripples embedded in them that
+              often trigger individual storm systems.
+            </dd>
+            <dt>Trough tilt (positive / neutral / negative)</dt>
+            <dd>
+              The orientation of a trough axis. A negatively tilted trough (leaning
+              northwest&ndash;southeast) is often the most dynamic configuration,
+              favoring rapid storm development and severe weather.
+            </dd>
+            <dt>Cutoff low</dt>
+            <dd>
+              A low that has pinched off from the main westerly flow and circulates
+              on its own. With no steering current, cutoffs drift slowly and can
+              repeat rain over the same area for days.
+            </dd>
+            <dt>Blocking</dt>
+            <dd>
+              A stalled configuration — often a strong ridge — that stops the usual
+              west-to-east progression. Under a block, extremes compound: heat
+              builds under the ridge, and rain repeats near any trapped low.
+            </dd>
+            <dt>Jet stream / jet streak</dt>
+            <dd>
+              The ribbon of strong upper-level winds along air-mass boundaries. A
+              jet streak is a local wind maximum within it; air accelerating into
+              and out of a streak creates the lift that spins up surface storms.
+            </dd>
+            <dt>Cyclogenesis</dt>
+            <dd>
+              The birth or intensification of a surface low-pressure system,
+              typically downstream of an approaching upper-level trough.
+            </dd>
+            <dt>PV / stratospheric intrusion</dt>
+            <dd>
+              Potential vorticity — a marker of stratospheric air. Where dry,
+              high-PV air folds down toward the troposphere (vivid red in Air Mass
+              RGB imagery), the upper atmosphere is dynamically active, often
+              alongside a strong jet and developing storms.
+            </dd>
+            <dt>CAPE</dt>
+            <dd>
+              Convective Available Potential Energy (J/kg) — the fuel gauge for
+              thunderstorms. A few hundred is marginal; 1000+ supports strong
+              storms; 3000+ is a loaded environment.
+            </dd>
+            <dt>Wind shear</dt>
+            <dd>
+              Change of wind speed or direction with height. Shear organizes
+              storms: with ample CAPE, strong deep-layer shear favors supercells
+              and severe weather.
+            </dd>
+            <dt>Helicity (SRH)</dt>
+            <dd>
+              Storm-relative helicity measures low-level wind spiraling available
+              to rotating storms; higher values (m²/s²) mean better odds a storm
+              can rotate and produce a tornado.
+            </dd>
+          </dl>
+        </section>
+
+        <section aria-labelledby="units-heading">
+          <h2 id="units-heading">Units &amp; Notation</h2>
+          <dl class="glossary-list">
+            <dt>mb / hPa</dt>
+            <dd>
+              Millibars and hectopascals — identical units of pressure (1 mb =
+              1 hPa). Sea-level pressure averages ~1013 mb; a deep winter storm can
+              dip below 970 mb; a strong high can top 1040 mb.
+            </dd>
+            <dt>dam</dt>
+            <dd>Decameter, 10 meters; the unit for geopotential heights.</dd>
+            <dt>kt</dt>
+            <dd>Knot, one nautical mile per hour (≈1.15 mph, ≈1.85 km/h).</dd>
+            <dt>UTC / Z</dt>
+            <dd>
+              Coordinated Universal Time, meteorology's common clock;
+              &ldquo;12Z&rdquo; means 12:00 UTC. Upper-air analyses are made twice
+              daily, at 00Z and 12Z.
+            </dd>
+          </dl>
+        </section>
+
+        <section aria-labelledby="climate-heading">
+          <h2 id="climate-heading">Climate &amp; Seasonal Context</h2>
+          <dl class="glossary-list">
+            <dt>ENSO</dt>
+            <dd>
+              El Niño&ndash;Southern Oscillation — the slow seesaw of tropical
+              Pacific ocean temperatures that tilts the odds in North American
+              seasonal weather. El Niño is the warm phase, La Niña the cool phase.
+            </dd>
+            <dt>ONI</dt>
+            <dd>
+              Oceanic Niño Index — the running three-month average of sea-surface
+              temperature anomalies in the tropical Pacific's Niño 3.4 region.
+              Values ≥ +0.5 °C indicate El Niño conditions, ≤ −0.5 °C La Niña.
+            </dd>
+            <dt>North American Monsoon</dt>
+            <dd>
+              The summer wind shift that draws tropical moisture into Mexico and
+              the US Southwest, fueling near-daily afternoon thunderstorms from
+              roughly late June through September.
+            </dd>
+            <dt>Bermuda High</dt>
+            <dd>
+              The semi-permanent subtropical Atlantic high. In summer its western
+              flank pumps humid Gulf air northward into the central and eastern US
+              — the classic source of muggy heat and storm fuel.
+            </dd>
+            <dt>Hurricane season</dt>
+            <dd>
+              Atlantic: June 1 &ndash; November 30, peaking around September 10.
+              East Pacific: May 15 &ndash; November 30, often busiest in
+              July&ndash;August.
+            </dd>
+            <dt>HeatRisk</dt>
+            <dd>
+              An NWS index (Minor &rarr; Moderate &rarr; Major &rarr; Extreme)
+              rating how unusual and health-threatening a stretch of heat is for a
+              location and date.
+            </dd>
+          </dl>
+        </section>
+      </div>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container">
+        <p>
+          Named for
+          <a
+            href="https://en.wikipedia.org/wiki/Tlaloc"
+            target="_blank"
+            rel="noopener noreferrer"
+            >Tláloc</a
+          >, the Mexica deity of water, rain, fertility, and storms.
+        </p>
+        <p>
+          Data: NOAA WPC, SPC, NHC, CPC, NESDIS/GOES, Environment and Climate
+          Change Canada, and College of DuPage NEXLAB. Interpretation and
+          synthesis generated with Claude.
+        </p>
+      </div>
+    </footer>
+  </body>
+</html>

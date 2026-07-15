@@ -443,6 +443,38 @@ a:focus-visible {
 }
 
 /* ============================================================
+   Glossary
+   ============================================================ */
+.glossary-intro {
+  color: var(--color-text-muted);
+}
+
+.glossary-list {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+  display: grid;
+  gap: var(--space-4);
+}
+
+.glossary-list dt {
+  font-weight: 700;
+  color: var(--color-accent);
+}
+
+.glossary-list dd {
+  color: var(--color-text);
+  padding-bottom: var(--space-2);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.glossary-list dd:last-child {
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+/* ============================================================
    Site Footer
    ============================================================ */
 .site-footer {
