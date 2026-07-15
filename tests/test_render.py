@@ -84,6 +84,21 @@ class TestWriteIndexHtml:
         with pytest.raises(RuntimeError, match="sentinel"):
             write_index_html(index, make_synthesis(), [], GENERATED_AT)
 
+    def test_regional_notes_section_only_when_present(self, tmp_path):
+        index = tmp_path / "index.html"
+        index.write_text(SENTINEL_PAGE)
+        write_index_html(index, make_synthesis(), [], GENERATED_AT)
+        assert "Regional Signals" not in index.read_text()
+        write_index_html(
+            index,
+            make_synthesis(regional_notes="MCD 1701 tracks supercells in Alberta."),
+            [],
+            GENERATED_AT,
+        )
+        html = index.read_text()
+        assert "Regional Signals" in html
+        assert "MCD 1701 tracks supercells in Alberta." in html
+
     def test_rewrite_is_idempotent(self, tmp_path):
         index = tmp_path / "index.html"
         index.write_text(SENTINEL_PAGE)

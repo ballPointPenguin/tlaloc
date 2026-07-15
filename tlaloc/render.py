@@ -31,12 +31,19 @@ def paragraphs(text: str, css_class: str) -> str:
 
 def render_synthesis_section(synthesis: Synthesis, generated_at: datetime) -> str:
     iso, human = format_timestamp(generated_at)
+    regional = ""
+    if synthesis.regional_notes.strip():
+        regional = (
+            '    <h3 class="synthesis-card__subheading">Regional Signals</h3>\n'
+            + paragraphs(synthesis.regional_notes, "synthesis-card__text")
+            + "\n"
+        )
     return f"""<section aria-labelledby="synthesis-heading">
   <h2 id="synthesis-heading">Today&rsquo;s Synoptic Picture</h2>
   <div class="synthesis-card">
     <p class="synthesis-card__headline">{escape(synthesis.headline)}</p>
 {paragraphs(synthesis.narrative, "synthesis-card__text")}
-    <h3 class="synthesis-card__subheading">Climate Context</h3>
+{regional}    <h3 class="synthesis-card__subheading">Climate Context</h3>
 {paragraphs(synthesis.climate_context, "synthesis-card__text")}
     <p class="synoptic-card__timestamp">
       <small>Synthesized: <time datetime="{iso}">{human}</time></small>

@@ -6,7 +6,9 @@ import pytest
 
 from tlaloc.fetching import SourceError
 from tlaloc.sources import (
+    MCD_MAX_PRODUCTS,
     PRE_BLOCK_RE,
+    filter_recent_mcd_entries,
     iter_airmass_candidate_urls,
     resolve_500mb_chart_url,
 )
@@ -72,6 +74,34 @@ class TestIterAirmassCandidateUrls:
         assert urls[0].endswith("GOES19/ABI/FD/AirMass/latest.jpg")
         assert "20261961431_GOES19-ABI-FD-AirMass-1808x1808.jpg" in urls[1]
         assert not any("CONUS" in url for url in urls)
+
+
+class TestFilterRecentMcdEntries:
+    NOW = datetime(2026, 7, 15, 18, 0, tzinfo=timezone.utc)
+
+    @staticmethod
+    def entry(issued: str, id_suffix: str = "x") -> dict:
+        return {"issuanceTime": issued, "@id": f"https://api.weather.gov/products/{id_suffix}"}
+
+    def test_keeps_only_entries_within_lookback(self):
+        entries = [
+            self.entry("2026-07-15T17:30:00+00:00", "fresh"),
+            self.entry("2026-07-15T11:00:00+00:00", "stale"),
+        ]
+        recent = filter_recent_mcd_entries(entries, self.NOW)
+        assert [e["@id"].rsplit("/", 1)[1] for e in recent] == ["fresh"]
+
+    def test_caps_at_max_products(self):
+        entries = [self.entry("2026-07-15T17:00:00Z", str(i)) for i in range(10)]
+        assert len(filter_recent_mcd_entries(entries, self.NOW)) == MCD_MAX_PRODUCTS
+
+    def test_skips_malformed_entries(self):
+        entries = [
+            {"issuanceTime": "not-a-date", "@id": "u"},
+            {"@id": "missing-time"},
+            {"issuanceTime": "2026-07-15T17:00:00Z"},  # missing @id
+        ]
+        assert filter_recent_mcd_entries(entries, self.NOW) == []
 
 
 class TestPreBlockRegex:

@@ -53,10 +53,16 @@ individual summaries can't do alone:
    treat a prior analysis as a data source for today's specifics — today's claims
    come from today's sources.
 
+The core data includes any SPC mesoscale discussions active in the last few hours
+(or an explicit note that none are). Use them, plus any localized threats the other
+sources flag, to fill the regional_notes field of your write-up: the sub-synoptic
+signals a regional reader would want that don't belong in the main narrative. Leave
+regional_notes empty when nothing rises above the synoptic story.
+
 If you need more information to resolve a question the core data raises — e.g.
-whether a threat persists into day 2, how the pattern evolves this week, or whether
-SPC has active mesoscale discussions — use the fetch_supplementary_product tool.
-Use it only when it would genuinely sharpen the synthesis; one or two calls at most.
+whether a threat persists into day 2, or how the pattern evolves this week — use
+the fetch_supplementary_product tool. Use it only when it would genuinely sharpen
+the synthesis; one or two calls at most.
 
 Some sources may be marked unavailable. Work with what you have, and if a gap is
 material (e.g. no upper-air data), acknowledge it briefly rather than guessing.
@@ -64,13 +70,13 @@ material (e.g. no upper-air data), acknowledge it briefly rather than guessing.
 Ground every claim in the provided material. Do not invent specific numbers that
 are not in the summaries. Write plain text (no markdown). When ready, deliver the
 result with the publish_synthesis tool: a short headline, a 2-4 paragraph narrative
-covering points 1-3, and a separate climate-context paragraph for point 4.
+covering points 1-3, regional notes (possibly empty), and a separate
+climate-context paragraph for point 4.
 """
 
 SUPPLEMENTARY_PRODUCTS = {
     "spc_day2_outlook": ("SWO", "DY2", "SPC Day 2 Convective Outlook"),
     "wpc_extended_discussion": ("PMD", "EPD", "WPC Extended Forecast Discussion (days 3-7)"),
-    "spc_mesoscale_discussion": ("SWO", "MCD", "Latest SPC Mesoscale Discussion"),
 }
 
 TOOLS = [
@@ -80,9 +86,7 @@ TOOLS = [
             "Fetch the latest issuance of a supplementary NWS text product to answer a "
             "question the core data raised. Available products: spc_day2_outlook (does a "
             "severe threat persist into tomorrow?), wpc_extended_discussion (how does the "
-            "pattern evolve over days 3-7?), spc_mesoscale_discussion (is SPC actively "
-            "watching a region right now? — note MCDs are only issued when something is "
-            "happening, so absence is normal)."
+            "pattern evolve over days 3-7?)."
         ),
         "strict": True,
         "input_schema": {
@@ -121,6 +125,16 @@ TOOLS = [
                         "picture, focal points, and upper-level context"
                     ),
                 },
+                "regional_notes": {
+                    "type": "string",
+                    "description": (
+                        "One short plain-text paragraph of sub-synoptic regional signals "
+                        "that don't fit the main narrative: active SPC mesoscale "
+                        "discussions and watches, localized flood or heat threats, "
+                        "notable regional detail in Canada or Mexico. Use an empty "
+                        "string when nothing rises above the synoptic narrative today."
+                    ),
+                },
                 "climate_context": {
                     "type": "string",
                     "description": (
@@ -129,7 +143,7 @@ TOOLS = [
                     ),
                 },
             },
-            "required": ["headline", "narrative", "climate_context"],
+            "required": ["headline", "narrative", "regional_notes", "climate_context"],
             "additionalProperties": False,
         },
     },
@@ -143,6 +157,8 @@ class Synthesis:
     headline: str
     narrative: str
     climate_context: str
+    # Sub-synoptic regional signals; empty means nothing noteworthy today.
+    regional_notes: str = ""
 
 
 def _days_ago_label(record_date: str, today: date) -> str:
@@ -238,9 +254,14 @@ def synthesize(
             if block.name == "publish_synthesis":
                 fields = {
                     key: str(block.input.get(key, "")).strip()
-                    for key in ("headline", "narrative", "climate_context")
+                    for key in ("headline", "narrative", "climate_context", "regional_notes")
                 }
-                missing = [key for key, value in fields.items() if not value]
+                # regional_notes is legitimately empty on quiet days.
+                missing = [
+                    key
+                    for key, value in fields.items()
+                    if not value and key != "regional_notes"
+                ]
                 if missing:
                     tool_results.append({
                         "type": "tool_result",

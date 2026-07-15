@@ -255,15 +255,21 @@ def fetch_nws_product_text(type_id: str, location: str) -> str:
     except SourceError:
         pass  # fall through to the list endpoint
 
-    listing = fetch_json(NWS_PRODUCT_LIST.format(type_id=type_id, location=location))
-    entries = listing.get("@graph") or []
-    if not entries or not isinstance(entries[0], dict) or "@id" not in entries[0]:
+    entries = fetch_nws_product_listing(type_id, location)
+    if not entries or "@id" not in entries[0]:
         raise SourceError(f"No {type_id}/{location} products listed by api.weather.gov")
     product = fetch_json(entries[0]["@id"])
     text = product.get("productText")
     if not isinstance(text, str) or not text.strip():
         raise SourceError(f"Latest {type_id}/{location} product has no text body")
     return text.strip()[:MAX_TEXT_CHARS]
+
+
+def fetch_nws_product_listing(type_id: str, location: str) -> list[dict]:
+    """List a product type's recent issuances (newest first) from api.weather.gov."""
+    listing = fetch_json(NWS_PRODUCT_LIST.format(type_id=type_id, location=location))
+    entries = listing.get("@graph") or []
+    return [entry for entry in entries if isinstance(entry, dict)]
 
 
 def collect_wpc_discussion() -> SourceReport:
@@ -327,6 +333,66 @@ def collect_tropical_outlooks() -> SourceReport:
     return report
 
 
+MCD_LOOKBACK_HOURS = 6
+MCD_MAX_PRODUCTS = 3
+NO_RECENT_MCD_TEXT = (
+    f"No SPC mesoscale discussions issued in the past {MCD_LOOKBACK_HOURS} hours — "
+    "no organized convective threat is being actively monitored right now."
+)
+
+
+def filter_recent_mcd_entries(entries: list[dict], now_utc: datetime) -> list[dict]:
+    """The newest listing entries issued within the MCD lookback window."""
+    cutoff = now_utc - timedelta(hours=MCD_LOOKBACK_HOURS)
+    recent = []
+    for entry in entries:
+        issuance = entry.get("issuanceTime")
+        if not isinstance(issuance, str) or "@id" not in entry:
+            continue
+        try:
+            issued = datetime.fromisoformat(issuance.replace("Z", "+00:00"))
+        except ValueError:
+            continue
+        if issued >= cutoff:
+            recent.append(entry)
+        if len(recent) == MCD_MAX_PRODUCTS:
+            break
+    return recent
+
+
+def collect_mesoscale_discussions() -> SourceReport:
+    """Active SPC mesoscale discussions, where absence is signal, not failure.
+
+    MCDs are only issued while forecasters are actively monitoring a threat,
+    so a quiet listing is reported as an explicit "nothing active" note. This
+    keeps the synthesist informed either way, instead of leaving it to guess
+    whether asking for MCDs is worthwhile (the old supplementary-menu model).
+    """
+    report = SourceReport(
+        key="spc_mesoscale",
+        title="SPC Mesoscale Discussions",
+        kind="text",
+        credit="NOAA Storm Prediction Center",
+    )
+    try:
+        entries = fetch_nws_product_listing("SWO", "MCD")
+        sections = []
+        for entry in filter_recent_mcd_entries(entries, datetime.now(timezone.utc)):
+            product = fetch_json(entry["@id"])
+            text = product.get("productText")
+            if isinstance(text, str) and text.strip():
+                sections.append(text.strip())
+    except SourceError as exc:
+        return report.fail(str(exc))
+    if sections:
+        report.raw_text = "\n\n--- next mesoscale discussion ---\n\n".join(sections)[
+            :MAX_TEXT_CHARS
+        ]
+    else:
+        report.raw_text = NO_RECENT_MCD_TEXT
+    return report
+
+
 ONI_URL = "https://www.cpc.ncep.noaa.gov/data/indices/oni.ascii.txt"
 
 
@@ -364,6 +430,7 @@ COLLECTORS: list[Callable[[], SourceReport]] = [
     collect_cpc_610day_outlook,
     collect_wpc_discussion,
     collect_spc_outlook,
+    collect_mesoscale_discussions,
     collect_tropical_outlooks,
     collect_enso_state,
 ]
