@@ -1,4 +1,5 @@
-"""Render the analysis into index.html between the TLALOC CONTENT sentinels."""
+"""Render the analysis into index.html between the TLALOC CONTENT sentinels,
+plus the standalone archive pages derived from per-day history records."""
 
 import re
 from datetime import datetime, timezone
@@ -113,6 +114,193 @@ def render_content(
     if notes:
         sections.append(notes)
     return "\n\n".join(sections)
+
+
+# ---------------------------------------------------------------------------
+# Archive pages (standalone documents derived from per-day history records)
+# ---------------------------------------------------------------------------
+
+ARCHIVE_PAGE_TEMPLATE = """\
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Tlaloc — archived daily synoptic pattern analysis for North America."
+    />
+    <title>{title}</title>
+    <link rel="stylesheet" href="../css/style.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="container">
+        <h1 class="site-title">
+          <span class="site-title__icon" aria-hidden="true">🌧️</span>
+          Tlaloc
+        </h1>
+        <p class="site-tagline">Daily synoptic pattern analysis for North America</p>
+        <nav class="site-nav" aria-label="Site">
+          <a href="../">Latest analysis</a>
+          <a href="./">Archive</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="main-content">
+      <div class="container">
+{content}
+      </div>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container">
+        <p>
+          Named for
+          <a
+            href="https://en.wikipedia.org/wiki/Tlaloc"
+            target="_blank"
+            rel="noopener noreferrer"
+            >Tláloc</a
+          >, the Mexica deity of water, rain, fertility, and storms.
+        </p>
+        <p>
+          Data: NOAA WPC, SPC, NHC, CPC, NESDIS/GOES, and College of DuPage NEXLAB.
+          Interpretation and synthesis generated with Claude.
+        </p>
+      </div>
+    </footer>
+  </body>
+</html>
+"""
+
+
+def parse_record_timestamp(record: dict) -> datetime:
+    return datetime.fromisoformat(record["generated_at"].replace("Z", "+00:00"))
+
+
+def render_record_synthesis_section(record: dict) -> str:
+    synthesis = record["synthesis"]
+    iso, human = format_timestamp(parse_record_timestamp(record))
+    regional = ""
+    if synthesis.get("regional_notes", "").strip():
+        regional = (
+            '    <h3 class="synthesis-card__subheading">Regional Signals</h3>\n'
+            + paragraphs(synthesis["regional_notes"], "synthesis-card__text")
+            + "\n"
+        )
+    return f"""<section aria-labelledby="synthesis-heading">
+  <h2 id="synthesis-heading">Synoptic Picture</h2>
+  <div class="synthesis-card">
+    <p class="synthesis-card__headline">{escape(synthesis["headline"])}</p>
+{paragraphs(synthesis["narrative"], "synthesis-card__text")}
+{regional}    <h3 class="synthesis-card__subheading">Climate Context</h3>
+{paragraphs(synthesis["climate_context"], "synthesis-card__text")}
+    <p class="synoptic-card__timestamp">
+      <small>Synthesized: <time datetime="{iso}">{human}</time></small>
+    </p>
+  </div>
+</section>"""
+
+
+def render_record_sources_section(record: dict) -> str:
+    items = []
+    for source in record["sources"]:
+        if source["status"] == "ok" and source.get("summary"):
+            items.append(
+                f"""    <li class="source-note">
+      <span class="source-note__title">{escape(source["title"])}</span>
+      <span class="source-note__body">{escape(" ".join(source["summary"].split()))}</span>
+    </li>"""
+            )
+        else:
+            items.append(
+                f"""    <li class="source-note source-note--failed">
+      <span class="source-note__title">{escape(source["title"])}</span>
+      <span class="source-note__body">Unavailable for this analysis.</span>
+    </li>"""
+            )
+    if not items:
+        return ""
+    body = "\n".join(items)
+    return f"""<section aria-labelledby="sources-heading">
+  <h2 id="sources-heading">Sources Consulted</h2>
+  <ul class="source-notes">
+{body}
+  </ul>
+</section>"""
+
+
+def render_record_charts_section(record: dict) -> str:
+    links = [
+        f"""    <li class="chart-link">
+      <a href="{escape(source["display_url"], quote=True)}" rel="noopener noreferrer">{escape(source["title"])}</a>
+      <span class="chart-link__credit">{escape(source["credit"])}</span>
+    </li>"""
+        for source in record["sources"]
+        if source["kind"] == "image" and source["status"] == "ok" and source.get("display_url")
+    ]
+    if not links:
+        return ""
+    body = "\n".join(links)
+    return f"""<section aria-labelledby="charts-heading">
+  <h2 id="charts-heading">Charts Consulted</h2>
+  <p class="archive-note">Chart images are not archived; these links point to the live
+  sources, which overwrite or expire their imagery within days.</p>
+  <ul class="source-notes">
+{body}
+  </ul>
+</section>"""
+
+
+def render_archive_page(record: dict) -> str:
+    sections = [
+        render_analysis_datetime(parse_record_timestamp(record)),
+        render_record_synthesis_section(record),
+        render_record_sources_section(record),
+        render_record_charts_section(record),
+    ]
+    content = "\n\n".join(s for s in sections if s)
+    return ARCHIVE_PAGE_TEMPLATE.format(
+        title=f"Tlaloc — Synoptic Analysis for {record['date']}",
+        content=content,
+    )
+
+
+def write_archive_page(archive_dir: Path, record: dict) -> Path:
+    archive_dir.mkdir(parents=True, exist_ok=True)
+    path = archive_dir / f"{record['date']}.html"
+    path.write_text(render_archive_page(record))
+    return path
+
+
+def render_archive_index(records: list[dict]) -> str:
+    items = []
+    for record in records:
+        date_str = record["date"]
+        headline = record["synthesis"].get("headline", "")
+        items.append(
+            f"""    <li class="archive-entry">
+      <a href="{escape(date_str, quote=True)}.html"><time datetime="{escape(date_str)}">{escape(date_str)}</time></a>
+      <span class="archive-entry__headline">{escape(headline)}</span>
+    </li>"""
+        )
+    body = "\n".join(items) if items else "    <li>No archived analyses yet.</li>"
+    content = f"""<section aria-labelledby="archive-heading">
+  <h2 id="archive-heading">Analysis Archive</h2>
+  <ul class="archive-list">
+{body}
+  </ul>
+</section>"""
+    return ARCHIVE_PAGE_TEMPLATE.format(title="Tlaloc — Analysis Archive", content=content)
+
+
+def write_archive_index(archive_dir: Path, records: list[dict]) -> Path:
+    archive_dir.mkdir(parents=True, exist_ok=True)
+    path = archive_dir / "index.html"
+    path.write_text(render_archive_index(records))
+    return path
 
 
 def write_index_html(

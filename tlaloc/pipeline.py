@@ -1,10 +1,13 @@
-"""Pipeline orchestration: collect -> interpret -> synthesize -> render."""
+"""Pipeline orchestration: collect -> interpret -> synthesize -> render -> archive."""
+
+from datetime import datetime, timezone
 
 import anthropic
 
-from .config import INDEX_HTML, MIN_IMAGE_SOURCES, MIN_TOTAL_SOURCES
+from . import history
+from .config import ARCHIVE_DIR, INDEX_HTML, MIN_IMAGE_SOURCES, MIN_TOTAL_SOURCES
 from .interpret import interpret_all
-from .render import write_index_html
+from .render import write_archive_index, write_archive_page, write_index_html
 from .sources import collect_all
 from .synthesize import synthesize
 
@@ -51,6 +54,20 @@ def run(collect_only: bool = False) -> int:
     synthesis = synthesize(client, reports)
     print(f"  headline: {synthesis.headline}")
 
-    write_index_html(INDEX_HTML, synthesis, reports)
+    generated_at = datetime.now(timezone.utc)
+    write_index_html(INDEX_HTML, synthesis, reports, generated_at)
     print(f"Wrote {INDEX_HTML}")
+
+    # History and archive are derived artifacts: a failure here must not fail
+    # the run, since the synthesis page (the product) is already written.
+    try:
+        record = history.record_from_run(synthesis, reports, generated_at)
+        record_path = history.save_day_record(record)
+        print(f"Wrote {record_path}")
+        page_path = write_archive_page(ARCHIVE_DIR, record)
+        write_archive_index(ARCHIVE_DIR, history.list_all_records())
+        print(f"Wrote {page_path} and archive index")
+    except Exception as exc:  # noqa: BLE001 — archive is best-effort by design
+        print(f"  [warn] history/archive step failed (page already published): {exc}")
+
     return 0
