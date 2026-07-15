@@ -11,10 +11,10 @@ seasons)?*
 
 ## How it works
 
-A two-stage pipeline (`tlaloc/`):
+A pipeline (`tlaloc/`):
 
 ```
-collect  ->  interpret (one Claude call per source)  ->  synthesize (one meta call)  ->  render
+collect  ->  interpret (one Claude call per source)  ->  synthesize (one meta call)  ->  render + archive
 ```
 
 **Stage 1 — fixed core sources.** Every run fetches the same backbone of open data:
@@ -22,22 +22,39 @@ collect  ->  interpret (one Claude call per source)  ->  synthesize (one meta ca
 | Source | Kind | Provider |
 | --- | --- | --- |
 | Surface analysis | chart | NOAA WPC |
+| Canadian surface analysis | chart | Environment and Climate Change Canada |
 | 500 mb heights/winds | chart | College of DuPage NEXLAB |
 | Air Mass RGB (CONUS) | satellite | NOAA NESDIS / GOES East |
+| Air Mass RGB (Full Disk: Canada, Mexico, tropics) | satellite | NOAA NESDIS / GOES East |
+| 6-10 Day Temperature Outlook | chart | NOAA CPC |
 | Short Range Forecast Discussion | text | NOAA WPC via api.weather.gov |
 | Day 1 Convective Outlook | text | NOAA SPC via api.weather.gov |
+| Mesoscale Discussions (last 6 h; absence noted) | text | NOAA SPC via api.weather.gov |
 | Tropical Weather Outlooks (ATL + EPAC) | text | NOAA NHC |
 | Oceanic Niño Index table | data | NOAA CPC |
 
 Each chart gets an independent vision interpretation; each text product gets a short
-distillation. These per-source summaries are the building blocks.
+distillation. These per-source summaries are the building blocks. (A stable
+Mexico-specific product from SMN/CONAGUA is a future candidate; for now Mexico is
+covered by the Full Disk satellite frame, the NHC East Pacific outlook, and the
+surface analyses.)
 
 **Stage 2 — meta-synthesis.** All summaries (including notes about any sources that
 failed) go to a single synthesis call that writes the day's pattern discussion:
-big picture, focal points, upper-level context, and climate context. The synthesist
-also has a small tool menu of *supplementary* products it may fetch on demand if the
-core data raises questions — the SPC Day 2 outlook, the WPC extended discussion, or
-active SPC mesoscale discussions.
+big picture, focal points, upper-level context, regional signals, and climate
+context. The briefing also includes Tlaloc's own recent analyses — yesterday's in
+full, older headlines — so the write-up can describe pattern evolution ("the cutoff
+low, now in its third day..."). The synthesist also has a small tool menu of
+*supplementary* products it may fetch on demand if the core data raises questions —
+the SPC Day 2 outlook or the WPC extended discussion.
+
+**Stage 3 — render + archive.** The synthesis rewrites `index.html`, and each run
+also writes a per-day JSON record (`data/YYYY-MM-DD.json`) — the durable, text-only
+history — from which a standalone archive page (`archive/YYYY-MM-DD.html`) and the
+archive index are derived. Chart images are deliberately not archived: their source
+URLs are overwritten or expire within days, and the interpretation text already
+records what each chart showed. A hand-maintained `glossary.html` explains the
+jargon.
 
 ### Design decisions
 
@@ -69,10 +86,16 @@ uv run python -m tlaloc --collect-only
 ANTHROPIC_API_KEY=... uv run python -m tlaloc
 ```
 
+```sh
+# Lint and unit tests
+uv run ruff check .
+uv run pytest
+```
+
 The GitHub Actions workflow (`.github/workflows/update-weather.yml`) runs the full
 pipeline daily at 13:30 UTC (after the 12Z upper-air analyses publish) and commits
-the updated `index.html`. Pull requests run `--collect-only` as a smoke test of the
-data sources.
+the updated `index.html`, `data/`, and `archive/`. Pull requests run lint, tests,
+and `--collect-only` as a smoke test of the data sources.
 
 ## Adding a source
 

@@ -10,6 +10,9 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 INDEX_HTML = REPO_ROOT / "index.html"
+# Per-day JSON records (the durable history) and the derived archive pages.
+DATA_DIR = REPO_ROOT / "data"
+ARCHIVE_DIR = REPO_ROOT / "archive"
 
 # Vision interpretation of individual charts/imagery.
 VISION_MODEL = os.environ.get("TLALOC_VISION_MODEL", "claude-sonnet-4-6")

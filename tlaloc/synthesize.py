@@ -14,7 +14,7 @@ needing to be parsed out of prose.
 
 import json
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 
 import anthropic
 
@@ -28,13 +28,16 @@ discussion for Tlaloc, a page read by an educated audience of weather enthusiast
 people who know what a negatively tilted trough is but don't have time to read six
 charts and four discussions themselves.
 
-You will receive independent summaries of today's core data sources (surface
-analysis, 500 mb analysis, Air Mass RGB satellite imagery, NWS center discussions,
-tropical outlooks, and the current ENSO state). Your job is the meta-analysis the
+You will receive independent summaries of today's core data sources (US and
+Canadian surface analyses, 500 mb analysis, Air Mass RGB satellite imagery over
+both the CONUS and the full disk, NWS center discussions and outlooks, tropical
+outlooks, and the current ENSO state). Your job is the meta-analysis the
 individual summaries can't do alone:
 
 1. THE BIG PICTURE: what single story best organizes today's pattern over North
-   America? Lead with it.
+   America — the CONUS, Canada, Mexico, and adjacent waters? Lead with it.
+   Canada and Mexico are part of the story, not scenery: when the data shows
+   action there, give it the same weight as a comparable feature over the US.
 2. FOCAL POINTS: where are today's centers of action — developing cyclogenesis,
    severe weather threats, heavy rain axes, heat domes, tropical mischief?
 3. UPPER-LEVEL CONTEXT: connect the surface story to the 500 mb pattern and the
@@ -43,11 +46,23 @@ individual summaries can't do alone:
    current ENSO state (an ONI table is provided), and seasonally relevant regimes
    such as the North American Monsoon, severe-weather season, or hurricane season,
    as appropriate for the date.
+5. PATTERN EVOLUTION: recent Tlaloc analyses may be appended to the briefing.
+   Where today's pattern continues, intensifies, or breaks from what was described
+   there, say so explicitly ("the cutoff low over Texas, now in its third day...").
+   Do not force continuity remarks when the pattern has simply reset, and never
+   treat a prior analysis as a data source for today's specifics — today's claims
+   come from today's sources.
+
+The core data includes any SPC mesoscale discussions active in the last few hours
+(or an explicit note that none are). Use them, plus any localized threats the other
+sources flag, to fill the regional_notes field of your write-up: the sub-synoptic
+signals a regional reader would want that don't belong in the main narrative. Leave
+regional_notes empty when nothing rises above the synoptic story.
 
 If you need more information to resolve a question the core data raises — e.g.
-whether a threat persists into day 2, how the pattern evolves this week, or whether
-SPC has active mesoscale discussions — use the fetch_supplementary_product tool.
-Use it only when it would genuinely sharpen the synthesis; one or two calls at most.
+whether a threat persists into day 2, or how the pattern evolves this week — use
+the fetch_supplementary_product tool. Use it only when it would genuinely sharpen
+the synthesis; one or two calls at most.
 
 Some sources may be marked unavailable. Work with what you have, and if a gap is
 material (e.g. no upper-air data), acknowledge it briefly rather than guessing.
@@ -55,13 +70,13 @@ material (e.g. no upper-air data), acknowledge it briefly rather than guessing.
 Ground every claim in the provided material. Do not invent specific numbers that
 are not in the summaries. Write plain text (no markdown). When ready, deliver the
 result with the publish_synthesis tool: a short headline, a 2-4 paragraph narrative
-covering points 1-3, and a separate climate-context paragraph for point 4.
+covering points 1-3, regional notes (possibly empty), and a separate
+climate-context paragraph for point 4.
 """
 
 SUPPLEMENTARY_PRODUCTS = {
     "spc_day2_outlook": ("SWO", "DY2", "SPC Day 2 Convective Outlook"),
     "wpc_extended_discussion": ("PMD", "EPD", "WPC Extended Forecast Discussion (days 3-7)"),
-    "spc_mesoscale_discussion": ("SWO", "MCD", "Latest SPC Mesoscale Discussion"),
 }
 
 TOOLS = [
@@ -71,9 +86,7 @@ TOOLS = [
             "Fetch the latest issuance of a supplementary NWS text product to answer a "
             "question the core data raised. Available products: spc_day2_outlook (does a "
             "severe threat persist into tomorrow?), wpc_extended_discussion (how does the "
-            "pattern evolve over days 3-7?), spc_mesoscale_discussion (is SPC actively "
-            "watching a region right now? — note MCDs are only issued when something is "
-            "happening, so absence is normal)."
+            "pattern evolve over days 3-7?)."
         ),
         "strict": True,
         "input_schema": {
@@ -112,6 +125,16 @@ TOOLS = [
                         "picture, focal points, and upper-level context"
                     ),
                 },
+                "regional_notes": {
+                    "type": "string",
+                    "description": (
+                        "One short plain-text paragraph of sub-synoptic regional signals "
+                        "that don't fit the main narrative: active SPC mesoscale "
+                        "discussions and watches, localized flood or heat threats, "
+                        "notable regional detail in Canada or Mexico. Use an empty "
+                        "string when nothing rises above the synoptic narrative today."
+                    ),
+                },
                 "climate_context": {
                     "type": "string",
                     "description": (
@@ -120,7 +143,7 @@ TOOLS = [
                     ),
                 },
             },
-            "required": ["headline", "narrative", "climate_context"],
+            "required": ["headline", "narrative", "regional_notes", "climate_context"],
             "additionalProperties": False,
         },
     },
@@ -134,9 +157,46 @@ class Synthesis:
     headline: str
     narrative: str
     climate_context: str
+    # Sub-synoptic regional signals; empty means nothing noteworthy today.
+    regional_notes: str = ""
 
 
-def build_briefing(reports: list[SourceReport], now_utc: datetime) -> str:
+def _days_ago_label(record_date: str, today: date) -> str:
+    delta = (today - date.fromisoformat(record_date)).days
+    if delta == 1:
+        return f"Yesterday ({record_date})"
+    return f"{delta} days ago ({record_date})"
+
+
+def build_history_block(history_records: list[dict], today: date) -> str:
+    """Pattern-continuity context: yesterday in full, older days headline-only.
+
+    Yesterday's complete narrative is what lets the synthesist write "the
+    ridge noted yesterday has shifted east"; earlier headlines sketch the
+    trajectory at minimal token cost.
+    """
+    lines = [
+        "=== Recent Tlaloc analyses (for pattern continuity) ===",
+        "These are Tlaloc's own prior write-ups, newest first. Use them for",
+        "evolution and trend language only, never as a source for today's facts.",
+    ]
+    for i, record in enumerate(history_records):
+        synthesis = record.get("synthesis", {})
+        lines.append("")
+        lines.append(f"{_days_ago_label(record['date'], today)}: {synthesis.get('headline', '')}")
+        if i == 0:
+            for field in ("narrative", "regional_notes", "climate_context"):
+                text = synthesis.get(field, "").strip()
+                if text:
+                    lines.append(text)
+    return "\n".join(lines)
+
+
+def build_briefing(
+    reports: list[SourceReport],
+    now_utc: datetime,
+    history_records: list[dict] | None = None,
+) -> str:
     lines = [
         f"Date/time of this briefing: {now_utc:%A, %B %d, %Y at %H:%M UTC}",
         "",
@@ -150,6 +210,9 @@ def build_briefing(reports: list[SourceReport], now_utc: datetime) -> str:
             lines.append(report.summary)
         else:
             lines.append(f"[UNAVAILABLE — {report.error or 'no data retrieved'}]")
+    if history_records:
+        lines.append("")
+        lines.append(build_history_block(history_records, now_utc.date()))
     return "\n".join(lines)
 
 
@@ -161,9 +224,13 @@ def run_supplementary_fetch(product: str) -> str:
     return f"{title}:\n\n{text}"
 
 
-def synthesize(client: anthropic.Anthropic, reports: list[SourceReport]) -> Synthesis:
+def synthesize(
+    client: anthropic.Anthropic,
+    reports: list[SourceReport],
+    history_records: list[dict] | None = None,
+) -> Synthesis:
     now_utc = datetime.now(timezone.utc)
-    messages = [{"role": "user", "content": build_briefing(reports, now_utc)}]
+    messages = [{"role": "user", "content": build_briefing(reports, now_utc, history_records)}]
     synthesis: Synthesis | None = None
 
     for _ in range(MAX_TURNS):
@@ -187,9 +254,14 @@ def synthesize(client: anthropic.Anthropic, reports: list[SourceReport]) -> Synt
             if block.name == "publish_synthesis":
                 fields = {
                     key: str(block.input.get(key, "")).strip()
-                    for key in ("headline", "narrative", "climate_context")
+                    for key in ("headline", "narrative", "climate_context", "regional_notes")
                 }
-                missing = [key for key, value in fields.items() if not value]
+                # regional_notes is legitimately empty on quiet days.
+                missing = [
+                    key
+                    for key, value in fields.items()
+                    if not value and key != "regional_notes"
+                ]
                 if missing:
                     tool_results.append({
                         "type": "tool_result",

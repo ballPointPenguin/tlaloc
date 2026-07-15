@@ -153,6 +153,13 @@ a:focus-visible {
   margin-top: var(--space-1);
 }
 
+.site-nav {
+  margin-top: var(--space-2);
+  display: flex;
+  gap: var(--space-4);
+  font-size: var(--font-size-sm);
+}
+
 /* ============================================================
    Main Content
    ============================================================ */
@@ -388,6 +395,83 @@ a:focus-visible {
 .source-note--failed .source-note__body {
   color: var(--color-text-muted);
   font-style: italic;
+}
+
+/* ============================================================
+   Archive
+   ============================================================ */
+.archive-list {
+  list-style: none;
+  display: grid;
+  gap: var(--space-3);
+}
+
+.archive-entry {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: var(--space-3) var(--space-4);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-4);
+  align-items: baseline;
+}
+
+.archive-entry > a {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-sm);
+  white-space: nowrap;
+}
+
+.archive-entry__headline {
+  color: var(--color-text-muted);
+  flex: 1;
+  min-width: 12rem;
+}
+
+.archive-note {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+  font-style: italic;
+  margin-bottom: var(--space-4);
+}
+
+.chart-link__credit {
+  display: block;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+}
+
+/* ============================================================
+   Glossary
+   ============================================================ */
+.glossary-intro {
+  color: var(--color-text-muted);
+}
+
+.glossary-list {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+  display: grid;
+  gap: var(--space-4);
+}
+
+.glossary-list dt {
+  font-weight: 700;
+  color: var(--color-accent);
+}
+
+.glossary-list dd {
+  color: var(--color-text);
+  padding-bottom: var(--space-2);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.glossary-list dd:last-child {
+  padding-bottom: 0;
+  border-bottom: none;
 }
 
 /* ============================================================

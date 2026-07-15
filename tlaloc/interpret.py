@@ -39,6 +39,31 @@ VISION_FOCUS = {
         "tops. Identify stratospheric dry intrusions, PV streamers or cutoffs, the jet "
         "axis implied by airmass boundaries, and organized deep convection."
     ),
+    "airmass_fd": (
+        "This is a GOES East Full Disk Air Mass RGB satellite image spanning the "
+        "Americas. Color guide: reds/oranges = dry stratospheric intrusions and "
+        "high-PV air; greens = tropical moist air; dark blues = cold dry upper "
+        "troposphere; white = high cold cloud tops. A CONUS-focused view is analyzed "
+        "separately, so concentrate on what this frame adds: the polar jet and airmass "
+        "boundaries across Canada and the Arctic, and tropical waves or organized "
+        "convection over Mexico, Central America, the Caribbean, and the eastern "
+        "Pacific and Atlantic basins."
+    ),
+    "eccc_surface": (
+        "This is the Canadian Meteorological Centre (Environment and Climate Change "
+        "Canada) surface analysis for North America. Focus on Canada and the "
+        "cross-border pattern: pressure centers and frontal boundaries over Canadian "
+        "provinces and territories, how they connect to systems over the United "
+        "States, and regions of tight pressure gradient or focused moisture and lift "
+        "north of the border."
+    ),
+    "cpc_610day": (
+        "This is the NOAA Climate Prediction Center 6-10 day temperature outlook, "
+        "showing probabilities of above- or below-normal temperatures. Describe where "
+        "warm and cool anomalies are favored, how strong the probabilities are, and "
+        "what the anomaly pattern implies about whether the current upper-level "
+        "regime persists or breaks down beyond the short range."
+    ),
 }
 
 TEXT_SYSTEM = """\
