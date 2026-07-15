@@ -14,7 +14,7 @@ needing to be parsed out of prose.
 
 import json
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 
 import anthropic
 
@@ -43,6 +43,12 @@ individual summaries can't do alone:
    current ENSO state (an ONI table is provided), and seasonally relevant regimes
    such as the North American Monsoon, severe-weather season, or hurricane season,
    as appropriate for the date.
+5. PATTERN EVOLUTION: recent Tlaloc analyses may be appended to the briefing.
+   Where today's pattern continues, intensifies, or breaks from what was described
+   there, say so explicitly ("the cutoff low over Texas, now in its third day...").
+   Do not force continuity remarks when the pattern has simply reset, and never
+   treat a prior analysis as a data source for today's specifics — today's claims
+   come from today's sources.
 
 If you need more information to resolve a question the core data raises — e.g.
 whether a threat persists into day 2, how the pattern evolves this week, or whether
@@ -136,7 +142,42 @@ class Synthesis:
     climate_context: str
 
 
-def build_briefing(reports: list[SourceReport], now_utc: datetime) -> str:
+def _days_ago_label(record_date: str, today: date) -> str:
+    delta = (today - date.fromisoformat(record_date)).days
+    if delta == 1:
+        return f"Yesterday ({record_date})"
+    return f"{delta} days ago ({record_date})"
+
+
+def build_history_block(history_records: list[dict], today: date) -> str:
+    """Pattern-continuity context: yesterday in full, older days headline-only.
+
+    Yesterday's complete narrative is what lets the synthesist write "the
+    ridge noted yesterday has shifted east"; earlier headlines sketch the
+    trajectory at minimal token cost.
+    """
+    lines = [
+        "=== Recent Tlaloc analyses (for pattern continuity) ===",
+        "These are Tlaloc's own prior write-ups, newest first. Use them for",
+        "evolution and trend language only, never as a source for today's facts.",
+    ]
+    for i, record in enumerate(history_records):
+        synthesis = record.get("synthesis", {})
+        lines.append("")
+        lines.append(f"{_days_ago_label(record['date'], today)}: {synthesis.get('headline', '')}")
+        if i == 0:
+            for field in ("narrative", "regional_notes", "climate_context"):
+                text = synthesis.get(field, "").strip()
+                if text:
+                    lines.append(text)
+    return "\n".join(lines)
+
+
+def build_briefing(
+    reports: list[SourceReport],
+    now_utc: datetime,
+    history_records: list[dict] | None = None,
+) -> str:
     lines = [
         f"Date/time of this briefing: {now_utc:%A, %B %d, %Y at %H:%M UTC}",
         "",
@@ -150,6 +191,9 @@ def build_briefing(reports: list[SourceReport], now_utc: datetime) -> str:
             lines.append(report.summary)
         else:
             lines.append(f"[UNAVAILABLE — {report.error or 'no data retrieved'}]")
+    if history_records:
+        lines.append("")
+        lines.append(build_history_block(history_records, now_utc.date()))
     return "\n".join(lines)
 
 
@@ -161,9 +205,13 @@ def run_supplementary_fetch(product: str) -> str:
     return f"{title}:\n\n{text}"
 
 
-def synthesize(client: anthropic.Anthropic, reports: list[SourceReport]) -> Synthesis:
+def synthesize(
+    client: anthropic.Anthropic,
+    reports: list[SourceReport],
+    history_records: list[dict] | None = None,
+) -> Synthesis:
     now_utc = datetime.now(timezone.utc)
-    messages = [{"role": "user", "content": build_briefing(reports, now_utc)}]
+    messages = [{"role": "user", "content": build_briefing(reports, now_utc, history_records)}]
     synthesis: Synthesis | None = None
 
     for _ in range(MAX_TURNS):

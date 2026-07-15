@@ -50,8 +50,20 @@ def run(collect_only: bool = False) -> int:
         )
         return 1
 
+    # Prior analyses give the synthesist pattern-continuity context; loading
+    # them is best-effort and must never block today's run.
+    history_records: list[dict] = []
+    try:
+        today = datetime.now(timezone.utc).date()
+        history_records = history.load_recent_records(3, before=today)
+        if history_records:
+            dates = ", ".join(r["date"] for r in history_records)
+            print(f"Loaded prior analyses for continuity: {dates}")
+    except Exception as exc:  # noqa: BLE001 — continuity context is optional
+        print(f"  [warn] could not load history records: {exc}")
+
     print("Synthesizing...")
-    synthesis = synthesize(client, reports)
+    synthesis = synthesize(client, reports, history_records)
     print(f"  headline: {synthesis.headline}")
 
     generated_at = datetime.now(timezone.utc)
