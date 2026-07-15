@@ -56,8 +56,10 @@ WPC_SURFACE_URL = "https://www.wpc.ncep.noaa.gov/sfc/namussfcwbg.gif"
 COD_500MB_URL_TEMPLATE = "https://weather.cod.edu/wxdata/upper/US/500/US500.{date}.{hour}.gif"
 COD_500MB_LOOKBACK_STEPS = 4  # 12-hour synoptic times to look back
 
-GOES_AIRMASS_BASE = "https://cdn.star.nesdis.noaa.gov/{satellite}/ABI/CONUS/AirMass"
-GOES_AIRMASS_FILENAME = "{stamp}_{satellite}-ABI-CONUS-AirMass-2500x1500.jpg"
+GOES_AIRMASS_BASE = "https://cdn.star.nesdis.noaa.gov/{satellite}/ABI/{sector}/AirMass"
+GOES_AIRMASS_FILENAME = "{stamp}_{satellite}-ABI-{sector}-AirMass-{size}.jpg"
+# Image size variant per sector, chosen to stay under the 5 MB request cap.
+GOES_SECTOR_SIZES = {"CONUS": "2500x1500", "FD": "1808x1808"}
 GOES_SATELLITES = ("GOES19", "GOES16")
 GOES_LOOKBACK_HOURS = 3
 
@@ -116,16 +118,17 @@ def collect_500mb_analysis() -> SourceReport:
     return report
 
 
-def iter_airmass_candidate_urls(now_utc: datetime):
-    """Yield candidate GOES Air Mass URLs, newest-first per satellite.
+def iter_airmass_candidate_urls(now_utc: datetime, sector: str = "CONUS"):
+    """Yield candidate GOES Air Mass URLs for a sector, newest-first per satellite.
 
     Tries the stable latest.jpg first, then timestamped 10-minute scans
     (stamped :01 then :00, matching how recent products are published).
     """
+    size = GOES_SECTOR_SIZES[sector]
     normalized = now_utc.astimezone(timezone.utc).replace(second=0, microsecond=0)
     aligned = normalized - timedelta(minutes=normalized.minute % 10)
     for satellite in GOES_SATELLITES:
-        base = GOES_AIRMASS_BASE.format(satellite=satellite)
+        base = GOES_AIRMASS_BASE.format(satellite=satellite, sector=sector)
         yield f"{base}/latest.jpg", satellite
         for step in range(GOES_LOOKBACK_HOURS * 6):
             scan = aligned - timedelta(minutes=10 * step)
@@ -134,8 +137,29 @@ def iter_airmass_candidate_urls(now_utc: datetime):
                 if candidate > normalized:
                     continue
                 stamp = candidate.strftime("%Y%j%H%M")
-                filename = GOES_AIRMASS_FILENAME.format(stamp=stamp, satellite=satellite)
+                filename = GOES_AIRMASS_FILENAME.format(
+                    stamp=stamp, satellite=satellite, sector=sector, size=size
+                )
                 yield f"{base}/{filename}", satellite
+
+
+def _collect_airmass_sector(report: SourceReport, sector: str) -> SourceReport:
+    now_utc = datetime.now(timezone.utc)
+    for url, satellite in iter_airmass_candidate_urls(now_utc, sector):
+        if not image_url_exists(url):
+            continue
+        try:
+            data, media_type = fetch_image_base64(url)
+        except SourceError:
+            continue  # e.g. latest.jpg over the 5 MB limit; try the next candidate
+        report.title = f"{report.title} ({satellite.replace('GOES', 'GOES-')})"
+        report.display_url = url
+        report.image_base64 = data
+        report.image_media_type = media_type
+        return report
+    return report.fail(
+        f"No usable GOES {sector} Air Mass image found within {GOES_LOOKBACK_HOURS}h lookback"
+    )
 
 
 def collect_airmass_rgb() -> SourceReport:
@@ -145,22 +169,64 @@ def collect_airmass_rgb() -> SourceReport:
         kind="image",
         credit="NOAA NESDIS / GOES East",
     )
-    now_utc = datetime.now(timezone.utc)
-    for url, satellite in iter_airmass_candidate_urls(now_utc):
-        if not image_url_exists(url):
-            continue
-        try:
-            data, media_type = fetch_image_base64(url)
-        except SourceError:
-            continue  # e.g. latest.jpg over the 5 MB limit; try the next candidate
-        report.title = f"Air Mass RGB ({satellite.replace('GOES', 'GOES-')})"
-        report.display_url = url
-        report.image_base64 = data
-        report.image_media_type = media_type
-        return report
-    return report.fail(
-        f"No usable GOES CONUS Air Mass image found within {GOES_LOOKBACK_HOURS}h lookback"
+    return _collect_airmass_sector(report, "CONUS")
+
+
+def collect_airmass_fulldisk() -> SourceReport:
+    """The Full Disk frame is the intentional Canada/Mexico/tropics view: one
+    image spanning the Arctic to South America and both tropical basins."""
+    report = SourceReport(
+        key="airmass_fd",
+        title="Air Mass RGB Full Disk",
+        kind="image",
+        credit="NOAA NESDIS / GOES East",
     )
+    return _collect_airmass_sector(report, "FD")
+
+
+ECCC_SURFACE_URL = "https://weather.gc.ca/data/analysis/947_100.gif"
+
+
+def collect_eccc_surface_analysis() -> SourceReport:
+    """The Canadian Meteorological Centre's own surface analysis: an independent
+    center's take on the North American pattern, with better frontal detail
+    over Canada than the US-centric WPC chart."""
+    report = SourceReport(
+        key="eccc_surface",
+        title="Canadian Surface Analysis",
+        kind="image",
+        credit="Environment and Climate Change Canada",
+    )
+    try:
+        data, media_type = fetch_image_base64(ECCC_SURFACE_URL)
+    except SourceError as exc:
+        return report.fail(str(exc))
+    report.display_url = ECCC_SURFACE_URL
+    report.image_base64 = data
+    report.image_media_type = media_type
+    return report
+
+
+CPC_610DAY_TEMP_URL = (
+    "https://www.cpc.ncep.noaa.gov/products/predictions/610day/610temp.new.gif"
+)
+
+
+def collect_cpc_610day_outlook() -> SourceReport:
+    report = SourceReport(
+        key="cpc_610day",
+        title="CPC 6-10 Day Temperature Outlook",
+        kind="image",
+        credit="NOAA Climate Prediction Center",
+    )
+    try:
+        data, media_type = fetch_image_base64(CPC_610DAY_TEMP_URL)
+    except SourceError as exc:
+        return report.fail(str(exc))
+    report.display_url = CPC_610DAY_TEMP_URL
+    report.image_base64 = data
+    report.image_media_type = media_type
+    return report
 
 
 # ---------------------------------------------------------------------------
@@ -291,8 +357,11 @@ def collect_enso_state() -> SourceReport:
 
 COLLECTORS: list[Callable[[], SourceReport]] = [
     collect_surface_analysis,
+    collect_eccc_surface_analysis,
     collect_500mb_analysis,
     collect_airmass_rgb,
+    collect_airmass_fulldisk,
+    collect_cpc_610day_outlook,
     collect_wpc_discussion,
     collect_spc_outlook,
     collect_tropical_outlooks,

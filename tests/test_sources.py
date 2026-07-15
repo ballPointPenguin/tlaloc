@@ -67,6 +67,12 @@ class TestIterAirmassCandidateUrls:
         assert sats[0] == "GOES19"
         assert sats.index("GOES16") == sats.count("GOES19")
 
+    def test_full_disk_sector_uses_fd_path_and_size(self):
+        urls = [url for url, _sat in iter_airmass_candidate_urls(self.NOW, sector="FD")]
+        assert urls[0].endswith("GOES19/ABI/FD/AirMass/latest.jpg")
+        assert "20261961431_GOES19-ABI-FD-AirMass-1808x1808.jpg" in urls[1]
+        assert not any("CONUS" in url for url in urls)
+
 
 class TestPreBlockRegex:
     def test_extracts_product_text_from_nhc_page(self):

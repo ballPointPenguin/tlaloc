@@ -166,8 +166,9 @@ ARCHIVE_PAGE_TEMPLATE = """\
           >, the Mexica deity of water, rain, fertility, and storms.
         </p>
         <p>
-          Data: NOAA WPC, SPC, NHC, CPC, NESDIS/GOES, and College of DuPage NEXLAB.
-          Interpretation and synthesis generated with Claude.
+          Data: NOAA WPC, SPC, NHC, CPC, NESDIS/GOES, Environment and Climate
+          Change Canada, and College of DuPage NEXLAB. Interpretation and
+          synthesis generated with Claude.
         </p>
       </div>
     </footer>
