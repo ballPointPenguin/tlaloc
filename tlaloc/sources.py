@@ -14,7 +14,7 @@ captured on the report so the pipeline can degrade gracefully.
 
 import re
 import traceback
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from typing import Callable, Literal
 
@@ -79,7 +79,10 @@ def collect_surface_analysis() -> SourceReport:
     return report
 
 
-def resolve_500mb_chart_url(now_utc: datetime | None = None) -> str:
+def resolve_500mb_chart_url(
+    now_utc: datetime | None = None,
+    probe: Callable[[str], bool] = image_url_exists,
+) -> str:
     """Find the most recent COD 500 mb analysis, stepping back 12 h at a time."""
     probe_time = now_utc or datetime.now(timezone.utc)
     hour = 12 if probe_time.hour >= 12 else 0
@@ -87,7 +90,7 @@ def resolve_500mb_chart_url(now_utc: datetime | None = None) -> str:
     for step in range(COD_500MB_LOOKBACK_STEPS):
         t = aligned - timedelta(hours=12 * step)
         url = COD_500MB_URL_TEMPLATE.format(date=t.strftime("%Y%m%d"), hour=t.strftime("%H"))
-        if image_url_exists(url):
+        if probe(url):
             return url
     raise SourceError(
         f"No COD 500mb chart found within {COD_500MB_LOOKBACK_STEPS} synoptic times of "

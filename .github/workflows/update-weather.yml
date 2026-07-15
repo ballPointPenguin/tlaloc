@@ -30,6 +30,12 @@ jobs:
       - name: Install dependencies
         run: uv sync
 
+      - name: Lint and test
+        if: github.event_name == 'pull_request'
+        run: |
+          uv run ruff check .
+          uv run pytest
+
       # On pull requests (and collect-only dispatches), verify all data
       # sources are reachable without spending API tokens or modifying the page.
       - name: Check data sources
