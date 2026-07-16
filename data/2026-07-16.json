@@ -1,0 +1,123 @@
+{
+  "schema_version": 1,
+  "date": "2026-07-16",
+  "generated_at": "2026-07-16T14:16:44Z",
+  "synthesis": {
+    "headline": "A semi-blocked ridge-over-East pattern begins its westward shuffle, keeping Northern Plains heat and Texas flooding running while the eastern trough starts to dig",
+    "narrative": "The continent remains organized by the amplified, semi-blocked upper pattern that has dominated this week, but it is now on the move. At 500 mb a towering longwave ridge sits over the Ohio Valley and Mid-Atlantic with heights near 5900 dm, opposite a broad, nearly stationary trough draped from the Pacific Northwest into the Great Basin. That single ridge-trough couplet still explains most of the map: dangerous heat and humidity beneath the eastern ridge from the Northern Plains through the Upper Midwest and into the northern Mid-Atlantic (highs in the 90s to low 100s), and the water — monsoon storms and Texas flooding — living under and downstream of the western trough. The important nuance today is that the block is beginning to reconfigure. The medium range consensus retrogrades the ridge axis westward toward the Rockies and Plains while an eastern-U.S. trough digs in, a shift already previewed by the CPC 6-10 day outlook (above-normal West and Deep South, below-normal Great Lakes and Northeast). A cold front pushing into the Northeast today, with cooler air and Canadian wildfire smoke arriving in New England, is the leading edge of that adjustment.\n\nThe wettest, most dangerous focal point remains the southern tier, now in its third day. An upper-level low interacting with a deep Gulf moisture plume over a stalled Southern Plains boundary continues to train convection over the Texas Hill Country, where 6-8 inches with locally 10-plus inches are expected before the heavy-rain focus shifts toward Big Bend on Friday. This is fundamentally a flash-flood story rather than a severe-wind one. The Southwest monsoon is the other engine, with rounds of terrain-driven storms across the Four Corners and the greatest flash-flood threat near the Arizona-New Mexico border. The Canadian side deserves equal billing: a strong 1035 hPa Prairie high suppresses precipitation across the west, while eastern Canada is far more disturbed, with a Great Lakes/Ontario low and — on the 0000Z CMC chart — a deep sub-990 hPa cyclone near southern Manitoba anchoring the most active weather zone from the northern Plains into Ontario, all channeled by a blocking high over the North Atlantic and Hudson Bay.\n\nThe upper-level structure ties it together and points the way forward. The primary jet streak (50-70 kt) runs along the north and east flank of the ridge from the central Plains through the Great Lakes into New England, and that is exactly where today's modest severe threat lives, as a vigorous shortwave dropping out of Quebec drives low-topped, damaging-wind convection into northern New England. A closed upper low over the western trough supports the Montana hail/wind threat. The extended guidance keeps the large-scale wave train intact rather than collapsing: as a shortwave rounds the ridge into the Upper Midwest and Great Lakes early next week, the eastern trough deepens, the ridge slides west, and the dangerous heat eases across the northern states while consolidating and shifting south toward the central Plains, Mississippi Valley, and Gulf Coast. Note that GOES Air Mass RGB imagery was unavailable this cycle, so the airmass/PV boundary read leans on the 500 mb and surface analyses.",
+    "climate_context": "This is textbook peak-summer North America: the North American Monsoon is in full swing over the Southwest, mid-summer heat and severe season is driving the heat domes and terrain convection, and the Atlantic hurricane season is beginning to stir. The tropical action is lopsided toward the East Pacific, which is the busy basin — Tropical Storm Elida southwest of Baja California, a disturbance south of Mexico given a high (90% through 7 days) chance of development by the weekend, and a lower-odds low southwest of Hawaii — while the Atlantic stays quieter, with only a 20% area forecast to form in the northeastern Gulf this weekend and drift toward Florida and the Southeast (WPC notes troughing there could enhance rainfall even without a true tropical low). The ENSO backdrop is a notable transition: the weak La Niña that held through early 2026 (ONI around -0.5) has been giving way to warming, with guidance trending toward a weak El Niño as the season progresses — a developing warm phase that will increasingly shape the second half of hurricane season.",
+    "regional_notes": "SPC has an active mesoscale discussion for south-central Texas, where overnight thunderstorm clusters with embedded supercells and transient circulations pose a brief tornado threat along the stationary boundary as the low-level jet peaks (0-3 km SRH 250-350 m2/s2, MLCAPE 500-1500 J/kg, mid-to-upper 70s dewpoints, potential intensity up to 90 mph); a watch is considered unlikely given the isolated, transient nature, and the threat should diminish as the LLJ weakens. Beyond that, watch localized flash flooding near the Arizona-New Mexico border under the monsoon; isolated severe hail and wind overnight across northeast North Dakota and northern Minnesota as convection spreads south from the Canadian Prairies; and Canadian wildfire smoke fouling air quality across the Northeast behind the cold front."
+  },
+  "sources": [
+    {
+      "key": "surface",
+      "title": "Surface Analysis",
+      "kind": "image",
+      "credit": "NOAA Weather Prediction Center",
+      "status": "ok",
+      "display_url": "https://www.wpc.ncep.noaa.gov/sfc/namussfcwbg.gif",
+      "summary": "WPC 1200Z Surface Analysis, 16 July 2026\n\nA strong Bermuda High centered near 1021-1022 mb over the western Atlantic is the dominant feature, with a secondary high around 1021 mb over the south-central Plains; together these are driving a persistent southerly flow across the Gulf Coast and lower Mississippi Valley, funneling Gulf moisture northward into the mid-South and Midwest where dewpoints are running in the upper 60s to low 70s F. A sprawling low pressure region across the northern Rockies and northern Plains, with multiple low centers in the 1007-1013 mb range, anchors a cold front that extends southeastward through the central Plains and into Texas, where a warm front segment and a weak stationary boundary are visible across the Gulf Coast states, providing a convergence focus for convection in that corridor. The Pacific Northwest shows a deep low near 1098 mb off the coast with tight isobar spacing, indicating a strong onshore gradient there, while the interior West and southern Plains exhibit a considerably slack gradient beneath the ridge axis. A cold front is draped across the northeastern US into the Mid-Atlantic, with the tight frontal zone between the 1009 mb low near New England and the Atlantic high focusing lift and moisture convergence from the Ohio Valley into southern New England. The greatest convective potential appears concentrated along the Gulf Coast frontal boundary and in the warm sector of the northern Plains low, where moisture return and low-level convergence are best organized.",
+      "error": null
+    },
+    {
+      "key": "eccc_surface",
+      "title": "Canadian Surface Analysis",
+      "kind": "image",
+      "credit": "Environment and Climate Change Canada",
+      "status": "ok",
+      "display_url": "https://weather.gc.ca/data/analysis/947_100.gif",
+      "summary": "Valid 0000Z Thursday 16 July 2026, the dominant Canadian feature is a strong 1035 hPa high centered over the central Prairies, likely Saskatchewan or southern Alberta, anchoring a broad ridge that suppresses precipitation across much of western and central Canada. A low pressure system near 1013 hPa sits over the BC interior or Pacific coast, with an associated frontal boundary extending southward into the Pacific Northwest, producing the sharpest pressure gradient along the BC-Washington corridor where isobars are noticeably compressed. Across eastern Canada, the pattern is more disturbed, with a low near 1002 hPa positioned over the Great Lakes or Ontario region and frontal boundaries trailing into the Upper Midwest and northeastern US, maintaining lift and moisture flux from the Gulf sector northward into Quebec and the Maritimes. The 988 hPa low in the central chart area, positioned roughly over the north-central US or southern Manitoba, represents the deepest surface system on the chart and is surrounded by tightly packed isobars indicating strong cyclonic winds, with its warm and cold fronts likely driving the most active weather zone stretching from the northern Plains into Ontario. High pressure near 1027-1029 hPa over the North Atlantic and Hudson Bay region is contributing to a blocking pattern that channels frontal systems into a relatively narrow corridor across central Canada.",
+      "error": null
+    },
+    {
+      "key": "upper_500mb",
+      "title": "500 mb Analysis",
+      "kind": "image",
+      "credit": "College of DuPage NEXLAB",
+      "status": "ok",
+      "display_url": "https://weather.cod.edu/wxdata/upper/US/500/US500.20260716.12.gif",
+      "summary": "Valid 1200 UTC 16 July 2026, the 500 mb pattern shows a high-amplitude longwave ridge centered over the Ohio Valley and Mid-Atlantic states, with heights reaching into the upper 5800s to near 5900 dm and temperatures anomalously warm in the deep red core, indicating a strongly amplified and likely blocking ridge. To the west, a broad longwave trough extends from the Pacific Northwest southward into the Great Basin, with a modest shortwave evident over the Pacific Coast of British Columbia; this trough appears neutrally tilted to slightly negatively tilted, and the overall wavelength spacing suggests a semi-blocked, slow-progressive pattern rather than a zonal regime. A surface low is analyzed over northern Mexico near the Texas border, consistent with a thermally driven feature beneath the trough axis, while a surface high sits over Arizona and the Desert Southwest. The primary jet streak is evident on the northern and eastern periphery of the ridge, oriented from the central Plains northeastward through the Great Lakes and into New England, with wind barbs suggesting speeds of 50-70 knots in that corridor. The combination of the amplified stationary ridge and the retrogressing or stalled trough to the west points to a blocked pattern that will anchor anomalous heat across the eastern third of the country.",
+      "error": null
+    },
+    {
+      "key": "airmass",
+      "title": "Air Mass RGB",
+      "kind": "image",
+      "credit": "NOAA NESDIS / GOES East",
+      "status": "failed",
+      "display_url": null,
+      "summary": null,
+      "error": "No usable GOES CONUS Air Mass image found within 3h lookback"
+    },
+    {
+      "key": "airmass_fd",
+      "title": "Air Mass RGB Full Disk",
+      "kind": "image",
+      "credit": "NOAA NESDIS / GOES East",
+      "status": "failed",
+      "display_url": null,
+      "summary": null,
+      "error": "No usable GOES FD Air Mass image found within 3h lookback"
+    },
+    {
+      "key": "cpc_610day",
+      "title": "CPC 6-10 Day Temperature Outlook",
+      "kind": "image",
+      "credit": "NOAA Climate Prediction Center",
+      "status": "ok",
+      "display_url": "https://www.cpc.ncep.noaa.gov/products/predictions/610day/610temp.new.gif",
+      "summary": "The dominant feature is a strong above-normal signal anchored over the Pacific Northwest and northern California, where probabilities reach 80-90 percent, indicating a well-amplified ridge locked over the West Coast that is expected to persist well beyond the short range. A secondary above-normal core of similar or greater intensity covers south Texas, Louisiana, the Gulf Coast, and Florida, with probabilities again in the 70-90 percent range, consistent with a heat dome or persistent subtropical high influence over the Deep South. The Great Plains from Montana south through Colorado and into Kansas shows near-normal odds, which is a transition zone signature suggesting the western ridge and eastern trough are separated by a relatively flat flow regime across the central tier. Below-normal probabilities of 50-60 percent are concentrated over the Upper Midwest and Great Lakes, extending into New England, pointing to a downstream trough reinforcing cool advection into that region during the valid period. Taken together, the amplified ridge-trough-ridge pattern from West Coast to Gulf Coast to Great Lakes implies the large-scale wave pattern is not collapsing but instead becoming more meridional, with the western ridge maintaining or strengthening while the downstream trough over the northeastern quadrant remains entrenched.",
+      "error": null
+    },
+    {
+      "key": "wpc_discussion",
+      "title": "WPC Short Range Forecast Discussion",
+      "kind": "text",
+      "credit": "NOAA Weather Prediction Center",
+      "status": "ok",
+      "display_url": null,
+      "summary": "Excessive rainfall continues across Texas Hill Country today with 6-8 inches expected, locally over 10 inches, due to an upper-level low interacting with Gulf moisture. Focus shifts to Big Bend Friday. Anomalous heat and humidity persist across Northern Plains and Upper Midwest, spreading into northern Mid-Atlantic with temperatures in 90s-lower 100s. Cooler air arrives New England today with Canadian wildfire smoke expected in Northeast. Severe thunderstorms possible western Montana today; strong storms likely northern New England. Monsoonal thunderstorms continue Four Corners region with greatest flash flooding threat near Arizona-New Mexico borders. Strong storms expected upper Great Lakes Friday, shifting lower Great Lakes Saturday.",
+      "error": null
+    },
+    {
+      "key": "spc_outlook",
+      "title": "SPC Day 1 Convective Outlook",
+      "kind": "text",
+      "credit": "NOAA Storm Prediction Center",
+      "status": "ok",
+      "display_url": null,
+      "summary": "SLIGHT RISK issued for western Montana and northern New England. In Montana, a closed upper low with modest shear (30-40 kt) will support scattered afternoon thunderstorms over higher terrain, with primary threat of large hail and gusty winds. In northern New England, a vigorous shortwave trough moving southeast from Quebec will drive low-topped convection with strong west-northwest flow; damaging winds main concern despite modest CAPE (250-500 J/kg). MARGINAL RISK for Mid-Atlantic due to moderate-to-strong instability ahead of a southward-moving surface front, though forcing and smoke impacts create uncertainty. Brief tornado possible in south-central Texas this morning with rotating cells in moist, weakly unstable air. Isolated severe hail and winds possible in northeast North Dakota/northern Minnesota tonight with convection spreading from Canadian Prairies. Sporadic strong gusts possible across Arizona higher terrain.",
+      "error": null
+    },
+    {
+      "key": "spc_mesoscale",
+      "title": "SPC Mesoscale Discussions",
+      "kind": "text",
+      "credit": "NOAA Storm Prediction Center",
+      "status": "ok",
+      "display_url": null,
+      "summary": "South-central Texas experiencing clusters of thunderstorms with embedded supercell activity producing transient circulations overnight. Tornado threat continues along stationary boundary with tropical moisture plume. Low-level jet intensifying to 30-35 knots with 0-3 km storm-relative helicity 250-350 m2/s2. MLCAPE 500-1500 J/kg and mid-to-upper 70s dewpoints support brief tornado potential through morning as LLJ peaks. Activity expected to diminish as LLJ decreases. Watch issuance unlikely due to isolated, transient nature of threat. Potential tornado intensity up to 90 mph.",
+      "error": null
+    },
+    {
+      "key": "tropics",
+      "title": "NHC Tropical Weather Outlooks",
+      "kind": "text",
+      "credit": "NOAA National Hurricane Center",
+      "status": "ok",
+      "display_url": null,
+      "summary": "Atlantic: A tropical wave southeast of Cabo Verde shows disorganized showers with low development potential (10% through 7 days) as it moves west-northwestward; environmental conditions worsen by weekend. An area of low pressure forming over the northeastern Gulf this weekend has 20% development chance through 7 days, moving slowly northeastward.\n\nEast Pacific: Tropical Storm Elida active southwest of Baja California. A broad low several hundred miles southwest of Hawaii has 30% development chance through 48 hours before conditions become unfavorable. A tropical wave south of Mexico shows extensive disorganization but favorable conditions for likely development by weekend into early next week (90% through 7 days).",
+      "error": null
+    },
+    {
+      "key": "enso",
+      "title": "ENSO State (Oceanic Niño Index)",
+      "kind": "text",
+      "credit": "NOAA Climate Prediction Center",
+      "status": "ok",
+      "display_url": null,
+      "summary": "Current ENSO state shows weak La Niña conditions persisting through early 2026. The ONI index is currently negative (around -0.5), with recent seasons holding steady in the -0.37 to -0.55 range. A warming trend is evident beginning in late winter 2026, with anomalies transitioning from negative to positive by spring. By April-May 2026, forecasts indicate movement toward weak El Niño conditions, with anomalies reaching +0.98. The shift from cool to warm phase is gradual but consistent across the outlook period.",
+      "error": null
+    }
+  ]
+}
