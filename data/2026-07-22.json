@@ -1,0 +1,123 @@
+{
+  "schema_version": 1,
+  "date": "2026-07-22",
+  "generated_at": "2026-07-22T14:17:26Z",
+  "synthesis": {
+    "headline": "The near-blocked summer regime holds a fifth day but starts to loosen: the eastern severe engine winds down as a stratospheric PV streamer digs into Texas and Bertha closes on the Louisiana coast",
+    "narrative": "The amplified, near-blocked summer pattern Tlaloc has tracked all week remains in command, but it is finally beginning to shift rather than simply repeat. The dominant 500 mb ridge is still centered over the central Plains and upper Midwest, with heights peaking near 5880-5940 dm, and it continues to anchor a formidable heat dome and a broad slack surface gradient across the interior West beneath a 1023-1025 mb high. What has changed is the eastern half: yesterday's anomalously cold Great Lakes cutoff has lifted northeast into a sharp closed low over New England (heights near 5500 dm), and the continent-spanning severe engine that delivered an Enhanced-risk day to the East Coast has relaxed accordingly. SPC today carries only a Slight risk over the southern Mid-Atlantic and Maine, and the Day 2 outlook shows the organized severe threat effectively shutting off Thursday even as the trailing cold front sags south — the ridge nudging west toward the Four Corners as a shortwave dives into the Missouri Valley marks the first real sign this blocked regime is starting to evolve.\n\nThree centers of action define the map. The freshest is over the western Gulf and Texas: the 500 mb analysis shows a slow-moving, neutral-to-slightly-negative-tilt cutoff near the Louisiana-Texas coast, and Air Mass RGB makes the mechanism vivid — a cyclonically curved, deep red-orange stratospheric PV streamer sweeping into central Texas and wrapping a surface low near the TX-LA border, with brilliant overshooting tops over east Texas and western Louisiana. This is a genuinely new focal point, distinct in the mid-levels from Tropical Storm Bertha, whose surface center is drifting westward through the northern Gulf toward southeast Louisiana (note that the surface analyses disagree on Bertha's exact longitude; the NHC/WPC placement in the northern Gulf is the operative one). Bertha's outer bands threaten isolated to scattered coastal flash flooding along the I-10 corridor, though most of the heavy rain stays offshore and inland severe potential is limited by weakening and poor thermodynamics. The second and third focal points are the entrenched heat and the fading front: dangerous heat with 105-115 F heat indices and 75-80 F overnight lows persists across the Southeast and southern Plains, while the cold front from a deep Hudson Bay low continues to sweep damaging-wind and flash-flood potential from the Mid-South to the Northeast today.\n\nAloft, the story is a partially blocked flow that forces systems to the extremes — north into Canada or cut off to the south. A polar jet streak arcs across southern Canada and the Northeast, its sharp airmass boundary well depicted on the full-disk imagery, with a jet oriented from the mid-Atlantic into Atlantic Canada supporting the New England low and the East Coast frontal band. To the west a longwave trough with a slightly negative tilt digs into the Pacific Northwest and northern Rockies, keeping that corner cyclonic and cool. Canada carries as much of the upper-level story as the CONUS today: a 1033 mb high over the Prairies butts against the tightly wound Hudson Bay low, focusing a brisk, high-lift corridor from Manitoba through northwestern Ontario, and a 1039 mb high near Greenland is reinforcing high-latitude blocking that explains the sluggish progression of the eastern Canadian trough. That block, more than anything, is why the ridge-cool-trough couplet has been so slow to break down.",
+    "climate_context": "This is textbook peak-summer North America. The North American Monsoon is in full swing over the Desert Southwest and central/southern Rockies, mid-summer heat-and-severe season is driving both the entrenched Plains heat dome and the East Coast frontal severe threat, and the CPC 6-10 day outlook keeps a 90-100 percent above-normal signal over the southern Plains and Rockies against a cool trough over the Northeast — implying the ridge-dominated block persists well beyond the short range. Both hurricane basins are near their climatological ramp: the Atlantic is producing Tropical Storm Bertha in the northern Gulf but is otherwise quiet with no additional formation expected over seven days, while the busier East Pacific carries Hurricane Fausto west-southwest of Baja, a wave off Central America given a 90 percent chance of developing by the weekend, and a low southwest of Hawaii at 60 percent before it slides into the western Pacific. The ENSO backdrop is one of steady transition: the ONI has climbed out of the weak La Niña that held through late 2025 (near -0.5 C) into positive territory by spring 2026 (+0.51 C in MAM, +0.98 C in AMJ), a warm shift toward El Niño that will increasingly shape the back half of the Atlantic season.",
+    "regional_notes": "SPC reports no mesoscale discussions in the past six hours and no organized convective threat actively monitored — quiet for now, though afternoon heating along the front should change that. Sub-synoptic signals worth watching: isolated strong wind gusts on the central High Plains with weak lee-low development today and again Thursday as a shortwave and deeply mixed boundary layer interact; the Southwest monsoon continuing to fire slow-moving afternoon storms with locally heavy rain over the higher terrain of the central and southern Rockies; coastal flash-flood risk along the northern Gulf I-10 corridor from Bertha's bands; and, in Canada, the tight Prairie-to-Hudson-Bay gradient favoring a windy, active corridor across Manitoba and northwestern Ontario."
+  },
+  "sources": [
+    {
+      "key": "surface",
+      "title": "Surface Analysis",
+      "kind": "image",
+      "credit": "NOAA Weather Prediction Center",
+      "status": "ok",
+      "display_url": "https://www.wpc.ncep.noaa.gov/sfc/namussfcwbg.gif",
+      "summary": "This 1200Z 22 July 2026 WPC surface analysis shows a dominant 1023 mb high centered over the central Great Plains, with a secondary 1025 mb high over the northern Rockies, together producing a broad slack gradient across the interior West and upper Midwest. A weak low near 998 mb sits over the upper Great Lakes region with an associated cold front draped southwestward through the Ohio Valley and into the central Gulf Coast states, with a warm front extending eastward toward New England where height contours tighten noticeably. Tropical Storm Bertha is positioned in the southwestern Atlantic near 29N 83W with a central pressure around 998 mb, and its circulation is interacting with the front pushing into the Florida peninsula, focusing deep moisture convergence across northern Florida and the Georgia coast. Tight gradient is also evident along the immediate Atlantic seaboard from the Carolinas northward, where isobars compress between the offshore trough and the inland high. The slack gradient over the Intermountain West and Four Corners region, combined with surface dewpoints in the upper 50s to low 60s, suggests scattered monsoonal convection is the primary lift mechanism there rather than any organized frontal forcing.",
+      "error": null
+    },
+    {
+      "key": "eccc_surface",
+      "title": "Canadian Surface Analysis",
+      "kind": "image",
+      "credit": "Environment and Climate Change Canada",
+      "status": "ok",
+      "display_url": "https://weather.gc.ca/data/analysis/947_100.gif",
+      "summary": "The dominant feature is a deep, tightly wound low centered near Hudson Bay or the eastern Canadian Shield with isobars packed closely enough to suggest a strong pressure gradient across Ontario and Quebec, driving brisk northwesterly flow well into the Great Lakes region of the United States. A sprawling high of 1033 mb sits over the central Prairie provinces, its western flank pushing into the northern Rockies and its eastern edge creating a sharp gradient against the Hudson Bay low, which would focus significant wind and lift along a corridor from Manitoba through northwestern Ontario. A cold front appears to trail southward from that Hudson Bay system into the central United States, while a separate frontal boundary across the Canadian Maritimes connects to Atlantic activity near Newfoundland. Tropical Storm Bertha is annotated near 29N 87W in the Gulf of Mexico, well south of Canadian territory but positioned to eventually interact with the frontal pattern across the southeastern United States. The 1039 mb high over the northwestern Atlantic near Greenland is reinforcing high-latitude blocking, which likely explains the slow progression of the Hudson Bay low and the amplified trough pattern over eastern Canada.",
+      "error": null
+    },
+    {
+      "key": "upper_500mb",
+      "title": "500 mb Analysis",
+      "kind": "image",
+      "credit": "College of DuPage NEXLAB",
+      "status": "ok",
+      "display_url": "https://weather.cod.edu/wxdata/upper/US/500/US500.20260722.12.gif",
+      "summary": "Valid 1200 UTC 22 July 2026, the 500 mb pattern features a broad, high-amplitude ridge centered over the central Plains and upper Midwest, with heights peaking near 5880-5940 dm across Nebraska into the Great Lakes region, indicating a strongly amplified summertime ridge. A weak cutoff or nearly closed low is evident over the Gulf of Mexico near Louisiana and Texas, displaced well south of the main westerlies and exhibiting a neutral to slightly negative tilt, consistent with a slow-moving or stagnant feature. A separate low center is marked over the northeastern US near New England, where heights fall sharply to around 5500 dm, and the tight height gradient along the Eastern Seaboard suggests a jet streak oriented from the mid-Atlantic northeastward into Atlantic Canada. Over the Pacific Northwest and northern Rockies, a broad longwave trough is digging southward with a slightly negative tilt, keeping that region in cyclonic flow. Overall the pattern appears partially blocked, with the dominant central ridge suppressing progressive westerly flow across the CONUS interior and forcing systems to track well north or become cutoff to the south.",
+      "error": null
+    },
+    {
+      "key": "airmass",
+      "title": "Air Mass RGB (GOES-19)",
+      "kind": "image",
+      "credit": "NOAA NESDIS / GOES East",
+      "status": "ok",
+      "display_url": "https://cdn.star.nesdis.noaa.gov/GOES19/ABI/CONUS/AirMass/20262031401_GOES19-ABI-CONUS-AirMass-2500x1500.jpg",
+      "summary": "GOES-19 AirMass RGB valid 22 Jul 2026 1401Z shows a prominent cyclonically curved dry intrusion in deep red-orange tones sweeping from the central Plains southward into central Texas, indicating a significant stratospheric PV streamer wrapping around a surface low centered near the Texas-Louisiana border region. The bright white overshooting convective tops embedded within that circulation over east Texas and western Louisiana confirm vigorous deep convection collocated with the cyclone center, with anvil cirrus streaming northeastward into the Mississippi Valley. A sharp airmass boundary separating the western red-orange stratospheric air from the moist green tropical airmass to the east marks the implied jet axis running from roughly the Oklahoma-Arkansas border southwestward into northeast Mexico. Along the East Coast, a diffuse but coherent cloud band in muted greens and whites from Georgia to the mid-Atlantic suggests a frontal boundary with modest upper-level support, while a separate active convective cluster appears off the Southeast U.S. coast near the Carolinas shelf waters. The Great Plains west of the 100th meridian is dominated by deeply dry, reddish-brown stratospheric air consistent with a pronounced upper-level ridge-trough pattern.",
+      "error": null
+    },
+    {
+      "key": "airmass_fd",
+      "title": "Air Mass RGB Full Disk (GOES-19)",
+      "kind": "image",
+      "credit": "NOAA NESDIS / GOES East",
+      "status": "ok",
+      "display_url": "https://cdn.star.nesdis.noaa.gov/GOES19/ABI/FD/AirMass/20262031400_GOES19-ABI-FD-AirMass-1808x1808.jpg",
+      "summary": "At 1400Z on 22 July 2026, a well-defined polar jet streak is visible across southern Canada and the northeastern United States, marked by the sharp boundary between the orange-red stratospheric air to the north and the moist green airmass to the south, with a curved cyclonic circulation apparent over the western North Atlantic near Atlantic Canada. In the eastern Pacific, two distinct organized convective systems are evident west of the Baja California peninsula and the Mexican coast, showing bright white cold tops embedded within the moist tropical airmass, consistent with tropical development or active easterly wave activity. The Intertropical Convergence Zone is clearly depicted as a broken but coherent band of deep convective cells stretching from the eastern Pacific coast of Central America through the Caribbean and into the tropical Atlantic, with particularly vigorous cells over Panama and northwestern Colombia. Over northern South America, the Amazon basin displays the characteristic deep green of abundant low-level moisture, while a separate area of organized convection with cold tops is visible over the southern Brazil and Paraguay region. Across southern South America, a vigorous extratropical cyclone is apparent near Patagonia and the Argentine coast, surrounded by the red-orange high-PV airmass characteristic of Southern Hemisphere winter polar air intrusion.",
+      "error": null
+    },
+    {
+      "key": "cpc_610day",
+      "title": "CPC 6-10 Day Temperature Outlook",
+      "kind": "image",
+      "credit": "NOAA Climate Prediction Center",
+      "status": "ok",
+      "display_url": "https://www.cpc.ncep.noaa.gov/products/predictions/610day/610temp.new.gif",
+      "summary": "The dominant feature is a high-probability above-normal signal centered over the southern Plains and extending broadly across the Rockies, central Plains, and into the Deep South, with the darkest shading over western Texas, Oklahoma, Kansas, and eastern New Mexico indicating a 90-100 percent probability of above-normal temperatures. That core probability is among the highest the CPC scale depicts, implying very high forecaster confidence in a persistent, amplified ridge anchored over or near the Four Corners region through July 27-31. The warm signal weakens but remains favored at the 40-50 percent leaning-above level across the Pacific Coast and the Southeast, suggesting the ridge influence extends broadly but with less certainty at the periphery. A contrasting below-normal signal at 50-60 percent probability covers New England and the Mid-Atlantic, with a separate below-normal area across coastal and interior Washington and northern Idaho, consistent with a longwave trough displaced into the Northeast and Pacific Northwest flanking the central ridge. Overall the pattern implies the ridge-dominated regime over the central and southern Rockies and Plains persists well beyond the short range with minimal breakdown, while the downstream trough keeps the Northeast cooler than average through the period.",
+      "error": null
+    },
+    {
+      "key": "wpc_discussion",
+      "title": "WPC Short Range Forecast Discussion",
+      "kind": "text",
+      "credit": "NOAA Weather Prediction Center",
+      "status": "ok",
+      "display_url": null,
+      "summary": "Strong cold front advancing from Upper Great Lakes southeastward through Thu will trigger widespread severe weather and flash flooding from Mid-South to Northeast, with primary hazards being damaging winds and flooding, though hail and tornadoes possible. Second severe round likely over lower Mid-Atlantic tomorrow. Tropical Storm Bertha tracking westward just south of Florida Panhandle toward southeast Louisiana; outer bands may produce isolated to scattered flash flooding despite most rain staying offshore. Southwest monsoonal thunderstorms continuing with slow motions and locally heavy rainfall, especially over higher terrain through Wednesday. Hazardous heat with 105-115 degree heat indices building across Southeast and Southern Plains with 75-80 degree overnight lows raising heat illness concerns. Below normal temperatures developing behind front in Upper Midwest, Great Lakes, and Northeast.",
+      "error": null
+    },
+    {
+      "key": "spc_outlook",
+      "title": "SPC Day 1 Convective Outlook",
+      "kind": "text",
+      "credit": "NOAA Storm Prediction Center",
+      "status": "ok",
+      "display_url": null,
+      "summary": "Slight risk of severe thunderstorms across southern Mid-Atlantic and Maine today. Primary hazard is damaging winds. Carolinas/Virginia expect isolated to scattered storms with 30-40 kt shear supporting organized clusters and possible supercells; tornado risk noted. New England scattered storms developing with cold front progression; supercell potential with similar shear values; damaging winds, marginal hail, isolated tornadoes possible through sunset. Central High Plains isolated strong wind gusts likely with weak lee low development and modest shear. Central Oregon afternoon storms possible with wind threat despite limited buoyancy. Tropical Storm Bertha drifting west across northern Gulf with limited supercell potential inland due to weakening and poor thermodynamic profiles.",
+      "error": null
+    },
+    {
+      "key": "spc_mesoscale",
+      "title": "SPC Mesoscale Discussions",
+      "kind": "text",
+      "credit": "NOAA Storm Prediction Center",
+      "status": "ok",
+      "display_url": null,
+      "summary": "No active convective threats are currently being monitored by SPC. No mesoscale discussions have been issued in the past 6 hours.",
+      "error": null
+    },
+    {
+      "key": "tropics",
+      "title": "NHC Tropical Weather Outlooks",
+      "kind": "text",
+      "credit": "NOAA National Hurricane Center",
+      "status": "ok",
+      "display_url": null,
+      "summary": "Atlantic: NHC issuing advisories on Tropical Storm Bertha in the northern Gulf of America. No tropical cyclone formation expected over next seven days.\n\nEast Pacific: Hurricane Fausto active west-southwest of Baja California. Tropical wave off Central America showing disorganized convection with 90 percent chance of depression formation by weekend as it moves west-northwestward. Separate low pressure system southwest of Hawaii presents 60 percent formation chance through seven days; expected to enter western Pacific basin Sunday.",
+      "error": null
+    },
+    {
+      "key": "enso",
+      "title": "ENSO State (Oceanic Niño Index)",
+      "kind": "text",
+      "credit": "NOAA Climate Prediction Center",
+      "status": "ok",
+      "display_url": null,
+      "summary": "ENSO state shows a transition from weak La Niña conditions to neutral and warming toward El Niño. The three-month ONI anomalies are currently near -0.5°C (SON-NDJ 2025), gradually warming through late winter. By spring 2026, anomalies turn positive, with MAM reaching +0.51°C and AMJ reaching +0.98°C. The trend indicates a shift toward El Niño conditions developing by late spring 2026, with sea surface temperature anomalies accelerating upward across the forecast period.",
+      "error": null
+    }
+  ]
+}
