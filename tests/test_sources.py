@@ -8,6 +8,7 @@ from tlaloc.fetching import SourceError
 from tlaloc.sources import (
     MCD_MAX_PRODUCTS,
     PRE_BLOCK_RE,
+    discover_page_image_urls,
     filter_recent_mcd_entries,
     iter_airmass_candidate_urls,
     parse_daily_index_series,
@@ -123,6 +124,39 @@ class TestResolveFirstAvailableImage:
     def test_raises_source_error_when_no_candidate_exists(self):
         with pytest.raises(SourceError):
             resolve_first_available_image(self.CANDIDATES, probe=lambda url: False)
+
+
+class TestDiscoverPageImageUrls:
+    PAGE = "https://www.cpc.ncep.noaa.gov/products/predictions/610day/500mb.php"
+
+    def test_resolves_relative_srcs_against_the_page(self):
+        html = '<img src="../../images/noaa_logo.gif"><img src="500mbfcst.gif">'
+        assert discover_page_image_urls(self.PAGE, html) == [
+            "https://www.cpc.ncep.noaa.gov/products/predictions/610day/500mbfcst.gif"
+        ]
+
+    def test_drops_site_chrome_and_non_images(self):
+        html = """
+        <img src="banner.gif"><img src="btn_next.png"><img src="nav/arrow.gif">
+        <img src="/products/predictions/610day/hgt.gif">
+        <a href="somewhere.php">text</a>
+        """
+        assert discover_page_image_urls(self.PAGE, html) == [
+            "https://www.cpc.ncep.noaa.gov/products/predictions/610day/hgt.gif"
+        ]
+
+    def test_orders_product_looking_filenames_first(self):
+        html = '<img src="thumbnail.png"><img src="610_500mb_anom.gif">'
+        urls = discover_page_image_urls(self.PAGE, html)
+        assert urls[0].endswith("610_500mb_anom.gif")
+        assert urls[1].endswith("thumbnail.png")
+
+    def test_deduplicates_repeated_references(self):
+        html = '<img src="hgt.gif"><img class="x" src="hgt.gif">'
+        assert len(discover_page_image_urls(self.PAGE, html)) == 1
+
+    def test_returns_empty_when_the_page_has_no_chart(self):
+        assert discover_page_image_urls(self.PAGE, "<html><body>nothing</body></html>") == []
 
 
 class TestDailyIndexSeries:

@@ -85,8 +85,11 @@ jargon.
   raised by the data ("does this severe threat persist into day 2?") can justify an
   extra fetch.
 - **Soft failure everywhere.** Timestamped chart URLs are probed with a lookback
-  window and renameable ones against a short list of known filename conventions;
-  content types and sizes are validated; every collector converts errors
+  window; charts whose filename isn't stable are found by reading the product page
+  and following its own `<img>` references, with hardcoded URLs as a fallback and a
+  failure message that names what the page did offer, so a `--collect-only` run
+  diagnoses an upstream change rather than merely reporting one; content types and
+  sizes are validated; every collector converts errors
   into a `failed` report rather than raising. The synthesis prompt is told exactly
   which sources are missing so it doesn't overreach. If too few sources survive
   (fewer than 1 chart or 2 total), the run aborts *without touching the page* —

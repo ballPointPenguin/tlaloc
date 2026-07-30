@@ -17,6 +17,7 @@ import traceback
 from dataclasses import dataclass
 from datetime import date, datetime, timedelta, timezone
 from typing import Callable, Literal, Sequence
+from urllib.parse import urljoin, urlsplit
 
 from .config import MAX_TEXT_CHARS
 from .fetching import SourceError, fetch_image_base64, fetch_json, fetch_text, image_url_exists
@@ -78,18 +79,6 @@ def resolve_first_available_image(
         if probe(url):
             return url
     raise SourceError(f"None of {len(candidates)} candidate URLs served an image: {candidates[0]}")
-
-
-def _collect_probed_image(report: SourceReport, candidates: Sequence[str]) -> SourceReport:
-    try:
-        url = resolve_first_available_image(candidates)
-        data, media_type = fetch_image_base64(url)
-    except SourceError as exc:
-        return report.fail(str(exc))
-    report.display_url = url
-    report.image_base64 = data
-    report.image_media_type = media_type
-    return report
 
 
 def collect_surface_analysis() -> SourceReport:
@@ -264,11 +253,14 @@ def collect_cpc_610day_outlook() -> SourceReport:
 # a block that flattens at days 6-10 and re-amplifies at days 8-14 was dented,
 # not broken, and only the pair of charts shows the difference.
 #
-# CPC's product pages for these (610day/500mb.php, 814day/500mb.php) are stable,
-# but the image filename behind each is not something to hardcode blind — the
-# sibling temperature outlooks use a ".new.gif" suffix while these appear not to.
-# Probing a short candidate list covers the plausible conventions and survives a
-# rename; if every candidate misses, the source fails soft like any other.
+# CPC's product pages for these (610day/500mb.php, 814day/500mb.php) are stable;
+# the image filenames behind them are not, and are not guessable — the sibling
+# temperature outlooks use a "610temp.new.gif" convention that these do not
+# follow. So the page is read and its own <img> references are used, which is
+# both how a human finds the chart and immune to a rename. Hardcoded guesses
+# remain as a fallback for the day the page markup changes shape.
+CPC_610DAY_500MB_PAGE = "https://www.cpc.ncep.noaa.gov/products/predictions/610day/500mb.php"
+CPC_814DAY_500MB_PAGE = "https://www.cpc.ncep.noaa.gov/products/predictions/814day/500mb.php"
 CPC_610DAY_500MB_CANDIDATES = (
     "https://www.cpc.ncep.noaa.gov/products/predictions/610day/500mb.gif",
     "https://www.cpc.ncep.noaa.gov/products/predictions/610day/500mb.new.gif",
@@ -280,27 +272,88 @@ CPC_814DAY_500MB_CANDIDATES = (
     "https://www.cpc.ncep.noaa.gov/products/predictions/814day/814mb500.gif",
 )
 
+MAX_PAGE_CHARS = 64_000
+IMG_SRC_RE = re.compile(r"""<img\b[^>]*?\bsrc\s*=\s*["']([^"']+)["']""", re.IGNORECASE)
+CHART_SUFFIX_RE = re.compile(r"\.(?:gif|png|jpe?g)$", re.IGNORECASE)
+# Site furniture that appears on every CPC page and is never the product.
+PAGE_CHROME_RE = re.compile(
+    r"logo|banner|butto?n|btn|spacer|arrow|header|footer|nav|icon|bullet|pixel|blank",
+    re.IGNORECASE,
+)
+# Filenames that look like a 500 mb height product get probed first. Kept to
+# distinctive substrings: a bare "mb" would match "thumbnail".
+CHART_RELEVANCE_RE = re.compile(r"500|hgt|height|anom", re.IGNORECASE)
+
+
+def discover_page_image_urls(page_url: str, html: str) -> list[str]:
+    """Absolute URLs of plausible chart images referenced by a product page.
+
+    Site chrome is dropped and the most product-looking filenames are ordered
+    first, so the caller can probe in descending order of likelihood.
+    """
+    found: list[str] = []
+    for src in IMG_SRC_RE.findall(html):
+        url = urljoin(page_url, src.strip())
+        path = urlsplit(url).path
+        if not CHART_SUFFIX_RE.search(path) or PAGE_CHROME_RE.search(path):
+            continue
+        if url not in found:
+            found.append(url)
+    found.sort(key=lambda url: not CHART_RELEVANCE_RE.search(urlsplit(url).path.rsplit("/", 1)[-1]))
+    return found
+
+
+def _collect_page_image(
+    report: SourceReport, page_url: str, fallbacks: Sequence[str]
+) -> SourceReport:
+    """Fetch the chart a product page points at, falling back to known URLs.
+
+    On total failure the error names the images the page did offer, so a CI
+    collect-only run diagnoses an upstream change instead of just reporting it.
+    """
+    discovered: list[str] = []
+    page_note = ""
+    try:
+        discovered = discover_page_image_urls(page_url, fetch_text(page_url, MAX_PAGE_CHARS))
+    except SourceError as exc:
+        page_note = f"; could not read {page_url}: {exc}"
+    candidates = discovered + [url for url in fallbacks if url not in discovered]
+    try:
+        url = resolve_first_available_image(candidates)
+        data, media_type = fetch_image_base64(url)
+    except SourceError:
+        listed = ", ".join(discovered) if discovered else "no chart images"
+        return report.fail(
+            f"No usable chart image for {page_url} (page listed: {listed}){page_note}"
+        )
+    report.display_url = url
+    report.image_base64 = data
+    report.image_media_type = media_type
+    return report
+
 
 def collect_cpc_610day_500mb() -> SourceReport:
-    return _collect_probed_image(
+    return _collect_page_image(
         SourceReport(
             key="cpc_610day_500mb",
             title="CPC 6-10 Day 500 mb Height Outlook",
             kind="image",
             credit="NOAA Climate Prediction Center",
         ),
+        CPC_610DAY_500MB_PAGE,
         CPC_610DAY_500MB_CANDIDATES,
     )
 
 
 def collect_cpc_814day_500mb() -> SourceReport:
-    return _collect_probed_image(
+    return _collect_page_image(
         SourceReport(
             key="cpc_814day_500mb",
             title="CPC 8-14 Day 500 mb Height Outlook",
             kind="image",
             credit="NOAA Climate Prediction Center",
         ),
+        CPC_814DAY_500MB_PAGE,
         CPC_814DAY_500MB_CANDIDATES,
     )
 
