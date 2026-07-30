@@ -1,6 +1,6 @@
 """Tests for the pure logic in tlaloc.sources (no network access)."""
 
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 
 import pytest
 
@@ -10,7 +10,10 @@ from tlaloc.sources import (
     PRE_BLOCK_RE,
     filter_recent_mcd_entries,
     iter_airmass_candidate_urls,
+    parse_daily_index_series,
     resolve_500mb_chart_url,
+    resolve_first_available_image,
+    summarize_daily_index,
 )
 
 
@@ -102,6 +105,79 @@ class TestFilterRecentMcdEntries:
             {"issuanceTime": "2026-07-15T17:00:00Z"},  # missing @id
         ]
         assert filter_recent_mcd_entries(entries, self.NOW) == []
+
+
+class TestResolveFirstAvailableImage:
+    CANDIDATES = ("https://example.test/a.gif", "https://example.test/b.gif")
+
+    def test_prefers_the_first_candidate_that_exists(self):
+        url = resolve_first_available_image(self.CANDIDATES, probe=lambda url: True)
+        assert url == self.CANDIDATES[0]
+
+    def test_falls_back_to_a_later_naming_convention(self):
+        url = resolve_first_available_image(
+            self.CANDIDATES, probe=lambda url: url.endswith("b.gif")
+        )
+        assert url == self.CANDIDATES[1]
+
+    def test_raises_source_error_when_no_candidate_exists(self):
+        with pytest.raises(SourceError):
+            resolve_first_available_image(self.CANDIDATES, probe=lambda url: False)
+
+
+class TestDailyIndexSeries:
+    TABLE = "\n".join(
+        [
+            "1950 1 1 0.92",
+            "2026 7 16 1.40",
+            "2026 7 17 1.30",
+            "2026 7 18 1.20",
+            "2026 7 19 1.10",
+            "2026 7 20 1.00",
+            "2026 7 21 0.90",
+            "2026 7 22 0.80",
+            "2026 7 23 0.70",
+            "2026 7 24 0.60",
+            "2026 7 25 0.50",
+            "2026 7 26 0.40",
+            "2026 7 27 0.30",
+            "2026 7 28 0.20",
+            "2026 7 29 0.10",
+        ]
+    )
+
+    def test_parses_date_and_value_pairs(self):
+        series = parse_daily_index_series(self.TABLE)
+        assert series[0] == (date(1950, 1, 1), 0.92)
+        assert series[-1] == (date(2026, 7, 29), 0.10)
+
+    def test_skips_headers_and_missing_data_sentinels(self):
+        text = "PNA index\n2026 7 28 -999.0\n2026 7 29 0.10\nnot a row\n"
+        assert parse_daily_index_series(text) == [(date(2026, 7, 29), 0.10)]
+
+    def test_summary_reports_latest_value_and_falling_trend(self):
+        summary = summarize_daily_index("PNA", "note", parse_daily_index_series(self.TABLE))
+        assert "latest 2026-07-29: +0.10" in summary
+        # Last week averages 0.7 below the prior week: a real relaxation.
+        assert "-0.70, falling" in summary
+        assert summary.endswith(
+            "daily, oldest to newest: +1.40 +1.30 +1.20 +1.10 +1.00 +0.90 +0.80 "
+            "+0.70 +0.60 +0.50 +0.40 +0.30 +0.20 +0.10"
+        )
+
+    def test_summary_names_no_trend_for_a_steady_index(self):
+        steady = "\n".join(f"2026 7 {day} 0.50" for day in range(16, 30))
+        summary = summarize_daily_index("PNA", "note", parse_daily_index_series(steady))
+        assert "little changed" in summary
+
+    def test_summary_handles_a_series_shorter_than_two_weeks(self):
+        short = "2026 7 28 0.40\n2026 7 29 0.60"
+        summary = summarize_daily_index("AO", "note", parse_daily_index_series(short))
+        assert "no prior week available" in summary
+
+    def test_summary_raises_when_nothing_parsed(self):
+        with pytest.raises(SourceError):
+            summarize_daily_index("PNA", "note", [])
 
 
 class TestPreBlockRegex:

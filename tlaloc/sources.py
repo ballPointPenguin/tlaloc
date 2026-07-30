@@ -15,8 +15,8 @@ captured on the report so the pipeline can degrade gracefully.
 import re
 import traceback
 from dataclasses import dataclass
-from datetime import datetime, timedelta, timezone
-from typing import Callable, Literal
+from datetime import date, datetime, timedelta, timezone
+from typing import Callable, Literal, Sequence
 
 from .config import MAX_TEXT_CHARS
 from .fetching import SourceError, fetch_image_base64, fetch_json, fetch_text, image_url_exists
@@ -62,6 +62,34 @@ GOES_AIRMASS_FILENAME = "{stamp}_{satellite}-ABI-{sector}-AirMass-{size}.jpg"
 GOES_SECTOR_SIZES = {"CONUS": "2500x1500", "FD": "1808x1808"}
 GOES_SATELLITES = ("GOES19", "GOES16")
 GOES_LOOKBACK_HOURS = 3
+
+
+def resolve_first_available_image(
+    candidates: Sequence[str],
+    probe: Callable[[str], bool] = image_url_exists,
+) -> str:
+    """First candidate URL that serves image content.
+
+    Used where a product's page is stable but its image filename is not
+    guaranteed — probing a short list of known naming conventions survives an
+    upstream rename without a code change.
+    """
+    for url in candidates:
+        if probe(url):
+            return url
+    raise SourceError(f"None of {len(candidates)} candidate URLs served an image: {candidates[0]}")
+
+
+def _collect_probed_image(report: SourceReport, candidates: Sequence[str]) -> SourceReport:
+    try:
+        url = resolve_first_available_image(candidates)
+        data, media_type = fetch_image_base64(url)
+    except SourceError as exc:
+        return report.fail(str(exc))
+    report.display_url = url
+    report.image_base64 = data
+    report.image_media_type = media_type
+    return report
 
 
 def collect_surface_analysis() -> SourceReport:
@@ -227,6 +255,54 @@ def collect_cpc_610day_outlook() -> SourceReport:
     report.image_base64 = data
     report.image_media_type = media_type
     return report
+
+
+# The 500 mb height outlooks are the pipeline's only *anomaly* products, and the
+# only ones drawn from an ensemble mean rather than a single analysis. They exist
+# to answer the question a surface chart cannot: not "is a front coming?" but
+# "does the ridge rebuild behind it?" Two lead times are fetched deliberately —
+# a block that flattens at days 6-10 and re-amplifies at days 8-14 was dented,
+# not broken, and only the pair of charts shows the difference.
+#
+# CPC's product pages for these (610day/500mb.php, 814day/500mb.php) are stable,
+# but the image filename behind each is not something to hardcode blind — the
+# sibling temperature outlooks use a ".new.gif" suffix while these appear not to.
+# Probing a short candidate list covers the plausible conventions and survives a
+# rename; if every candidate misses, the source fails soft like any other.
+CPC_610DAY_500MB_CANDIDATES = (
+    "https://www.cpc.ncep.noaa.gov/products/predictions/610day/500mb.gif",
+    "https://www.cpc.ncep.noaa.gov/products/predictions/610day/500mb.new.gif",
+    "https://www.cpc.ncep.noaa.gov/products/predictions/610day/610mb500.gif",
+)
+CPC_814DAY_500MB_CANDIDATES = (
+    "https://www.cpc.ncep.noaa.gov/products/predictions/814day/500mb.gif",
+    "https://www.cpc.ncep.noaa.gov/products/predictions/814day/500mb.new.gif",
+    "https://www.cpc.ncep.noaa.gov/products/predictions/814day/814mb500.gif",
+)
+
+
+def collect_cpc_610day_500mb() -> SourceReport:
+    return _collect_probed_image(
+        SourceReport(
+            key="cpc_610day_500mb",
+            title="CPC 6-10 Day 500 mb Height Outlook",
+            kind="image",
+            credit="NOAA Climate Prediction Center",
+        ),
+        CPC_610DAY_500MB_CANDIDATES,
+    )
+
+
+def collect_cpc_814day_500mb() -> SourceReport:
+    return _collect_probed_image(
+        SourceReport(
+            key="cpc_814day_500mb",
+            title="CPC 8-14 Day 500 mb Height Outlook",
+            kind="image",
+            credit="NOAA Climate Prediction Center",
+        ),
+        CPC_814DAY_500MB_CANDIDATES,
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -417,6 +493,127 @@ def collect_enso_state() -> SourceReport:
     return report
 
 
+# CPC's daily teleconnection indices, in standardized units. These are
+# supplementary rather than decisive — an index is a projection of the height
+# field, not a substitute for it — but the *trend* in the PNA is a cheap,
+# quantitative cross-check on whether an amplified western ridge is holding or
+# relaxing, which nothing else in the core data provides as a number.
+CPC_DAILY_INDEX_HOSTS = (
+    "https://ftp.cpc.ncep.noaa.gov/cwlinks",
+    "https://www.cpc.ncep.noaa.gov/products/precip/CWlink/daily_ao_index",
+)
+CPC_DAILY_INDEX_FILES = {
+    "PNA": (
+        "norm.daily.pna.index.b500101.current.ascii",
+        "Pacific/North American pattern; positive favors western North American "
+        "ridging with eastern troughing",
+    ),
+    "AO": (
+        "norm.daily.ao.index.b500101.current.ascii",
+        "Arctic Oscillation; negative favors high-latitude blocking",
+    ),
+    "NAO": (
+        "norm.daily.nao.index.b500101.current.ascii",
+        "North Atlantic Oscillation; influences whether an eastern cutoff can escape",
+    ),
+}
+# These tables run daily from 1950, so the whole file has to come down for the
+# tail to be the most recent data (same reason as the ONI table above).
+DAILY_INDEX_MAX_CHARS = 900_000
+TELECONNECTION_DAYS = 14
+# Change in weekly-mean standardized units below which a trend isn't worth naming.
+TELECONNECTION_TREND_THRESHOLD = 0.25
+# CPC uses large sentinels for missing days; real standardized values are O(1).
+DAILY_INDEX_VALUE_LIMIT = 20.0
+
+
+def parse_daily_index_series(text: str) -> list[tuple[date, float]]:
+    """Parse a CPC daily teleconnection table ("YYYY M D value") in order."""
+    series: list[tuple[date, float]] = []
+    for line in text.splitlines():
+        parts = line.split()
+        if len(parts) < 4:
+            continue
+        try:
+            day = date(int(parts[0]), int(parts[1]), int(parts[2]))
+            value = float(parts[3])
+        except ValueError:
+            continue  # header or comment line
+        if abs(value) > DAILY_INDEX_VALUE_LIMIT:
+            continue  # missing-data sentinel
+        series.append((day, value))
+    return series
+
+
+def summarize_daily_index(
+    name: str, note: str, series: list[tuple[date, float]], days: int = TELECONNECTION_DAYS
+) -> str:
+    """One block per index: latest value, week-over-week shift, and the dailies.
+
+    The week-over-week comparison is the point — a single day's index says
+    little, but a PNA falling half a standard deviation in a week is a real
+    signal about an amplified ridge relaxing.
+    """
+    recent = series[-days:]
+    if not recent:
+        raise SourceError(f"{name} index table contained no usable rows")
+    latest_day, latest = recent[-1]
+    week = [value for _day, value in recent[-7:]]
+    prior = [value for _day, value in recent[-14:-7]]
+    lines = [f"{name} ({note})", f"  latest {latest_day.isoformat()}: {latest:+.2f}"]
+    week_mean = sum(week) / len(week)
+    if prior:
+        prior_mean = sum(prior) / len(prior)
+        change = week_mean - prior_mean
+        if change > TELECONNECTION_TREND_THRESHOLD:
+            trend = "rising"
+        elif change < -TELECONNECTION_TREND_THRESHOLD:
+            trend = "falling"
+        else:
+            trend = "little changed"
+        lines.append(
+            f"  7-day mean {week_mean:+.2f} vs. prior 7-day mean {prior_mean:+.2f} "
+            f"({change:+.2f}, {trend})"
+        )
+    else:
+        lines.append(f"  7-day mean {week_mean:+.2f} (no prior week available)")
+    dailies = " ".join(f"{value:+.2f}" for _day, value in recent)
+    lines.append(f"  daily, oldest to newest: {dailies}")
+    return "\n".join(lines)
+
+
+def collect_teleconnection_indices() -> SourceReport:
+    """Daily PNA/AO/NAO in standardized units, with week-over-week trends.
+
+    Each index is fetched independently: a single missing table degrades the
+    source rather than failing it, since any one index still carries signal.
+    """
+    report = SourceReport(
+        key="teleconnections",
+        title="Teleconnection Indices (PNA, AO, NAO)",
+        kind="text",
+        credit="NOAA Climate Prediction Center",
+    )
+    blocks = []
+    errors = []
+    for name, (filename, note) in CPC_DAILY_INDEX_FILES.items():
+        for host in CPC_DAILY_INDEX_HOSTS:
+            try:
+                text = fetch_text(f"{host}/{filename}", DAILY_INDEX_MAX_CHARS)
+                blocks.append(summarize_daily_index(name, note, parse_daily_index_series(text)))
+                break
+            except SourceError as exc:
+                errors.append(f"{name} @ {host}: {exc}")
+    if not blocks:
+        return report.fail("; ".join(errors) or "no teleconnection indices retrieved")
+    header = (
+        "Daily CPC teleconnection indices in standardized units, last "
+        f"{TELECONNECTION_DAYS} days. These are observed values, not forecasts."
+    )
+    report.raw_text = "\n\n".join([header] + blocks)[:MAX_TEXT_CHARS]
+    return report
+
+
 # ---------------------------------------------------------------------------
 # Registry
 # ---------------------------------------------------------------------------
@@ -428,11 +625,14 @@ COLLECTORS: list[Callable[[], SourceReport]] = [
     collect_airmass_rgb,
     collect_airmass_fulldisk,
     collect_cpc_610day_outlook,
+    collect_cpc_610day_500mb,
+    collect_cpc_814day_500mb,
     collect_wpc_discussion,
     collect_spc_outlook,
     collect_mesoscale_discussions,
     collect_tropical_outlooks,
     collect_enso_state,
+    collect_teleconnection_indices,
 ]
 
 
