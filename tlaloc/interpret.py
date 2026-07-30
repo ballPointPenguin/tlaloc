@@ -104,7 +104,10 @@ VISION_FOCUS = {
         "holding, shrinking, or retreating in latitude and longitude, how far into "
         "western North America the zero-anomaly line reaches, and whether the flow is "
         "becoming more zonal. This is an anomaly product, so departures from normal can "
-        "be stated directly here."
+        "be stated directly here. This chart is located by reading CPC's product page, "
+        "so if the image is not in fact a 6-10 day 500 mb height or height-anomaly "
+        "forecast, say so in one sentence and describe what it actually is rather than "
+        "interpreting it as one."
     ),
     "cpc_814day_500mb": (
         "This is the NOAA Climate Prediction Center 8-14 day 500 mb height outlook: an "
@@ -115,7 +118,10 @@ VISION_FOCUS = {
         "the northern Rockies, and the northern Plains, and to where the ridge core "
         "sits — a ridge that has retreated toward the Southwest and northern Mexico is a "
         "different outcome from one still centered over the northern Rockies. This is an "
-        "anomaly product, so departures from normal can be stated directly here."
+        "anomaly product, so departures from normal can be stated directly here. This "
+        "chart is located by reading CPC's product page, so if the image is not in fact "
+        "an 8-14 day 500 mb height or height-anomaly forecast, say so in one sentence "
+        "and describe what it actually is rather than interpreting it as one."
     ),
 }
 

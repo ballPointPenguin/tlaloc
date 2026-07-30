@@ -262,15 +262,14 @@ def collect_cpc_610day_outlook() -> SourceReport:
 # remain as a fallback for the day the page markup changes shape.
 CPC_610DAY_500MB_PAGE = "https://www.cpc.ncep.noaa.gov/products/predictions/610day/500mb.php"
 CPC_814DAY_500MB_PAGE = "https://www.cpc.ncep.noaa.gov/products/predictions/814day/500mb.php"
+# The names discovery resolved to, kept as fallbacks. They are not guessable
+# from the sibling products' "610temp.new.gif" convention, which is why the
+# page is read first rather than these being trusted as primary.
 CPC_610DAY_500MB_CANDIDATES = (
-    "https://www.cpc.ncep.noaa.gov/products/predictions/610day/500mb.gif",
-    "https://www.cpc.ncep.noaa.gov/products/predictions/610day/500mb.new.gif",
-    "https://www.cpc.ncep.noaa.gov/products/predictions/610day/610mb500.gif",
+    "https://www.cpc.ncep.noaa.gov/products/predictions/610day/610day.03.gif",
 )
 CPC_814DAY_500MB_CANDIDATES = (
-    "https://www.cpc.ncep.noaa.gov/products/predictions/814day/500mb.gif",
-    "https://www.cpc.ncep.noaa.gov/products/predictions/814day/500mb.new.gif",
-    "https://www.cpc.ncep.noaa.gov/products/predictions/814day/814mb500.gif",
+    "https://www.cpc.ncep.noaa.gov/products/predictions/814day/814day.03.gif",
 )
 
 MAX_PAGE_CHARS = 64_000
