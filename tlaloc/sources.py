@@ -78,7 +78,8 @@ def resolve_first_available_image(
     for url in candidates:
         if probe(url):
             return url
-    raise SourceError(f"None of {len(candidates)} candidate URLs served an image: {candidates[0]}")
+    tried = candidates[0] if candidates else "no candidates offered"
+    raise SourceError(f"None of {len(candidates)} candidate URLs served an image: {tried}")
 
 
 def collect_surface_analysis() -> SourceReport:
@@ -277,30 +278,46 @@ IMG_SRC_RE = re.compile(r"""<img\b[^>]*?\bsrc\s*=\s*["']([^"']+)["']""", re.IGNO
 CHART_SUFFIX_RE = re.compile(r"\.(?:gif|png|jpe?g)$", re.IGNORECASE)
 # Site furniture that appears on every CPC page and is never the product.
 PAGE_CHROME_RE = re.compile(
-    r"logo|banner|butto?n|btn|spacer|arrow|header|footer|nav|icon|bullet|pixel|blank",
+    r"logo|banner|butto?n|btn|spacer|arrow|header|footer|nav|icon|bullet|pixel|blank|skip",
     re.IGNORECASE,
 )
 # Filenames that look like a 500 mb height product get probed first. Kept to
 # distinctive substrings: a bare "mb" would match "thumbnail".
 CHART_RELEVANCE_RE = re.compile(r"500|hgt|height|anom", re.IGNORECASE)
+# How many referenced images to name in a failure message before truncating.
+MAX_REPORTED_PAGE_IMAGES = 12
 
 
-def discover_page_image_urls(page_url: str, html: str) -> list[str]:
-    """Absolute URLs of plausible chart images referenced by a product page.
-
-    Site chrome is dropped and the most product-looking filenames are ordered
-    first, so the caller can probe in descending order of likelihood.
-    """
-    found: list[str] = []
+def extract_page_image_urls(page_url: str, html: str) -> list[str]:
+    """Every image a page references, as absolute URLs in document order."""
+    urls: list[str] = []
     for src in IMG_SRC_RE.findall(html):
         url = urljoin(page_url, src.strip())
-        path = urlsplit(url).path
-        if not CHART_SUFFIX_RE.search(path) or PAGE_CHROME_RE.search(path):
-            continue
-        if url not in found:
-            found.append(url)
-    found.sort(key=lambda url: not CHART_RELEVANCE_RE.search(urlsplit(url).path.rsplit("/", 1)[-1]))
-    return found
+        if url not in urls:
+            urls.append(url)
+    return urls
+
+
+def rank_chart_candidates(page_url: str, urls: Sequence[str]) -> list[str]:
+    """Of a page's images, those that plausibly are the product chart, best first.
+
+    The decisive filter is location: a CPC product chart sits in the same
+    directory as the page that displays it, so anything elsewhere is site
+    furniture. That is what rejects /nwscwi/skipgraphic.gif — the shared
+    accessibility spacer, which passes every filename-based test and would
+    otherwise be handed to the vision model as if it were the analysis.
+    """
+    split = urlsplit(page_url)
+    directory = f"{split.scheme}://{split.netloc}{split.path.rsplit('/', 1)[0]}/"
+    candidates = [
+        url
+        for url in urls
+        if url.startswith(directory)
+        and CHART_SUFFIX_RE.search(urlsplit(url).path)
+        and not PAGE_CHROME_RE.search(urlsplit(url).path)
+    ]
+    candidates.sort(key=lambda url: not CHART_RELEVANCE_RE.search(url.rsplit("/", 1)[-1]))
+    return candidates
 
 
 def _collect_page_image(
@@ -308,23 +325,25 @@ def _collect_page_image(
 ) -> SourceReport:
     """Fetch the chart a product page points at, falling back to known URLs.
 
-    On total failure the error names the images the page did offer, so a CI
-    collect-only run diagnoses an upstream change instead of just reporting it.
+    On total failure the error names every image the page referenced — not just
+    the ones that survived filtering — so a CI collect-only run locates a moved
+    chart instead of only reporting that something broke.
     """
-    discovered: list[str] = []
+    referenced: list[str] = []
     page_note = ""
     try:
-        discovered = discover_page_image_urls(page_url, fetch_text(page_url, MAX_PAGE_CHARS))
+        referenced = extract_page_image_urls(page_url, fetch_text(page_url, MAX_PAGE_CHARS))
     except SourceError as exc:
         page_note = f"; could not read {page_url}: {exc}"
+    discovered = rank_chart_candidates(page_url, referenced)
     candidates = discovered + [url for url in fallbacks if url not in discovered]
     try:
         url = resolve_first_available_image(candidates)
         data, media_type = fetch_image_base64(url)
     except SourceError:
-        listed = ", ".join(discovered) if discovered else "no chart images"
+        listed = ", ".join(referenced[:MAX_REPORTED_PAGE_IMAGES]) or "none"
         return report.fail(
-            f"No usable chart image for {page_url} (page listed: {listed}){page_note}"
+            f"No usable chart image for {page_url} (images referenced: {listed}){page_note}"
         )
     report.display_url = url
     report.image_base64 = data

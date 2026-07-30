@@ -8,10 +8,11 @@ from tlaloc.fetching import SourceError
 from tlaloc.sources import (
     MCD_MAX_PRODUCTS,
     PRE_BLOCK_RE,
-    discover_page_image_urls,
+    extract_page_image_urls,
     filter_recent_mcd_entries,
     iter_airmass_candidate_urls,
     parse_daily_index_series,
+    rank_chart_candidates,
     resolve_500mb_chart_url,
     resolve_first_available_image,
     summarize_daily_index,
@@ -126,37 +127,43 @@ class TestResolveFirstAvailableImage:
             resolve_first_available_image(self.CANDIDATES, probe=lambda url: False)
 
 
-class TestDiscoverPageImageUrls:
+class TestPageImageDiscovery:
     PAGE = "https://www.cpc.ncep.noaa.gov/products/predictions/610day/500mb.php"
+    DIR = "https://www.cpc.ncep.noaa.gov/products/predictions/610day/"
+
+    def ranked(self, html: str) -> list[str]:
+        return rank_chart_candidates(self.PAGE, extract_page_image_urls(self.PAGE, html))
 
     def test_resolves_relative_srcs_against_the_page(self):
         html = '<img src="../../images/noaa_logo.gif"><img src="500mbfcst.gif">'
-        assert discover_page_image_urls(self.PAGE, html) == [
-            "https://www.cpc.ncep.noaa.gov/products/predictions/610day/500mbfcst.gif"
+        assert extract_page_image_urls(self.PAGE, html) == [
+            "https://www.cpc.ncep.noaa.gov/products/images/noaa_logo.gif",
+            f"{self.DIR}500mbfcst.gif",
         ]
-
-    def test_drops_site_chrome_and_non_images(self):
-        html = """
-        <img src="banner.gif"><img src="btn_next.png"><img src="nav/arrow.gif">
-        <img src="/products/predictions/610day/hgt.gif">
-        <a href="somewhere.php">text</a>
-        """
-        assert discover_page_image_urls(self.PAGE, html) == [
-            "https://www.cpc.ncep.noaa.gov/products/predictions/610day/hgt.gif"
-        ]
-
-    def test_orders_product_looking_filenames_first(self):
-        html = '<img src="thumbnail.png"><img src="610_500mb_anom.gif">'
-        urls = discover_page_image_urls(self.PAGE, html)
-        assert urls[0].endswith("610_500mb_anom.gif")
-        assert urls[1].endswith("thumbnail.png")
 
     def test_deduplicates_repeated_references(self):
         html = '<img src="hgt.gif"><img class="x" src="hgt.gif">'
-        assert len(discover_page_image_urls(self.PAGE, html)) == 1
+        assert extract_page_image_urls(self.PAGE, html) == [f"{self.DIR}hgt.gif"]
+
+    def test_rejects_images_outside_the_pages_own_directory(self):
+        # The accessibility spacer that shipped a blank chart to the vision model.
+        html = '<img src="/nwscwi/skipgraphic.gif"><img src="500mb.gif">'
+        assert self.ranked(html) == [f"{self.DIR}500mb.gif"]
+
+    def test_drops_site_chrome_and_non_images(self):
+        html = """
+        <img src="banner.gif"><img src="btn_next.png"><img src="arrow.gif">
+        <img src="/products/predictions/610day/hgt.gif">
+        <a href="somewhere.php">text</a>
+        """
+        assert self.ranked(html) == [f"{self.DIR}hgt.gif"]
+
+    def test_orders_product_looking_filenames_first(self):
+        html = '<img src="thumbnail.png"><img src="610_500mb_anom.gif">'
+        assert self.ranked(html) == [f"{self.DIR}610_500mb_anom.gif", f"{self.DIR}thumbnail.png"]
 
     def test_returns_empty_when_the_page_has_no_chart(self):
-        assert discover_page_image_urls(self.PAGE, "<html><body>nothing</body></html>") == []
+        assert self.ranked("<html><body>nothing</body></html>") == []
 
 
 class TestDailyIndexSeries:
