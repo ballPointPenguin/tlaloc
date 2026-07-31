@@ -29,7 +29,43 @@ Stay inside what the chart can actually support:
   specific geometric definitions. Use one only when the plotted field clearly meets
   it; otherwise describe the geometry you see. A descriptive phrase that is right
   beats a label that is nearly right.
+- Check every number you read against the scale it belongs to, and carry the
+  chart's own units. A reading that would be extraordinary is far more often a
+  misread contour or a confused unit than a record, so when one looks that way,
+  say what the chart appears to show and name the doubt instead of asserting it.
+- Place features from the geography actually visible around them — coastlines,
+  borders, the chart's projection and domain — not from where a feature of that
+  kind usually sits. Naming a place is a claim like any other: when the geography
+  under a feature is ambiguous, locate it relative to something you can see, or
+  say the position is uncertain, rather than snapping to a familiar name. A value
+  read correctly and placed wrongly is still wrong, and often more misleading than
+  a bad number, because it stays plausible.
 """
+
+# Scale anchors for the fields most easily misread off a contour plot. Heights and
+# their anomalies differ by two orders of magnitude, and "dm" is a common but wrong
+# shorthand for decameters, so a chart read without these produces confident
+# nonsense like a 5720 dam ridge or a -150 dam anomaly.
+HEIGHT_UNITS_NOTE = (
+    "Report heights in decameters and get the magnitude right: the 500 mb surface runs "
+    "roughly 500-600 dam, i.e. 5,000-6,000 m, so the contours usually discussed are 552, "
+    "570, 588 and 594 dam. A four-digit number labelled dam or dm is always an error, and "
+    "dm properly means decimeter, which is off by a factor of 100."
+)
+HEIGHT_ANOMALY_UNITS_NOTE = (
+    "Height anomalies are far smaller than heights: they run to a few tens of meters, "
+    "single digits to low double digits in dam. An anomaly of 100 dam or more is a "
+    "misread, most often of a value plotted in meters."
+)
+# Air Mass RGB's warm colors are routinely over-read as stratospheric air, including
+# under ridges where the tropopause anomaly is the opposite sign.
+AIRMASS_PV_NOTE = (
+    "Be careful before attaching high-PV language to warm colors: the core of an upper "
+    "ridge is a low-PV feature, so broad red-orange under a summer ridge is usually dry, "
+    "subsident mid- and upper-tropospheric air, not a stratospheric intrusion. Reserve "
+    "high-PV and stratospheric-intrusion wording for the compact, elongated features on "
+    "the cyclonic side of the flow, around troughs and cutoffs."
+)
 
 # What to look for in each image source.
 VISION_FOCUS = {
@@ -54,39 +90,48 @@ VISION_FOCUS = {
         "any blocking: a Rex block is a meridionally stacked high-over-low couplet at "
         "roughly the same longitude, so if the anticyclone is not plainly poleward of "
         "the cutoff, describe what is there instead — e.g. an amplified ridge-cutoff "
-        "dipole, or a quasi-stationary western ridge with a separate eastern low."
+        "dipole, or a quasi-stationary western ridge with a separate eastern low. "
+        + HEIGHT_UNITS_NOTE
     ),
     "airmass": (
         "This is a GOES East CONUS Air Mass RGB satellite image. Color guide: "
-        "reds/oranges = dry, ozone-rich, high-PV air of stratospheric origin; greens = "
-        "tropical moist air; dark blues = cold dry upper troposphere; white = high cold "
-        "cloud tops. Identify dry high-PV intrusions and streamers, the jet corridor "
-        "implied by the sharpest airmass boundaries, and organized deep convection. "
-        "Describe where a high-PV feature runs and which flank of a trough or cutoff it "
-        "wraps around — high-PV air is most closely associated with the cyclonic side of "
-        "the upper jet and the wrapping trough circulation. The RGB shows a dry, "
-        "ozone-rich signature; it does not by itself establish literal descent, so say "
-        "the air is dry and high-PV rather than asserting it is descending. Likewise "
-        "call a sharp boundary the likely jet corridor, not a precisely located jet axis, "
-        "since no isotachs are plotted here."
+        "reds/oranges = dry upper-tropospheric air, whose sharpest and most saturated "
+        "form is the classic stratospheric-intrusion signature; greens = tropical moist "
+        "air; dark blues = cold dry upper troposphere; white = high cold cloud tops. "
+        "Identify dry intrusions and streamers, the jet corridor implied by the sharpest "
+        "airmass boundaries, and organized deep convection. Describe where a dry feature "
+        "runs and which flank of a trough or cutoff it wraps around. The imagery shows a "
+        "dry signature and does not by itself establish descent, so describe the air as "
+        "dry rather than asserting it is descending; likewise call a sharp boundary the "
+        "likely jet corridor, not a precisely located jet axis, since no isotachs are "
+        "plotted here. " + AIRMASS_PV_NOTE
     ),
     "airmass_fd": (
         "This is a GOES East Full Disk Air Mass RGB satellite image spanning the "
-        "Americas. Color guide: reds/oranges = dry, ozone-rich, high-PV air of "
-        "stratospheric origin; greens = tropical moist air; dark blues = cold dry upper "
+        "Americas. Color guide: reds/oranges = dry upper-tropospheric air, whose sharpest "
+        "and most saturated form is the classic stratospheric-intrusion signature; "
+        "greens = tropical moist air; dark blues = cold dry upper "
         "troposphere; white = high cold cloud tops. A CONUS-focused view is analyzed "
         "separately, so concentrate on what this frame adds: the polar jet and airmass "
         "boundaries across Canada and the Arctic, and tropical waves or organized "
         "convection over Mexico, Central America, the Caribbean, and the eastern "
-        "Pacific and Atlantic basins."
+        "Pacific and Atlantic basins. " + AIRMASS_PV_NOTE
     ),
     "eccc_surface": (
         "This is the Canadian Meteorological Centre (Environment and Climate Change "
-        "Canada) surface analysis for North America. Focus on Canada and the "
+        "Canada) surface analysis. Focus on Canada and the "
         "cross-border pattern: pressure centers and frontal boundaries over Canadian "
         "provinces and territories, how they connect to systems over the United "
         "States, and regions of tight pressure gradient or focused moisture and lift "
-        "north of the border."
+        "north of the border. Note the domain before placing anything: this chart is "
+        "drawn on a polar projection and reaches far beyond the provinces, over the "
+        "Arctic Ocean, the Canadian Archipelago, Greenland and the pole, so the upper "
+        "part of the frame is high Arctic rather than southern Canada. Deep lows are "
+        "ordinary up there in summer and would be remarkable over the provinces, which "
+        "makes a misplacement costly. Place features from the coastlines actually "
+        "visible around them, and where the geography is genuinely ambiguous say so or "
+        "locate the feature relative to a landmark you can see, rather than attaching "
+        "the nearest familiar province name."
     ),
     "cpc_610day": (
         "This is the NOAA Climate Prediction Center 6-10 day temperature outlook, "
@@ -107,7 +152,7 @@ VISION_FOCUS = {
         "be stated directly here. This chart is located by reading CPC's product page, "
         "so if the image is not in fact a 6-10 day 500 mb height or height-anomaly "
         "forecast, say so in one sentence and describe what it actually is rather than "
-        "interpreting it as one."
+        "interpreting it as one. " + HEIGHT_UNITS_NOTE + " " + HEIGHT_ANOMALY_UNITS_NOTE
     ),
     "cpc_814day_500mb": (
         "This is the NOAA Climate Prediction Center 8-14 day 500 mb height outlook: an "
@@ -121,7 +166,8 @@ VISION_FOCUS = {
         "anomaly product, so departures from normal can be stated directly here. This "
         "chart is located by reading CPC's product page, so if the image is not in fact "
         "an 8-14 day 500 mb height or height-anomaly forecast, say so in one sentence "
-        "and describe what it actually is rather than interpreting it as one."
+        "and describe what it actually is rather than interpreting it as one. "
+        + HEIGHT_UNITS_NOTE + " " + HEIGHT_ANOMALY_UNITS_NOTE
     ),
 }
 

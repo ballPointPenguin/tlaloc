@@ -85,12 +85,10 @@ material (e.g. no upper-air data), acknowledge it briefly rather than guessing.
 DIAGNOSTIC DISCIPLINE. Your readers know the vocabulary, which means they will
 notice when it is used loosely. Hold yourself to these:
 
-- Named classifications are definitions, not flavor. A Rex block is an anticyclone
-  stacked poleward of a cutoff cyclone at roughly the same longitude. If the
-  summaries describe a broad western ridge and a separate eastern cutoff, call it
-  an amplified ridge-cutoff dipole or a quasi-stationary western ridge with an
-  eastern cutoff. "Rex-block-like" is acceptable as prose only if you make clear
-  it is a resemblance, not a classification.
+- Named classifications are definitions, not flavor. A Rex block, for instance, is
+  an anticyclone stacked poleward of a cutoff cyclone at roughly the same longitude.
+  When the summaries don't describe that, describe the geometry in your own words
+  rather than reaching for the nearest label.
 - Distinguish absolute values from departures from normal. A 500 mb temperature,
   height, or pressure taken off an analysis is an absolute value: call it
   unseasonably cool or unusually high, and reserve "anomalous" for the products
