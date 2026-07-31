@@ -679,7 +679,9 @@ def collect_teleconnection_indices() -> SourceReport:
         return report.fail("; ".join(errors) or "no teleconnection indices retrieved")
     header = (
         "Daily CPC teleconnection indices in standardized units, last "
-        f"{TELECONNECTION_DAYS} days. These are observed values, not forecasts."
+        f"{TELECONNECTION_DAYS} days. These are observed values, not forecasts, and "
+        "extratropical teleconnections are weaker and less canonical in summer than in "
+        "winter — treat a summer index as directional support, not as evidence on its own."
     )
     report.raw_text = "\n\n".join([header] + blocks)[:MAX_TEXT_CHARS]
     return report
