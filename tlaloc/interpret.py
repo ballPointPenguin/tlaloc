@@ -33,6 +33,13 @@ Stay inside what the chart can actually support:
   chart's own units. A reading that would be extraordinary is far more often a
   misread contour or a confused unit than a record, so when one looks that way,
   say what the chart appears to show and name the doubt instead of asserting it.
+- Place features from the geography actually visible around them — coastlines,
+  borders, the chart's projection and domain — not from where a feature of that
+  kind usually sits. Naming a place is a claim like any other: when the geography
+  under a feature is ambiguous, locate it relative to something you can see, or
+  say the position is uncertain, rather than snapping to a familiar name. A value
+  read correctly and placed wrongly is still wrong, and often more misleading than
+  a bad number, because it stays plausible.
 """
 
 # Scale anchors for the fields most easily misread off a contour plot. Heights and
@@ -112,11 +119,19 @@ VISION_FOCUS = {
     ),
     "eccc_surface": (
         "This is the Canadian Meteorological Centre (Environment and Climate Change "
-        "Canada) surface analysis for North America. Focus on Canada and the "
+        "Canada) surface analysis. Focus on Canada and the "
         "cross-border pattern: pressure centers and frontal boundaries over Canadian "
         "provinces and territories, how they connect to systems over the United "
         "States, and regions of tight pressure gradient or focused moisture and lift "
-        "north of the border."
+        "north of the border. Note the domain before placing anything: this chart is "
+        "drawn on a polar projection and reaches far beyond the provinces, over the "
+        "Arctic Ocean, the Canadian Archipelago, Greenland and the pole, so the upper "
+        "part of the frame is high Arctic rather than southern Canada. Deep lows are "
+        "ordinary up there in summer and would be remarkable over the provinces, which "
+        "makes a misplacement costly. Place features from the coastlines actually "
+        "visible around them, and where the geography is genuinely ambiguous say so or "
+        "locate the feature relative to a landmark you can see, rather than attaching "
+        "the nearest familiar province name."
     ),
     "cpc_610day": (
         "This is the NOAA Climate Prediction Center 6-10 day temperature outlook, "
