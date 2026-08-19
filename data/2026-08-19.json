@@ -1,0 +1,153 @@
+{
+  "schema_version": 1,
+  "date": "2026-08-19",
+  "generated_at": "2026-08-19T13:49:13Z",
+  "synthesis": {
+    "headline": "The summer dipole holds into its second week: an anchoring Southwest heat ridge and a deepening eastern trough, with a Canadian cold front sweeping severe storms and heavy rain across the middle of the continent",
+    "narrative": "The warm-season dipole Tlaloc has tracked for well over a week remains the organizing story, and today it is behaving exactly as the medium range advertised. The 12Z 500 mb analysis still shows a large-amplitude ridge over the upper Midwest and Great Lakes, but its core shading of roughly 576-582 dam (innermost contour near 588) is a clear step down from yesterday's exceptional 594-dam block. That relaxation is the key evolution: the transient central-and-eastern ridge is already loosening, while the durable half of the pattern — the ridge anchored to a surface high over the interior Southwest and a trough dropping into the East — comes into sharper focus. The surface reflects the same structure. A compact 1009 mb low over the central Plains anchors a cold front trailing southwest into Texas and a warm front lifting northeast into the upper Midwest, with the tightest isobar packing from Kansas into Wisconsin marking the day's best convergence. On the Canadian side, a deep low complex (a center near 987 mb) dominates the Arctic Archipelago/northern Hudson Bay zone and sends a frontal boundary south into the northern US, while a 1023-1028 mb ridge leaves western Canada tranquil.\n\nThe centers of action ring the ridge periphery. The northern-stream expression is convective: SPC carries a Slight Risk from the Ozarks into the mid Mississippi Valley, where an approaching shortwave and recovering airmass with strong shear support supercells capable of large hail, damaging gusts and a few tornadoes into tonight, with secondary Ohio Valley and High Plains activity. WPC pairs this with a heavy-rain and flash-flood threat across the Midwest and Ohio Valley today, shifting to the Mid-Atlantic coast Thursday, where a 1010 mb coastal low and its trailing front are drawing Atlantic moisture into the Carolinas and Virginia. The more dangerous and durable element is heat: record warmth persists across the South and intensifies over the Desert Southwest and southern Plains, with dangerously warm overnight lows and Extreme Heat Warnings in force. That suppression is the work of midlevel subsidence and warming, a strengthened cap and dry air aloft under the ridge — not the modest 1017-1018 mb surface highs on the analysis.\n\nThe upper structure ties it together. The 500 mb pattern has a broad omega-like geometry, the Midwest ridge flanked by a trough dipping into the Pacific Northwest and western Canada to the west and by lower heights across the Southeast and Mid-Atlantic to the east. GOES Air Mass RGB reads consistently: a broad orange-red plume of dry, subsident upper-tropospheric air over the central and southern Plains is ridge-related dryness, not a stratospheric intrusion, while a sharper dry streamer curls cyclonically from the Desert Southwest into the central Plains along the ridge's dynamically active western flank. The sharpest color gradient — from the Gulf Coast northeastward through the Carolinas toward southern New England — marks the implied jet corridor and airmass boundary, and it is along that seam, where the Canadian front meets deep Gulf moisture, that today's convection is firing (bright tops are already up over Minnesota-Wisconsin). Looking ahead, both CPC ensemble-mean height charts and the WPC extended discussion argue this is a genuine geographic contraction of the ridge, not a cosmetic disruption. The 6-10 day (Aug 24-28) keeps the positive anomaly retracted offshore over the northeast Pacific with the zero line near the BC coast, and drives a meridional trough through central Canada into the central US; the 8-14 day (Aug 26-Sep 1) retreats the ridge core all the way to the Four Corners/northern Mexico (~588 dam) with no positive anomaly left over western Canada, the northern Rockies or northern Plains, all of which fall under the downstream flank of a deep Arctic low (~534 dam) that dominates both periods. Read against each other, the pair keeps shrinking and shifting the ridge southwest rather than rebuilding it in place. WPC closes the loop for days 3-7: the anchoring upper high holds over the Four Corners and southern Plains while multiple shortwaves sustain eastern troughing, with good model agreement on a closed upper low near the Great Lakes and adjacent Canada Sunday-Monday (the GFS the more progressive, northern outlier).",
+    "climate_context": "This is peak-summer North America running close to the seasonal script. The North American Monsoon is active, supplying the moisture streaming north under the Southwest ridge for diurnal high-terrain convection and today's southern Arizona severe/flood threat, while severe-weather season is being expressed as ridge-periphery, northern-stream storms along a wavy Canadian frontal zone rather than classic deep-Plains supercells. The ENSO backdrop is a decisively developing warm state: the ONI has climbed out of last year's weak La Nina (about -0.6 in late 2025) through neutral in late winter to roughly +1.39 by MJJ 2026, a clear transition toward moderate El Nino. That configuration typically favors the East Pacific while shear and dry air suppress the Atlantic, and today's tropics fit the split as the basin nears its early-September peak: the Atlantic is quiet with no development expected in seven days, while the East Pacific hosts Hurricane Lala near Hawaii, a tropical wave east-southeast of Hawaii (70 percent in 48 hours), and a low south-southwest of Mexico (80 percent in seven days). Teleconnection indices are only a weak, directional cross-check in summer, but they corroborate rather than drive the height story: a strongly negative NAO (-1.28, -0.90 mean), a weakly negative PNA consistent with diminished western ridging, and an AO that swung positive then rolled slightly back all align with the deepening-eastern-trough, retreating-Southwest-ridge regime the height and PV fields already show.",
+    "regional_notes": "Severe weather is at outlook level this morning: overnight Watch 598 across northeast Kansas and central Missouri was already weakening and expired near 0900Z with no follow-on watch anticipated, so watch the Ozarks/mid Mississippi Valley for renewed development this afternoon and evening. Southern Arizona sits under its own Slight Risk as monsoon moisture supports severe wind gusts, with a marginal excessive-rainfall risk; WPC flags localized flash flooding across the Four Corners and Intermountain West, especially over burn scars, slot canyons and urban areas. Extreme Heat Warnings cover the Desert Southwest and southern Plains with Heat Advisories over Florida and the Southeast, and the overnight-low danger is as important as the daytime peak. In Canada, the action is concentrated at high latitudes around the deep Arctic low; the provinces remain quiet under the western ridge, with only weak gradients over Quebec and the Maritimes."
+  },
+  "sources": [
+    {
+      "key": "surface",
+      "title": "Surface Analysis",
+      "kind": "image",
+      "credit": "NOAA Weather Prediction Center",
+      "status": "ok",
+      "display_url": "https://www.wpc.ncep.noaa.gov/sfc/namussfcwbg.gif",
+      "summary": "This 1200Z 19 August 2026 surface analysis shows a sprawling Bermuda-type high centered near 1018 mb over the southeastern Gulf Coast and another modest high at roughly 1017 mb over the central Rockies, neither strong enough at those pressures to be dynamically noteworthy. More consequential is the compact low near 1009 mb positioned over the central Plains, which anchors a trailing cold front extending southwestward toward Texas and a warm front pushing northeast into the upper Midwest; the tight isobar spacing along and ahead of this frontal zone, particularly from Kansas northeastward into Wisconsin, marks the region of strongest surface convergence and the most credible focus for organized lift. A second surface low near 1010 mb sits along the Mid-Atlantic coast with an associated cold front draped southward, where a sharp dewpoint gradient and onshore flow implied by the station plots suggest a moisture fetch off the Atlantic feeding into the Carolinas and Virginia. Across the Desert Southwest and northern Mexico, the isobar spacing is very slack and surface moisture values (dewpoints in the upper 50s to low 60s F at some stations) are consistent with the ongoing monsoon fetch, though no organized boundary is analyzed there. The Pacific Northwest shows a modest low near 1016 mb offshore and a front approaching the British Columbia coast, while the interior West otherwise sits under a relatively flat pressure gradient with little frontal forcing.",
+      "error": null
+    },
+    {
+      "key": "eccc_surface",
+      "title": "Canadian Surface Analysis",
+      "kind": "image",
+      "credit": "Environment and Climate Change Canada",
+      "status": "ok",
+      "display_url": "https://weather.gc.ca/data/analysis/947_100.gif",
+      "summary": "This CMC surface analysis valid 00Z Wednesday 19 August 2026 shows a broad low pressure complex dominating the central portion of the chart, with a center labeled near 987 mb sitting over what appears to be the Canadian Arctic Archipelago or northern Hudson Bay area, surrounded by a loose cluster of secondary lows in the 996 to 1009 mb range across the same general high-latitude zone. Over the provinces proper, pressure is less dramatic: a 1023 mb high sits over what appears to be interior British Columbia or the Alberta foothills, and a second high near 1028 mb is positioned over the western Prairies or Saskatchewan, together establishing a broad ridge across western Canada with relatively slack gradients at the surface. The tightest cross-border gradient visible appears across the central United States into the southern Prairies, where isobars pack noticeably between the 1031 mb high over the northern Plains and lows trailing southward, consistent with an implied surface wind maximum along that corridor. A frontal boundary extends from the primary Arctic low southward through the interior of the continent, reaching into the northern US with both warm and cold frontal segments visible, suggesting the primary lifting and moisture focus is positioned well south of the 60th parallel along that boundary. Eastern Canada appears sandwiched between the retreating Arctic low to the north and a sprawling Atlantic high to the southeast, leaving a relatively weak gradient and limited organized lift over Quebec and the Maritimes at this analysis time.",
+      "error": null
+    },
+    {
+      "key": "upper_500mb",
+      "title": "500 mb Analysis",
+      "kind": "image",
+      "credit": "College of DuPage NEXLAB",
+      "status": "ok",
+      "display_url": "https://weather.cod.edu/wxdata/upper/US/500/US500.20260819.12.gif",
+      "summary": "At 500 mb, the dominant feature is a large-amplitude ridge centered over the upper Midwest and Great Lakes region, with the innermost closed contour appearing near 588 dam and the core shading reaching approximately 576-582 dam based on the contour spacing visible. The ridge axis runs roughly north-south from near the Canadian border southward through the central Plains, and its western limb connects to a surface high (labeled H) positioned over the interior Southwest around Nevada or Utah. To the west, height contours across the Pacific Northwest and into western Canada are dipping equatorward, suggesting a downstream trough in that sector, while the eastern flank of the ridge slopes back toward lower heights across the Southeast and Mid-Atlantic, giving the overall pattern a broad omega-like geometry across the continent, though the upstream trough is only partially captured in the domain. The blue dashed contours, which appear to represent temperature, show the coldest values well upstream over the Pacific and into the northern Rockies, with the warmest air collocated with the ridge core over the Midwest, consistent with a thermally direct ridge structure. Wind speeds plotted in the ridge core appear modest, but along the northern and southern flanks where height gradient tightens, implied jet-level flow could be stronger; no single dominant jet streak is unambiguously isolated here. The flow pattern, with a deep stationary ridge anchored by the Southwest surface high and no evident closed cutoff low within the domain, looks retrogressive or at minimum non-progressive rather than a fast zonal regime.",
+      "error": null
+    },
+    {
+      "key": "airmass",
+      "title": "Air Mass RGB (GOES-19)",
+      "kind": "image",
+      "credit": "NOAA NESDIS / GOES East",
+      "status": "ok",
+      "display_url": "https://cdn.star.nesdis.noaa.gov/GOES19/ABI/CONUS/AirMass/20262311331_GOES19-ABI-CONUS-AirMass-2500x1500.jpg",
+      "summary": "Valid 19 Aug 2026 13:31Z, GOES-19 AirMass RGB.\n\nA broad swath of red-orange coloring covers much of the central and southern Plains eastward into the mid-Mississippi Valley, consistent with deep, dry upper-tropospheric air under what is likely a sprawling summer ridge; this coloring lacks the compact, elongated character of a stratospheric intrusion and should be read as ridge-related dryness rather than high-PV air. A sharper, more saturated orange-brown streamer curves cyclonically from the Desert Southwest northeastward across the southern Rockies and into the central Plains, wrapping around what appears to be the western flank of that ridge complex and representing the more dynamically active dry signature on that flank. The sharpest color gradient — from rich orange-red to green — runs roughly from the central Gulf Coast states northeastward through the Carolinas toward southern New England, marking the implied jet corridor and airmass boundary separating the dry western air from tropical maritime moisture to the east and south. Bright white convective tops are visible over the Upper Midwest near the Minnesota-Wisconsin area, and additional deep convection is scattered across southern Mexico and Central America, with isolated cells apparent near the Bahamas and western Atlantic. The Southeast and Gulf Coast show green hues consistent with a moist tropical airmass, with relatively little organized deep convection evident there at this time.",
+      "error": null
+    },
+    {
+      "key": "airmass_fd",
+      "title": "Air Mass RGB Full Disk (GOES-19)",
+      "kind": "image",
+      "credit": "NOAA NESDIS / GOES East",
+      "status": "ok",
+      "display_url": "https://cdn.star.nesdis.noaa.gov/GOES19/ABI/FD/AirMass/20262311320_GOES19-ABI-FD-AirMass-1808x1808.jpg",
+      "summary": "This GOES-19 Air Mass RGB valid 19 Aug 2026 at 1320Z shows a broad green tropical airmass dominating from roughly the Gulf of Mexico southward through the Amazon basin, consistent with deep, moist tropical air through much of the column. Across northern Canada and into the Arctic fringe, the image transitions to dark blue-purple tones indicating cold, dry upper-tropospheric air, with a fairly sharp color boundary curving across the upper portion of the disk that marks the implied polar airmass edge. A cluster of bright white convective tops is visible over the Caribbean and eastern Caribbean basin, suggesting organized deep convection in that area, while scattered high cloud over Central America and the eastern Pacific ITCZ region appears as patchy white against the green background. Along the southern tip of South America and the surrounding South Atlantic and South Pacific, vivid red-orange tones with swirling white cloud streaks are consistent with active mid-latitude cyclone tracks and frontal systems, with the orange hues there more plausibly reflecting dry subsident air wrapping around extratropical systems rather than a stratospheric intrusion. The Atlantic basin east of the Lesser Antilles shows relatively clear green tones with only modest cloud organization, offering no obvious signature of a well-developed tropical wave at this valid time.",
+      "error": null
+    },
+    {
+      "key": "cpc_610day",
+      "title": "CPC 6-10 Day Temperature Outlook",
+      "kind": "image",
+      "credit": "NOAA Climate Prediction Center",
+      "status": "ok",
+      "display_url": "https://www.cpc.ncep.noaa.gov/products/predictions/610day/610temp.new.gif",
+      "summary": "The most striking feature is the 90-100% probability bulls-eye for above-normal temperatures centered over Texas and Oklahoma, extending into New Mexico and southern Kansas, indicating an exceptionally high-confidence warm signal for late August 2026 that is consistent with a strong, anchored upper-level ridge over the south-central Plains. Probabilities decline outward concentrically but remain in the 60-70% likely-above range across most of the Rockies, central Plains, and the Southeast, so the above-normal signal covers the majority of the contiguous United States. The notable exception is a 50-60% likely-below signal over New England and the mid-Atlantic, centered roughly over New York and New England, with near-normal probabilities in the Great Lakes region forming a transition zone; this cool pocket is consistent with an implied downstream trough or cold advection feature digging into the Northeast. The geographic breadth of the above-normal signal — stretching from the Pacific Northwest interior to the Gulf Coast while maintaining high confidence at the core — suggests the forecasters see little indication that the warm regime breaks down within this period, rather than a transitional pattern. Alaska shows a below-normal signal over the western Aleutians and near-normal over the mainland interior, while Hawaii carries a likely-above signal, both consistent with the broader ridge axis implied over the central Pacific and continent.",
+      "error": null
+    },
+    {
+      "key": "cpc_610day_500mb",
+      "title": "CPC 6-10 Day 500 mb Height Outlook",
+      "kind": "image",
+      "credit": "NOAA Climate Prediction Center",
+      "status": "ok",
+      "display_url": "https://www.cpc.ncep.noaa.gov/products/predictions/610day/610day.03.gif",
+      "summary": "This 6-10 day 500 mb height and anomaly forecast valid August 24-28, 2026 shows a deep negative height anomaly center over the Canadian Arctic Archipelago and adjacent areas of the central Canadian Arctic, where the closed green height contours reach down to approximately 534 dam and the blue dashed anomaly contours indicate departures of roughly -20 dam or greater below normal — an exceptionally strong negative center that should be noted with some caution, though the concentric anomaly contours clearly support a large negative departure in that region. A broad positive anomaly region is evident across the North Pacific and along the western North American coast, with red dashed anomaly contours reaching +9 dam or so off the Pacific coast, but the zero anomaly line (where red and blue dashed contours transition) appears to run roughly along or just inland of the BC/Pacific Northwest coastline, suggesting the positive anomaly does not extend deeply into the continental interior. The 500 mb ridge axis over western North America tilts from roughly the northeastern Pacific into the BC coast area, while a pronounced trough axis extends meridionally through central Canada southward toward the central United States, consistent with the deep negative anomaly center to the north. Across the contiguous United States, the height pattern shows relatively flat, weakly amplified contours from the southern Rockies eastward through the Gulf states and southeastern US, with a secondary negative anomaly region implied over the south-central US by the blue dashed contours there. Overall the pattern implies a retracted positive anomaly confined to the Pacific and immediate coast rather than a strong ridge building into western North America, with the dominant feature being the amplified trough over central Canada producing a meridional but asymmetric flow rather than a zonal regime.",
+      "error": null
+    },
+    {
+      "key": "cpc_814day_500mb",
+      "title": "CPC 8-14 Day 500 mb Height Outlook",
+      "kind": "image",
+      "credit": "NOAA Climate Prediction Center",
+      "status": "ok",
+      "display_url": "https://www.cpc.ncep.noaa.gov/products/predictions/814day/814day.03.gif",
+      "summary": "This chart is a 500 mb height and height-anomaly (density/DNS dashed) prognostic valid 26 Aug – 1 Sep 2026, made 18 Aug 2026, so it is correctly identified as the CPC 8–14 day product. The dominant feature is a deep closed low centered over the Canadian Arctic Archipelago, with heights near 534 dam at the center; the anomaly dashed contours indicate a strong negative departure there, consistent with an unseasonably cold upper-level trough dominating the high latitudes. A broad ridge axis runs from the southwestern United States northward through the Great Basin and into the Pacific Northwest, with the ridge core appearing centered near the Four Corners/northern Mexico border region at approximately 588 dam — this represents a ridge that has retreated well to the southwest, and there is no evident positive anomaly centered over western Canada, the northern Rockies, or the northern Plains, which instead sit beneath the downstream flank of the Arctic trough. Across the central and eastern United States, heights range from roughly 582 dam in the southern Plains to 570 dam in the Great Lakes region, with the dashed anomaly contours suggesting near-normal to slightly below-normal departures across much of the Midwest and East. A secondary trough axis is implied by the height packing and curvature across central Canada, extending southeastward from the Arctic low toward the Great Lakes, consistent with a broad troughing pattern over eastern North America.",
+      "error": null
+    },
+    {
+      "key": "wpc_discussion",
+      "title": "WPC Short Range Forecast Discussion",
+      "kind": "text",
+      "credit": "NOAA Weather Prediction Center",
+      "status": "ok",
+      "display_url": null,
+      "summary": "A cool Canadian air mass and associated cold front will push eastward over the next two days, focusing heavy rain and severe thunderstorm threats along its boundary. Heavy rain and flash flooding expected today across the Midwest, Ohio Valley, and southern Arizona, shifting to the Mid-Atlantic coast Thursday. Severe storms possible mid-Mississippi Valley today through tonight. A convergence zone Thursday will enhance rainfall from the Mid-Atlantic northeastward. Monsoonal activity continues in the Four Corners with marginal excessive rainfall risk. Record heat persists in the South and intensifies in the Southwest, with dangerously warm overnight lows providing little relief. Extreme Heat Warnings active across the Desert Southwest and southern Plains; Heat Advisories cover Florida and the Southeast.",
+      "error": null
+    },
+    {
+      "key": "spc_outlook",
+      "title": "SPC Day 1 Convective Outlook",
+      "kind": "text",
+      "credit": "NOAA Storm Prediction Center",
+      "status": "ok",
+      "display_url": null,
+      "summary": "A Slight Risk is in effect for severe thunderstorms from the Ozarks into the mid Mississippi Valley and southern Arizona. The primary threats are damaging wind gusts and large hail.\n\nIn the mid Missouri Valley, a shortwave trough moving eastward will enhance instability, supporting organized supercells with potential large hail and damaging gusts by afternoon. The Ozarks into mid Mississippi Valley will see development this evening as the airmass recovers and the shortwave approaches; strong shear supports supercells capable of large hail, damaging gusts, and a few tornadoes. Secondary development is expected across the Ohio Valley with isolated supercell potential. High Plains storms developing over terrain will progress eastward with severe gust potential. Southern Arizona will see monsoon moisture supporting severe wind gusts. The Southeast has scattered activity with isolated wind damage possible.",
+      "error": null
+    },
+    {
+      "key": "spc_mesoscale",
+      "title": "SPC Mesoscale Discussions",
+      "kind": "text",
+      "credit": "NOAA Storm Prediction Center",
+      "status": "ok",
+      "display_url": null,
+      "summary": "Localized severe weather threat continues across northeast Kansas and west-central/central Missouri under Watch 598 through 0930Z, but intensity has been diminishing since 0700Z. Storms occupy an east-west zone with weak-to-moderate MUCAPE and weakening instability. While occasional stronger updrafts remain possible with localized risk of strong winds or hail, overall severe threat expected to continue declining. No new watch anticipated after Watch 598 expiration at 0900Z. Most probable peak wind gusts 55-70 mph; hail up to 1.25 inches.",
+      "error": null
+    },
+    {
+      "key": "tropics",
+      "title": "NHC Tropical Weather Outlooks",
+      "kind": "text",
+      "credit": "NOAA National Hurricane Center",
+      "status": "ok",
+      "display_url": null,
+      "summary": "Atlantic: No tropical cyclone formation expected over the next seven days.\n\nEast Pacific: Hurricane Lala is active several hundred miles southeast of Lisianski Island. A tropical wave east-southeast of Hawaii shows organization with favorable conditions; tropical depression likely within two days as it moves west-northwestward (70 percent 48-hour formation chance). A low pressure system south-southwest of Mexico expected to form late week with gradual development likely; tropical depression anticipated this weekend (80 percent seven-day formation chance).",
+      "error": null
+    },
+    {
+      "key": "enso",
+      "title": "ENSO State (Oceanic Niño Index)",
+      "kind": "text",
+      "credit": "NOAA Climate Prediction Center",
+      "status": "ok",
+      "display_url": null,
+      "summary": "Current ONI values show transition from weak La Niña conditions (OND 2025 at -0.61) toward neutral and then El Niño territory by spring-summer 2026. The cold anomaly weakens progressively through early 2026, crossing into positive territory around February-March 2026 with anomalies of +0.11 to +0.46. By late spring and early summer 2026, anomalies strengthen notably to +0.95 and +1.39, indicating development of moderate El Niño conditions. Warming trend is consistent and accelerating.",
+      "error": null
+    },
+    {
+      "key": "teleconnections",
+      "title": "Teleconnection Indices (PNA, AO, NAO)",
+      "kind": "text",
+      "credit": "NOAA Climate Prediction Center",
+      "status": "ok",
+      "display_url": null,
+      "summary": "PNA has weakened into negative territory, with the 7-day mean dropping to -0.70 from -0.29, suggesting loss of the western ridge/eastern trough pattern. AO recovered sharply from negative values mid-period, rising to +0.37 mean, though the latest reading is -0.35, indicating some pullback from high-latitude blocking support. NAO has shifted decidedly negative (7-day mean -0.90 from +0.19), now at -1.28, which could constrain eastern cutoff escapes. Summer teleconnections are directional signals rather than deterministic—current indices show weakening Pacific ridging, transient Arctic suppression, and Atlantic blocking unfavorability.",
+      "error": null
+    }
+  ]
+}
