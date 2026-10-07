@@ -289,7 +289,9 @@ def synthesize(
     length_rejections = 0
 
     for _ in range(MAX_TURNS):
-        response = client.messages.create(
+        # Streamed because the SDK refuses non-streaming calls whose max_tokens
+        # could imply a >10 minute request; we only need the assembled message.
+        with client.messages.stream(
             model=SYNTHESIS_MODEL,
             max_tokens=32000,
             thinking={"type": "adaptive"},
@@ -297,7 +299,8 @@ def synthesize(
             system=SYSTEM,
             tools=TOOLS,
             messages=messages,
-        )
+        ) as stream:
+            response = stream.get_final_message()
 
         if response.stop_reason != "tool_use":
             break

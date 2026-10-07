@@ -93,9 +93,23 @@ class FakeClient:
         self.calls = 0
         self.messages = self
 
-    def create(self, **kwargs):
+    def stream(self, **kwargs):
         self.calls += 1
-        return self.responses.pop(0)
+        return _FakeStream(self.responses.pop(0))
+
+
+class _FakeStream:
+    def __init__(self, message):
+        self.message = message
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *exc):
+        return False
+
+    def get_final_message(self):
+        return self.message
 
 
 class TestLengthBudget:
