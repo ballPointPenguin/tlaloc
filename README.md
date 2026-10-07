@@ -120,6 +120,17 @@ ANTHROPIC_API_KEY=... uv run python -m tlaloc
 ```
 
 ```sh
+# Full run with real Claude calls, but written to .dry-run/ (gitignored) instead of
+# the repo, so nothing touches the production page or archive
+ANTHROPIC_API_KEY=... uv run python -m tlaloc --dry-run
+open .dry-run/index.html
+```
+
+On GitHub, run the workflow manually (Actions → Daily Synoptic Analysis → Run workflow,
+choosing your branch) with **dry_run** ticked: it does the full run and uploads
+`tlaloc-dry-run` as a downloadable artifact instead of committing.
+
+```sh
 # Lint and unit tests
 uv run ruff check .
 uv run pytest

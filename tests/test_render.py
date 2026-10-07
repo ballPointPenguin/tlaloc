@@ -106,3 +106,15 @@ class TestWriteIndexHtml:
         first = index.read_text()
         write_index_html(index, make_synthesis(), [make_image_report()], GENERATED_AT)
         assert index.read_text() == first
+
+
+def test_write_index_html_can_target_a_separate_output(tmp_path):
+    template = tmp_path / "index.html"
+    template.write_text(
+        "<main>\n        <!-- BEGIN TLALOC CONTENT -->\nold\n        <!-- END TLALOC CONTENT -->\n</main>"
+    )
+    out = tmp_path / "scratch" / "index.html"
+    out.parent.mkdir()
+    write_index_html(template, make_synthesis(), [], GENERATED_AT, output_path=out)
+    assert "old" in template.read_text()
+    assert "old" not in out.read_text()

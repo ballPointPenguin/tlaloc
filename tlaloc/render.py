@@ -292,7 +292,9 @@ def write_index_html(
     synthesis: Synthesis,
     reports: list[SourceReport],
     generated_at: datetime | None = None,
+    output_path: Path | None = None,
 ) -> None:
+    """Splice the content into index_path's template; write to output_path if given."""
     generated_at = generated_at or datetime.now(timezone.utc)
     source = index_path.read_text()
     content = render_content(synthesis, reports, generated_at)
@@ -306,4 +308,4 @@ def write_index_html(
     updated, count = SENTINEL_RE.subn(lambda _match: replacement, source)
     if count == 0:
         raise RuntimeError(f"TLALOC CONTENT sentinel comments not found in {index_path}")
-    index_path.write_text(updated)
+    (output_path or index_path).write_text(updated)

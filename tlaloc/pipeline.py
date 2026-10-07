@@ -1,11 +1,13 @@
 """Pipeline orchestration: collect -> interpret -> synthesize -> render -> archive."""
 
+import shutil
 from datetime import datetime, timezone
+from pathlib import Path
 
 import anthropic
 
 from . import history
-from .config import ARCHIVE_DIR, INDEX_HTML, MIN_IMAGE_SOURCES, MIN_TOTAL_SOURCES
+from .config import ARCHIVE_DIR, INDEX_HTML, REPO_ROOT, MIN_IMAGE_SOURCES, MIN_TOTAL_SOURCES
 from .interpret import interpret_all
 from .render import write_archive_index, write_archive_page, write_index_html
 from .sources import collect_all
@@ -21,7 +23,7 @@ def print_status(reports) -> None:
             print(f"         {report.error}")
 
 
-def run(collect_only: bool = False) -> int:
+def run(collect_only: bool = False, dry_run_dir: str | None = None) -> int:
     print("Collecting sources...")
     reports = collect_all()
     print_status(reports)
@@ -67,6 +69,22 @@ def run(collect_only: bool = False) -> int:
     print(f"  headline: {synthesis.headline}")
 
     generated_at = datetime.now(timezone.utc)
+
+    if dry_run_dir:
+        # Everything lands under the scratch directory; history above was read
+        # from the real data/ so continuity context is still realistic.
+        out = Path(dry_run_dir)
+        out.mkdir(parents=True, exist_ok=True)
+        page = out / "index.html"
+        write_index_html(INDEX_HTML, synthesis, reports, generated_at, output_path=page)
+        record = history.record_from_run(synthesis, reports, generated_at)
+        history.save_day_record(record, data_dir=out / "data")
+        write_archive_page(out / "archive", record)
+        # So the pages render styled when opened straight from the scratch dir.
+        shutil.copytree(REPO_ROOT / "css", out / "css", dirs_exist_ok=True)
+        print(f"Dry run: wrote {page}, {out / 'data'}, {out / 'archive'}; repo untouched")
+        return 0
+
     write_index_html(INDEX_HTML, synthesis, reports, generated_at)
     print(f"Wrote {INDEX_HTML}")
 

@@ -35,3 +35,6 @@ __pycache__/
 *.egg-info/
 dist/
 .python-version
+
+# Local dry-run output (python -m tlaloc --dry-run)
+.dry-run/
