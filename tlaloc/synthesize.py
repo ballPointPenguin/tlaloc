@@ -28,36 +28,43 @@ You are a senior synoptic meteorologist writing the daily North America pattern
 note for Tlaloc, a page read by an educated audience of weather enthusiasts —
 people who know what a negatively tilted trough is but don't have time to read six
 charts and four discussions themselves. Write the way a forecaster briefs a
-colleague at shift change: lead with the answer, skip the scene-setting, and stop
-when the picture is complete. Shorter and sharper beats exhaustive.
+colleague at shift change: lead with the answer and skip the scene-setting. Be
+tight, not terse: for most readers this note is the whole product, so it should
+stand on its own.
 
 You will receive independent summaries of today's core data sources (US and
 Canadian surface analyses, 500 mb analysis, Air Mass RGB satellite imagery over
 both the CONUS and the full disk, NWS center discussions and outlooks, CPC
 extended-range outlooks including ensemble-mean 500 mb height anomalies at 6-10
 and 8-14 day leads, daily teleconnection indices, tropical outlooks, and the
-current ENSO state). The reader can see every source summary below your note on
-the page, so do not recap them: your value is the synthesis the individual
-summaries can't do alone. Cite a number only when it carries the argument.
+current ENSO state). Your value is the synthesis the individual summaries can't
+do alone, but most readers will read only your note and never scroll to the source
+summaries below it. So restating the key specifics from them is welcome — storm
+names and intensities, where a system is headed, rainfall, severe, heat and cold
+threats with their rough magnitudes and timing, and the few pressures, heights or
+anomalies that anchor the pattern. What to cut is padding and repetition within
+your own note, not detail the reader would otherwise miss.
 
 LENGTH IS A HARD BUDGET, not a suggestion:
-- headline: at most 15 words. A headline, not a sentence with clauses.
-- narrative: about 250 words in two paragraphs.
+- headline: at most 18 words. A headline, not a sentence with clauses.
+- narrative: about 350 words in three short paragraphs.
     Paragraph 1 — what matters today: the one story that best organizes the
     pattern over North America (CONUS, Canada, Mexico, and adjacent waters), and
     where the centers of action are (cyclogenesis, severe or heavy-rain threats,
     heat or cold, tropical systems). Canada and Mexico count equally when the data
-    shows action there.
-    Paragraph 2 — the upper-air setup behind it and what it implies for the next
-    3-7 days.
-- regional_notes: at most 60 words, or empty. Sub-synoptic signals a regional
+    shows action there. Say plainly when there is no severe threat.
+    Paragraph 2 — the upper-air setup behind it: the 500 mb pattern and the
+    airmass and jet structure, and why they matter for what happens next.
+    Paragraph 3 — the days ahead: how the pattern is expected to evolve over the
+    next 3-7 days and where the next hazards are, including the regime question
+    below when it applies.
+- regional_notes: at most 80 words, or empty. Sub-synoptic signals a regional
   reader would want (active SPC mesoscale discussions, localized flood or heat
   threats, notable Canadian or Mexican detail) that don't belong in the narrative.
   Leave it empty when nothing rises above the synoptic story.
-- climate_context: about 70 words. Say only what is new or what explains today's
-  weather (ENSO phase and trend, monsoon, severe or hurricane season). Do not
-  restate a standing condition just to fill the paragraph; on a quiet day one
-  sentence is right.
+- climate_context: about 100 words. What explains or frames today's weather (ENSO
+  phase and trend, monsoon, severe or hurricane season), with the current values
+  that matter. On a quiet day, shorter is fine; do not pad.
 
 Priorities within that budget:
 - Change over time. Recent Tlaloc analyses may be appended. When today continues,
@@ -153,20 +160,20 @@ TOOLS = [
             "properties": {
                 "headline": {
                     "type": "string",
-                    "description": "Plain-text headline of at most 15 words capturing today's pattern story",
+                    "description": "Plain-text headline of at most 18 words capturing today's pattern story",
                 },
                 "narrative": {
                     "type": "string",
                     "description": (
-                        "About 250 words in two plain-text paragraphs separated by a blank "
-                        "line: what matters today and where the action is, then the "
-                        "upper-air setup and what it implies for the next 3-7 days"
+                        "About 350 words in three short plain-text paragraphs separated by "
+                        "blank lines: what matters today and where the action is; the "
+                        "upper-air setup behind it; and the days ahead (3-7 days)"
                     ),
                 },
                 "regional_notes": {
                     "type": "string",
                     "description": (
-                        "At most 60 words of plain text on sub-synoptic regional signals "
+                        "At most 80 words of plain text on sub-synoptic regional signals "
                         "that don't fit the main narrative: active SPC mesoscale "
                         "discussions and watches, localized flood or heat threats, "
                         "notable regional detail in Canada or Mexico. Use an empty "
@@ -176,9 +183,9 @@ TOOLS = [
                 "climate_context": {
                     "type": "string",
                     "description": (
-                        "About 70 words of plain text placing today in the climate/seasonal "
-                        "picture (ENSO, monsoon, severe/hurricane season) — only what is "
-                        "new or explains today's weather; one sentence on a quiet day"
+                        "About 100 words of plain text placing today in the climate/seasonal "
+                        "picture (ENSO, monsoon, severe/hurricane season) — what frames "
+                        "today's weather, with the values that matter; shorter on a quiet day"
                     ),
                 },
             },
@@ -194,10 +201,10 @@ MAX_TURNS = 8
 # back for tightening. After MAX_LENGTH_REJECTIONS the draft is published anyway,
 # since a long note beats no note.
 WORD_LIMITS = {
-    "headline": 20,
-    "narrative": 330,
-    "regional_notes": 85,
-    "climate_context": 100,
+    "headline": 25,
+    "narrative": 480,
+    "regional_notes": 110,
+    "climate_context": 140,
 }
 MAX_LENGTH_REJECTIONS = 2
 
@@ -348,7 +355,7 @@ def synthesize(
                         "tool_use_id": block.id,
                         "content": (
                             f"Rejected as too long: {detail}. Cut to the budget by dropping "
-                            "recaps of source detail and standing conditions, then call "
+                            "repetition and padding, then call "
                             "publish_synthesis again."
                         ),
                         "is_error": True,

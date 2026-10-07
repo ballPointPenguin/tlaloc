@@ -100,12 +100,14 @@ jargon.
   `TLALOC_TEXT_MODEL`, `TLALOC_SYNTHESIS_MODEL`; synthesis thinking depth is
   `TLALOC_SYNTHESIS_EFFORT` (default `high`). Vision calls run with
   `thinking: between_tools` so Sonnet 5.5's default thinking can't eat the token budget.
-- **Brevity is a budget, enforced.** The synthesis prompt sets word targets (headline
-  ≤15 words, narrative ~250 in two paragraphs, regional notes ≤60, climate ~70) and
-  tells the model the reader can already see every source summary. `publish_synthesis`
-  drafts that overshoot `WORD_LIMITS` in `synthesize.py` are sent back for tightening
-  twice, then published anyway. Only yesterday's opening sentence (plus older
-  headlines) is fed back for continuity, so the note doesn't echo its own phrasing.
+- **Length is a budget, enforced.** Most readers only read the synthesis, so it has to
+  stand alone: the prompt sets word targets (headline ≤18 words, narrative ~350 in
+  three short paragraphs — today, upper-air setup, days ahead — regional notes ≤80,
+  climate ~100) and explicitly welcomes restating key specifics from the source
+  summaries, while cutting padding. `publish_synthesis` drafts that overshoot
+  `WORD_LIMITS` in `synthesize.py` are sent back for tightening twice, then published
+  anyway. Only yesterday's opening sentence (plus older headlines) is fed back for
+  continuity, so the note doesn't echo its own phrasing.
 
 ## Running
 
