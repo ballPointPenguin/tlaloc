@@ -188,6 +188,10 @@ def interpret_image(client: anthropic.Anthropic, report: SourceReport) -> str:
     response = client.messages.create(
         model=VISION_MODEL,
         max_tokens=1024,
+        # Sonnet 5.5 thinks by default, and thinking tokens count against
+        # max_tokens; between_tools (the lowest setting) keeps this a plain
+        # text call, as it was on earlier models.
+        thinking={"type": "between_tools"},
         system=VISION_SYSTEM,
         messages=[
             {

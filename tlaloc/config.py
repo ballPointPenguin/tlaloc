@@ -21,6 +21,10 @@ TEXT_MODEL = os.environ.get("TLALOC_TEXT_MODEL", "claude-haiku-4-5")
 # The final meta-synthesis across all source summaries.
 SYNTHESIS_MODEL = os.environ.get("TLALOC_SYNTHESIS_MODEL", "claude-opus-5-5")
 
+# Thinking depth for the synthesis call. Opus 5.5 defaults to "medium"; "high" is
+# worth the (small, once-daily) cost for the diagnostic-discipline rules.
+SYNTHESIS_EFFORT = os.environ.get("TLALOC_SYNTHESIS_EFFORT", "high")
+
 USER_AGENT = "tlaloc-weather-bot/2.0 (+https://github.com/ballPointPenguin/tlaloc)"
 HTTP_TIMEOUT_SECONDS = 30
 PROBE_TIMEOUT_SECONDS = 10
