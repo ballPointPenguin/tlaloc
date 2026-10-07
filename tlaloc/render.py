@@ -2,6 +2,7 @@
 plus the standalone archive pages derived from per-day history records."""
 
 import re
+from dataclasses import asdict
 from datetime import datetime, timezone
 from html import escape
 from pathlib import Path
@@ -29,27 +30,31 @@ def paragraphs(text: str, css_class: str) -> str:
     )
 
 
-def render_synthesis_section(synthesis: Synthesis, generated_at: datetime) -> str:
+def _synthesis_card(fields: dict, heading: str, generated_at: datetime) -> str:
     iso, human = format_timestamp(generated_at)
     regional = ""
-    if synthesis.regional_notes.strip():
+    if fields.get("regional_notes", "").strip():
         regional = (
             '    <h3 class="synthesis-card__subheading">Regional Signals</h3>\n'
-            + paragraphs(synthesis.regional_notes, "synthesis-card__text")
+            + paragraphs(fields["regional_notes"], "synthesis-card__text")
             + "\n"
         )
     return f"""<section aria-labelledby="synthesis-heading">
-  <h2 id="synthesis-heading">Today&rsquo;s Synoptic Picture</h2>
+  <h2 id="synthesis-heading">{heading}</h2>
   <div class="synthesis-card">
-    <p class="synthesis-card__headline">{escape(synthesis.headline)}</p>
-{paragraphs(synthesis.narrative, "synthesis-card__text")}
+    <p class="synthesis-card__headline">{escape(fields["headline"])}</p>
+{paragraphs(fields["narrative"], "synthesis-card__text")}
 {regional}    <h3 class="synthesis-card__subheading">Climate Context</h3>
-{paragraphs(synthesis.climate_context, "synthesis-card__text")}
+{paragraphs(fields["climate_context"], "synthesis-card__text")}
     <p class="synoptic-card__timestamp">
       <small>Synthesized: <time datetime="{iso}">{human}</time></small>
     </p>
   </div>
 </section>"""
+
+
+def render_synthesis_section(synthesis: Synthesis, generated_at: datetime) -> str:
+    return _synthesis_card(asdict(synthesis), "Today&rsquo;s Synoptic Picture", generated_at)
 
 
 def render_image_section(report: SourceReport) -> str:
@@ -70,20 +75,21 @@ def render_image_section(report: SourceReport) -> str:
 </section>"""
 
 
-def render_source_notes(reports: list[SourceReport]) -> str:
+def _source_notes_section(notes: list[tuple[str, str | None]]) -> str:
+    """Render (title, summary) pairs; a falsy summary means the source was unavailable."""
     items = []
-    for report in reports:
-        if report.status == "ok" and report.kind == "text" and report.summary:
+    for title, summary in notes:
+        if summary:
             items.append(
                 f"""    <li class="source-note">
-      <span class="source-note__title">{escape(report.title)}</span>
-      <span class="source-note__body">{escape(' '.join(report.summary.split()))}</span>
+      <span class="source-note__title">{escape(title)}</span>
+      <span class="source-note__body">{escape(" ".join(summary.split()))}</span>
     </li>"""
             )
-        elif report.status != "ok":
+        else:
             items.append(
                 f"""    <li class="source-note source-note--failed">
-      <span class="source-note__title">{escape(report.title)}</span>
+      <span class="source-note__title">{escape(title)}</span>
       <span class="source-note__body">Unavailable for this analysis.</span>
     </li>"""
             )
@@ -96,6 +102,16 @@ def render_source_notes(reports: list[SourceReport]) -> str:
 {body}
   </ul>
 </section>"""
+
+
+def render_source_notes(reports: list[SourceReport]) -> str:
+    # Charts get their own cards on the live page, so only text sources and
+    # failures are listed here.
+    return _source_notes_section([
+        (r.title, r.summary if r.status == "ok" else None)
+        for r in reports
+        if r.status != "ok" or (r.kind == "text" and r.summary)
+    ])
 
 
 def render_analysis_datetime(generated_at: datetime) -> str:
@@ -190,55 +206,14 @@ def parse_record_timestamp(record: dict) -> datetime:
 
 
 def render_record_synthesis_section(record: dict) -> str:
-    synthesis = record["synthesis"]
-    iso, human = format_timestamp(parse_record_timestamp(record))
-    regional = ""
-    if synthesis.get("regional_notes", "").strip():
-        regional = (
-            '    <h3 class="synthesis-card__subheading">Regional Signals</h3>\n'
-            + paragraphs(synthesis["regional_notes"], "synthesis-card__text")
-            + "\n"
-        )
-    return f"""<section aria-labelledby="synthesis-heading">
-  <h2 id="synthesis-heading">Synoptic Picture</h2>
-  <div class="synthesis-card">
-    <p class="synthesis-card__headline">{escape(synthesis["headline"])}</p>
-{paragraphs(synthesis["narrative"], "synthesis-card__text")}
-{regional}    <h3 class="synthesis-card__subheading">Climate Context</h3>
-{paragraphs(synthesis["climate_context"], "synthesis-card__text")}
-    <p class="synoptic-card__timestamp">
-      <small>Synthesized: <time datetime="{iso}">{human}</time></small>
-    </p>
-  </div>
-</section>"""
+    return _synthesis_card(record["synthesis"], "Synoptic Picture", parse_record_timestamp(record))
 
 
 def render_record_sources_section(record: dict) -> str:
-    items = []
-    for source in record["sources"]:
-        if source["status"] == "ok" and source.get("summary"):
-            items.append(
-                f"""    <li class="source-note">
-      <span class="source-note__title">{escape(source["title"])}</span>
-      <span class="source-note__body">{escape(" ".join(source["summary"].split()))}</span>
-    </li>"""
-            )
-        else:
-            items.append(
-                f"""    <li class="source-note source-note--failed">
-      <span class="source-note__title">{escape(source["title"])}</span>
-      <span class="source-note__body">Unavailable for this analysis.</span>
-    </li>"""
-            )
-    if not items:
-        return ""
-    body = "\n".join(items)
-    return f"""<section aria-labelledby="sources-heading">
-  <h2 id="sources-heading">Sources Consulted</h2>
-  <ul class="source-notes">
-{body}
-  </ul>
-</section>"""
+    return _source_notes_section([
+        (src["title"], src.get("summary") if src["status"] == "ok" else None)
+        for src in record["sources"]
+    ])
 
 
 def render_record_charts_section(record: dict) -> str:

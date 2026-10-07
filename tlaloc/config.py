@@ -15,11 +15,11 @@ DATA_DIR = REPO_ROOT / "data"
 ARCHIVE_DIR = REPO_ROOT / "archive"
 
 # Vision interpretation of individual charts/imagery.
-VISION_MODEL = os.environ.get("TLALOC_VISION_MODEL", "claude-sonnet-4-6")
+VISION_MODEL = os.environ.get("TLALOC_VISION_MODEL", "claude-sonnet-5-5")
 # Distillation of long text products (forecast discussions, outlooks).
 TEXT_MODEL = os.environ.get("TLALOC_TEXT_MODEL", "claude-haiku-4-5")
 # The final meta-synthesis across all source summaries.
-SYNTHESIS_MODEL = os.environ.get("TLALOC_SYNTHESIS_MODEL", "claude-opus-4-8")
+SYNTHESIS_MODEL = os.environ.get("TLALOC_SYNTHESIS_MODEL", "claude-opus-5-5")
 
 USER_AGENT = "tlaloc-weather-bot/2.0 (+https://github.com/ballPointPenguin/tlaloc)"
 HTTP_TIMEOUT_SECONDS = 30

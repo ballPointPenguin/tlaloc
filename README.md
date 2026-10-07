@@ -94,9 +94,9 @@ jargon.
   which sources are missing so it doesn't overreach. If too few sources survive
   (fewer than 1 chart or 2 total), the run aborts *without touching the page* —
   yesterday's analysis stays up rather than publishing something thin.
-- **Models.** Chart interpretation uses `claude-sonnet-4-6` (vision), text
+- **Models.** Chart interpretation uses `claude-sonnet-5-5` (vision), text
   distillation uses `claude-haiku-4-5`, and the once-daily synthesis uses
-  `claude-opus-4-8` with adaptive thinking. Override with `TLALOC_VISION_MODEL`,
+  `claude-opus-5-5` with adaptive thinking. Override with `TLALOC_VISION_MODEL`,
   `TLALOC_TEXT_MODEL`, `TLALOC_SYNTHESIS_MODEL`.
 
 ## Running
