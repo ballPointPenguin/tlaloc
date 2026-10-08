@@ -592,6 +592,10 @@ CPC_DAILY_INDEX_FILES = {
 # tail to be the most recent data (same reason as the ONI table above).
 DAILY_INDEX_MAX_CHARS = 900_000
 TELECONNECTION_DAYS = 14
+# CPC's daily tables sometimes stop updating for days. A series whose newest row is
+# older than this is flagged as stale in the briefing rather than passed off as
+# current, and an older mirror never wins over a fresher one.
+TELECONNECTION_STALE_DAYS = 3
 # Change in weekly-mean standardized units below which a trend isn't worth naming.
 TELECONNECTION_TREND_THRESHOLD = 0.25
 # CPC uses large sentinels for missing days; real standardized values are O(1).
@@ -667,19 +671,40 @@ def collect_teleconnection_indices() -> SourceReport:
     )
     blocks = []
     errors = []
+    today = datetime.now(timezone.utc).date()
     for name, (filename, note) in CPC_DAILY_INDEX_FILES.items():
+        # Hosts can mirror the same table at different freshness, so keep the
+        # newest series and only stop early once one is current.
+        best: list[tuple[date, float]] = []
         for host in CPC_DAILY_INDEX_HOSTS:
             try:
                 text = fetch_text(f"{host}/{filename}", DAILY_INDEX_MAX_CHARS)
-                blocks.append(summarize_daily_index(name, note, parse_daily_index_series(text)))
-                break
             except SourceError as exc:
                 errors.append(f"{name} @ {host}: {exc}")
+                continue
+            series = parse_daily_index_series(text)
+            if series and (not best or series[-1][0] > best[-1][0]):
+                best = series
+            if best and (today - best[-1][0]).days <= TELECONNECTION_STALE_DAYS:
+                break
+        if not best:
+            errors.append(f"{name}: no usable rows from any host")
+            continue
+        block = summarize_daily_index(name, note, best)
+        age = (today - best[-1][0]).days
+        if age > TELECONNECTION_STALE_DAYS:
+            block += (
+                f"\n  WARNING: STALE — the newest value is {age} days old "
+                f"({best[-1][0].isoformat()}); CPC has not updated this table. "
+                "Do not treat it as current."
+            )
+        blocks.append(block)
     if not blocks:
         return report.fail("; ".join(errors) or "no teleconnection indices retrieved")
     header = (
         "Daily CPC teleconnection indices in standardized units, last "
-        f"{TELECONNECTION_DAYS} days. These are observed values, not forecasts, and "
+        f"{TELECONNECTION_DAYS} available days (see each index's date). These are "
+        "observed values, not forecasts, and "
         "extratropical teleconnections are weaker and less canonical in summer than in "
         "winter — treat a summer index as directional support, not as evidence on its own."
     )

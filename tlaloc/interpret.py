@@ -179,8 +179,9 @@ the forecaster's attention is focused, and any notable uncertainty. Keep the
 specifics a downstream writer would need — named systems and their intensities,
 locations, timing, risk categories, and the key numbers — rather than generalizing
 them away. For data tables, state the current value and recent trend plainly (e.g.
-for an ONI table, the current ENSO phase and which way it is drifting). Drop
-boilerplate, headers, and administrative text, and don't comment on the product's
+for an ONI table, the current ENSO phase and which way it is drifting). Always keep a product's
+as-of date when it is stated, and any warning that the data is stale or out of
+date. Drop boilerplate, headers, and administrative text, and don't comment on the product's
 format — just brief its content. Plain text only, no markdown, at most 150 words.
 """
 
