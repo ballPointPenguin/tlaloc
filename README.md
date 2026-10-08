@@ -29,12 +29,15 @@ collect  ->  interpret (one Claude call per source)  ->  synthesize (one meta ca
 | 6-10 Day Temperature Outlook | chart | NOAA CPC |
 | 6-10 Day 500 mb Height Outlook (ensemble-mean anomalies) | chart | NOAA CPC |
 | 8-14 Day 500 mb Height Outlook (ensemble-mean anomalies) | chart | NOAA CPC |
+| Excessive Rainfall Outlook, Days 1 and 2 | chart | NOAA WPC |
 | Short Range Forecast Discussion | text | NOAA WPC via api.weather.gov |
 | Day 1 Convective Outlook | text | NOAA SPC via api.weather.gov |
 | Mesoscale Discussions (last 6 h; absence noted) | text | NOAA SPC via api.weather.gov |
 | Tropical Weather Outlooks (ATL + EPAC) | text | NOAA NHC |
+| Active storm advisories and discussions (absence noted) | text | NOAA NHC (`CurrentStorms.json`) |
 | Oceanic Niño Index table | data | NOAA CPC |
 | Daily teleconnection indices (PNA, AO, NAO) | data | NOAA CPC |
+| MJO phase and amplitude (RMM index) | data | Australian Bureau of Meteorology |
 
 Each chart gets an independent vision interpretation; each text product gets a short
 distillation. These per-source summaries are the building blocks. (A stable

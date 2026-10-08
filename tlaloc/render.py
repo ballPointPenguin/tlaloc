@@ -191,7 +191,7 @@ ARCHIVE_PAGE_TEMPLATE = """\
         </p>
         <p>
           Data: NOAA WPC, SPC, NHC, CPC, NESDIS/GOES, Environment and Climate
-          Change Canada, and College of DuPage NEXLAB. Interpretation and
+          Change Canada, Australian Bureau of Meteorology, and College of DuPage NEXLAB. Interpretation and
           synthesis generated with Claude.
         </p>
       </div>

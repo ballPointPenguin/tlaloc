@@ -133,6 +133,30 @@ VISION_FOCUS = {
         "locate the feature relative to a landmark you can see, rather than attaching "
         "the nearest familiar province name."
     ),
+    "ero_day1": (
+        "This is the NOAA Weather Prediction Center Excessive Rainfall Outlook for Day 1: "
+        "the risk that rainfall will exceed flash-flood guidance within 25 miles of a "
+        "point. Read the legend before naming a category: the risk areas are Marginal, "
+        "Slight, Moderate and High (conventionally green, yellow, red and magenta), and "
+        "Marginal is the lowest. List which categories appear and over which regions, "
+        "naming states or coastlines from the geography visible. Say which area carries "
+        "the highest category and whether the risk areas look tied to a tropical system, "
+        "a stalled front or terrain. If no risk area is drawn, say the outlook shows no "
+        "excessive-rainfall risk. The chart shows risk categories, not rainfall totals, "
+        "so do not quote amounts."
+    ),
+    "ero_day2": (
+        "This is the NOAA Weather Prediction Center Excessive Rainfall Outlook for Day 2: "
+        "the risk that rainfall will exceed flash-flood guidance within 25 miles of a "
+        "point. Read the legend before naming a category: the risk areas are Marginal, "
+        "Slight, Moderate and High (conventionally green, yellow, red and magenta), and "
+        "Marginal is the lowest. List which categories appear and over which regions, "
+        "naming states or coastlines from the geography visible, and whether the risk "
+        "has grown, shifted or relaxed relative to what a Day 1 outlook would typically "
+        "show for the same system (only if that is evident). If no risk area is drawn, "
+        "say so. The chart shows risk categories, not rainfall totals, so do not quote "
+        "amounts."
+    ),
     "cpc_610day": (
         "This is the NOAA Climate Prediction Center 6-10 day temperature outlook, "
         "showing probabilities of above- or below-normal temperatures. Describe where "
@@ -182,7 +206,8 @@ them away. For data tables, state the current value and recent trend plainly (e.
 for an ONI table, the current ENSO phase and which way it is drifting). Always keep a product's
 as-of date when it is stated, and any warning that the data is stale or out of
 date. Drop boilerplate, headers, and administrative text, and don't comment on the product's
-format — just brief its content. Plain text only, no markdown, at most 150 words.
+format — just brief its content. Plain text only, no markdown, within the word limit
+stated with the product.
 """
 
 
@@ -216,6 +241,9 @@ def interpret_image(client: anthropic.Anthropic, report: SourceReport) -> str:
     return _text_of(response)
 
 
+DEFAULT_SUMMARY_WORDS = 150
+
+
 def summarize_text(client: anthropic.Anthropic, report: SourceReport) -> str:
     response = client.messages.create(
         model=TEXT_MODEL,
@@ -230,7 +258,8 @@ def summarize_text(client: anthropic.Anthropic, report: SourceReport) -> str:
                 "content": (
                     f"Product: {report.title} ({report.credit}).\n\n"
                     f"{report.raw_text}\n\n"
-                    "Distill this product per your instructions."
+                    "Distill this product per your instructions. Word limit: "
+                    f"{report.summary_words or DEFAULT_SUMMARY_WORDS} words."
                 ),
             }
         ],

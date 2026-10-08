@@ -41,6 +41,8 @@ class SourceReport:
     raw_text: str | None = None
     # Filled in by the interpretation stage
     summary: str | None = None
+    # Word budget for this text source's distillation; None means the default.
+    summary_words: int | None = None
 
     def fail(self, error: str) -> "SourceReport":
         self.status = "failed"
@@ -376,6 +378,65 @@ def collect_cpc_814day_500mb() -> SourceReport:
     )
 
 
+# WPC's Excessive Rainfall Outlook: the flooding counterpart to SPC's severe
+# outlook. Days 1 and 2 are fetched because a tropical or frontal rain event is
+# usually decided a day or two out. The filenames below are WPC's long-standing
+# ones; if they move, the failure message lists what the product page offers.
+WPC_ERO_PAGE = "https://www.wpc.ncep.noaa.gov/qpf/excess_rain.shtml"
+WPC_ERO_DAYS = {
+    1: ("ero_day1", ("https://www.wpc.ncep.noaa.gov/qpf/94ewbg.gif",)),
+    2: ("ero_day2", ("https://www.wpc.ncep.noaa.gov/qpf/98ewbg.gif",)),
+}
+
+
+def _collect_direct_image(
+    report: SourceReport, candidates: Sequence[str], discovery_page: str
+) -> SourceReport:
+    """Fetch the first candidate URL that serves an image.
+
+    On failure the error names every image the product page references, so a
+    CI collect-only run shows where a moved chart went.
+    """
+    try:
+        url = resolve_first_available_image(candidates)
+        data, media_type = fetch_image_base64(url)
+    except SourceError as exc:
+        try:
+            referenced = extract_page_image_urls(
+                discovery_page, fetch_text(discovery_page, MAX_PAGE_CHARS)
+            )
+            offered = ", ".join(referenced[:MAX_REPORTED_PAGE_IMAGES]) or "none"
+        except SourceError as page_exc:
+            offered = f"page unreadable ({page_exc})"
+        return report.fail(f"{exc}; {discovery_page} references: {offered}")
+    report.display_url = url
+    report.image_base64 = data
+    report.image_media_type = media_type
+    return report
+
+
+def _collect_ero(day: int) -> SourceReport:
+    key, candidates = WPC_ERO_DAYS[day]
+    return _collect_direct_image(
+        SourceReport(
+            key=key,
+            title=f"Excessive Rainfall Outlook (Day {day})",
+            kind="image",
+            credit="NOAA Weather Prediction Center",
+        ),
+        candidates,
+        WPC_ERO_PAGE,
+    )
+
+
+def collect_ero_day1() -> SourceReport:
+    return _collect_ero(1)
+
+
+def collect_ero_day2() -> SourceReport:
+    return _collect_ero(2)
+
+
 # ---------------------------------------------------------------------------
 # Text sources
 # ---------------------------------------------------------------------------
@@ -477,6 +538,109 @@ def collect_tropical_outlooks() -> SourceReport:
     if not sections:
         return report.fail("; ".join(errors) or "no outlooks retrieved")
     report.raw_text = "\n\n".join(sections)[:MAX_TEXT_CHARS]
+    return report
+
+
+# Active tropical cyclones. The outlooks above say what might form; this is what
+# NHC is already issuing advisories on, with the intensity, track and hazard
+# detail that otherwise reaches the synthesis only second-hand.
+NHC_CURRENT_STORMS_URL = "https://www.nhc.noaa.gov/CurrentStorms.json"
+NHC_TEXT_URL = "https://www.nhc.noaa.gov/text/MIA{product}{bin}.shtml"
+NHC_MAX_STORMS = 4
+NHC_PRODUCT_MAX_CHARS = 7_000
+NHC_SUMMARY_WORDS = 250
+NO_ACTIVE_STORMS_TEXT = (
+    "NHC lists no active tropical cyclones right now (no advisories are being issued)."
+)
+NHC_CLASSIFICATIONS = {
+    "HU": "Hurricane",
+    "TS": "Tropical Storm",
+    "TD": "Tropical Depression",
+    "STS": "Subtropical Storm",
+    "STD": "Subtropical Depression",
+    "PTC": "Potential Tropical Cyclone",
+    "PC": "Post-Tropical Cyclone",
+}
+
+
+def describe_active_storm(storm: dict) -> str:
+    """One header line per storm from CurrentStorms.json, tolerant of missing fields."""
+    code = str(storm.get("classification", "")).strip()
+    label = NHC_CLASSIFICATIONS.get(code, code or "Tropical cyclone")
+    name = storm.get("name") or storm.get("id") or "unnamed"
+    parts = [f"{label} {name}"]
+    if storm.get("intensity") not in (None, ""):
+        parts.append(f"max sustained winds {storm['intensity']} kt")
+    if storm.get("pressure") not in (None, ""):
+        parts.append(f"minimum pressure {storm['pressure']} mb")
+    lat = storm.get("latitude") or storm.get("latitudeNumeric")
+    lon = storm.get("longitude") or storm.get("longitudeNumeric")
+    if lat not in (None, "") and lon not in (None, ""):
+        parts.append(f"position {lat}, {lon}")
+    if storm.get("movementDir") not in (None, "") and storm.get("movementSpeed") not in (None, ""):
+        parts.append(f"moving {storm['movementDir']} deg at {storm['movementSpeed']}")
+    if storm.get("lastUpdate"):
+        parts.append(f"as of {storm['lastUpdate']}")
+    return ", ".join(parts)
+
+
+def _nhc_product_url(storm: dict, field: str, product: str) -> str | None:
+    """The advisory/discussion page for a storm: NHC's own link, else built from its bin."""
+    link = storm.get(field)
+    if isinstance(link, dict) and isinstance(link.get("url"), str) and link["url"].startswith("http"):
+        return link["url"]
+    bin_number = storm.get("binNumber")
+    if isinstance(bin_number, str) and bin_number.strip():
+        return NHC_TEXT_URL.format(product=product, bin=bin_number.strip().upper())
+    return None
+
+
+def _fetch_nhc_product(url: str) -> str:
+    html = fetch_text(url, MAX_TEXT_CHARS * 2)
+    match = PRE_BLOCK_RE.search(html)
+    if not match:
+        raise SourceError(f"no <pre> product block found at {url}")
+    return match.group(1).strip()[:NHC_PRODUCT_MAX_CHARS]
+
+
+def collect_active_storms() -> SourceReport:
+    """Advisories and discussions for each active tropical cyclone.
+
+    No active storms is a normal state (and itself signal), so it is reported as
+    a note rather than a failure. A storm whose advisory text can't be fetched
+    still contributes its header line from the index.
+    """
+    report = SourceReport(
+        key="nhc_storms",
+        title="NHC Active Storm Advisories",
+        kind="text",
+        credit="NOAA National Hurricane Center",
+        summary_words=NHC_SUMMARY_WORDS,
+    )
+    try:
+        data = fetch_json(NHC_CURRENT_STORMS_URL)
+    except SourceError as exc:
+        return report.fail(str(exc))
+    storms = [s for s in (data.get("activeStorms") or []) if isinstance(s, dict)]
+    if not storms:
+        report.raw_text = NO_ACTIVE_STORMS_TEXT
+        return report
+    sections = []
+    for storm in storms[:NHC_MAX_STORMS]:
+        block = [f"=== {describe_active_storm(storm)} ==="]
+        for field, product, label in (
+            ("publicAdvisory", "TCP", "Public advisory"),
+            ("forecastDiscussion", "TCD", "Forecast discussion"),
+        ):
+            url = _nhc_product_url(storm, field, product)
+            if not url:
+                continue
+            try:
+                block.append(f"--- {label} ---\n{_fetch_nhc_product(url)}")
+            except SourceError as exc:
+                block.append(f"--- {label} unavailable: {exc} ---")
+        sections.append("\n\n".join(block))
+    report.raw_text = "\n\n".join(sections)
     return report
 
 
@@ -712,6 +876,96 @@ def collect_teleconnection_indices() -> SourceReport:
     return report
 
 
+# The Real-time Multivariate MJO (RMM) index of the Australian Bureau of
+# Meteorology: the standard phase/amplitude diagnostic for where tropical
+# convection is being enhanced along the equator. It frames the tropical
+# cyclone and two-week-pattern questions the rest of the backbone can't, and like
+# the teleconnections it is supplementary context, never a conclusion on its own.
+MJO_URL = "https://www.bom.gov.au/climate/mjo/graphics/rmm.74toRealtime.txt"
+# The table runs daily from 1974 (~1.2 MB), so it has to come down whole for the
+# tail to be the latest data.
+MJO_MAX_CHARS = 3_000_000
+MJO_RECENT_DAYS = 10
+MJO_STALE_DAYS = 3
+# Active MJO events have amplitude >= 1 (outside the unit circle of the phase diagram).
+MJO_ACTIVE_AMPLITUDE = 1.0
+MJO_PHASE_REGIONS = {
+    1: "Western Hemisphere/Africa",
+    2: "Indian Ocean",
+    3: "Indian Ocean",
+    4: "Maritime Continent",
+    5: "Maritime Continent",
+    6: "western Pacific",
+    7: "western Pacific",
+    8: "Western Hemisphere/Africa",
+}
+
+
+def parse_rmm_series(text: str) -> list[tuple[date, float, float, int, float]]:
+    """Parse the RMM table into (day, RMM1, RMM2, phase, amplitude) in order.
+
+    Rows read "year month day RMM1 RMM2 phase amplitude ..."; BoM marks missing
+    days with 1.E36 and phase 999, and the header and notes are free text.
+    """
+    series = []
+    for line in text.splitlines():
+        parts = line.split()
+        if len(parts) < 7:
+            continue
+        try:
+            day = date(int(parts[0]), int(parts[1]), int(parts[2]))
+            rmm1, rmm2, phase, amp = (
+                float(parts[3]), float(parts[4]), int(float(parts[5])), float(parts[6])
+            )
+        except ValueError:
+            continue
+        if abs(rmm1) > 1e5 or abs(rmm2) > 1e5 or abs(amp) > 1e5 or phase not in MJO_PHASE_REGIONS:
+            continue
+        series.append((day, rmm1, rmm2, phase, amp))
+    return series
+
+
+def summarize_mjo(series: list[tuple[date, float, float, int, float]], today: date) -> str:
+    recent = series[-MJO_RECENT_DAYS:]
+    if not recent:
+        raise SourceError("MJO table contained no usable rows")
+    day, rmm1, rmm2, phase, amp = recent[-1]
+    state = (
+        "active (outside the unit circle)"
+        if amp >= MJO_ACTIVE_AMPLITUDE
+        else "weak (inside the unit circle; little MJO signal)"
+    )
+    lines = [
+        "Real-time Multivariate MJO (RMM) index, Australian Bureau of Meteorology.",
+        f"Latest {day.isoformat()}: phase {phase} ({MJO_PHASE_REGIONS[phase]}), "
+        f"amplitude {amp:.2f}, {state}; RMM1 {rmm1:+.2f}, RMM2 {rmm2:+.2f}.",
+        "Recent days, oldest to newest (phase/amplitude): "
+        + ", ".join(f"{d.month}/{d.day}: {p}/{a:.2f}" for d, _r1, _r2, p, a in recent),
+    ]
+    age = (today - day).days
+    if age > MJO_STALE_DAYS:
+        lines.append(
+            f"WARNING: STALE — the newest value is {age} days old ({day.isoformat()}); "
+            "do not treat it as current."
+        )
+    return "\n".join(lines)
+
+
+def collect_mjo() -> SourceReport:
+    report = SourceReport(
+        key="mjo",
+        title="Madden-Julian Oscillation (RMM Index)",
+        kind="text",
+        credit="Australian Bureau of Meteorology",
+    )
+    try:
+        series = parse_rmm_series(fetch_text(MJO_URL, MJO_MAX_CHARS))
+        report.raw_text = summarize_mjo(series, datetime.now(timezone.utc).date())
+    except SourceError as exc:
+        return report.fail(str(exc))
+    return report
+
+
 # ---------------------------------------------------------------------------
 # Registry
 # ---------------------------------------------------------------------------
@@ -725,12 +979,16 @@ COLLECTORS: list[Callable[[], SourceReport]] = [
     collect_cpc_610day_outlook,
     collect_cpc_610day_500mb,
     collect_cpc_814day_500mb,
+    collect_ero_day1,
+    collect_ero_day2,
     collect_wpc_discussion,
     collect_spc_outlook,
     collect_mesoscale_discussions,
     collect_tropical_outlooks,
+    collect_active_storms,
     collect_enso_state,
     collect_teleconnection_indices,
+    collect_mjo,
 ]
 
 

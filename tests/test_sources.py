@@ -279,3 +279,123 @@ class TestTeleconnectionFreshness:
         assert report.status == "ok"
         assert "STALE" in report.raw_text
         assert "8 days old" in report.raw_text
+
+
+class TestActiveStorms:
+    STORM = {
+        "id": "al092026",
+        "binNumber": "AT4",
+        "name": "Isaias",
+        "classification": "HU",
+        "intensity": "75",
+        "pressure": "975",
+        "latitude": "25.1N",
+        "longitude": "86.2W",
+        "movementDir": 350,
+        "movementSpeed": 8,
+        "lastUpdate": "2026-10-08T21:00:00.000Z",
+        "publicAdvisory": {"url": "https://www.nhc.noaa.gov/text/MIATCPAT4.shtml"},
+    }
+
+    def test_describe_storm_uses_available_fields(self):
+        from tlaloc.sources import describe_active_storm
+
+        line = describe_active_storm(self.STORM)
+        assert line.startswith("Hurricane Isaias")
+        assert "75 kt" in line and "975 mb" in line and "25.1N, 86.2W" in line
+
+    def test_describe_storm_tolerates_missing_fields(self):
+        from tlaloc.sources import describe_active_storm
+
+        assert describe_active_storm({"name": "Simon", "classification": "TS"}) == (
+            "Tropical Storm Simon"
+        )
+
+    def test_product_url_prefers_nhc_link_then_builds_from_bin(self):
+        from tlaloc.sources import _nhc_product_url
+
+        assert _nhc_product_url(self.STORM, "publicAdvisory", "TCP").endswith("MIATCPAT4.shtml")
+        assert _nhc_product_url(self.STORM, "forecastDiscussion", "TCD") == (
+            "https://www.nhc.noaa.gov/text/MIATCDAT4.shtml"
+        )
+        assert _nhc_product_url({}, "forecastDiscussion", "TCD") is None
+
+    def test_no_active_storms_is_a_note_not_a_failure(self, monkeypatch):
+        from tlaloc import sources
+
+        monkeypatch.setattr(sources, "fetch_json", lambda url: {"activeStorms": []})
+        report = sources.collect_active_storms()
+        assert report.status == "ok"
+        assert report.raw_text == sources.NO_ACTIVE_STORMS_TEXT
+
+    def test_unreadable_advisory_still_reports_the_storm(self, monkeypatch):
+        from tlaloc import sources
+
+        def no_text(url, max_chars):
+            raise sources.SourceError("down")
+
+        monkeypatch.setattr(sources, "fetch_json", lambda url: {"activeStorms": [self.STORM]})
+        monkeypatch.setattr(sources, "fetch_text", no_text)
+        report = sources.collect_active_storms()
+        assert report.status == "ok"
+        assert "Hurricane Isaias" in report.raw_text
+        assert "Public advisory unavailable" in report.raw_text
+
+    def test_index_failure_fails_the_source(self, monkeypatch):
+        from tlaloc import sources
+
+        def boom(url):
+            raise sources.SourceError("403")
+
+        monkeypatch.setattr(sources, "fetch_json", boom)
+        assert sources.collect_active_storms().status == "failed"
+
+
+class TestMjo:
+    TABLE = "\n".join([
+        "RMM index, rows: year month day RMM1 RMM2 phase amplitude status",
+        "1974 6 1 1.2 -0.4 5 1.26 Final",
+        "1974 6 2 1.E36 1.E36 999 1.E36 missing",
+    ] + [
+        f"2026 10 {d} {0.2 * d:.2f} -0.50 {1 + d % 8} {0.3 * d:.2f} Prelim" for d in range(1, 9)
+    ])
+
+    def test_parse_skips_header_and_missing_rows(self):
+        from tlaloc.sources import parse_rmm_series
+
+        series = parse_rmm_series(self.TABLE)
+        assert len(series) == 9
+        assert series[0][0] == date(1974, 6, 1) and series[0][3] == 5
+        assert series[-1][0] == date(2026, 10, 8)
+
+    def test_summary_reports_phase_amplitude_and_staleness(self):
+        from tlaloc.sources import parse_rmm_series, summarize_mjo
+
+        series = parse_rmm_series(self.TABLE)
+        fresh = summarize_mjo(series, date(2026, 10, 9))
+        assert "Latest 2026-10-08: phase 1 (Western Hemisphere/Africa)" in fresh
+        assert "active (outside the unit circle)" in fresh
+        assert "STALE" not in fresh
+        stale = summarize_mjo(series, date(2026, 10, 20))
+        assert "STALE" in stale and "12 days old" in stale
+
+    def test_weak_amplitude_is_labeled_weak(self):
+        from tlaloc.sources import summarize_mjo
+
+        text = summarize_mjo([(date(2026, 10, 8), 0.1, 0.1, 3, 0.4)], date(2026, 10, 8))
+        assert "weak (inside the unit circle" in text
+
+
+class TestEroCollectors:
+    def test_failure_names_what_the_page_offers(self, monkeypatch):
+        from tlaloc import sources
+
+        monkeypatch.setattr(sources, "image_url_exists", lambda url: False)
+        monkeypatch.setattr(
+            sources,
+            "fetch_text",
+            lambda url, max_chars: '<img src="/qpf/new_ero_day1.png"><img src="/logo.png">',
+        )
+        report = sources.collect_ero_day1()
+        assert report.status == "failed"
+        assert "new_ero_day1.png" in report.error
