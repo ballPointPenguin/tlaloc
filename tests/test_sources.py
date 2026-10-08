@@ -432,3 +432,11 @@ class TestMjoCollector:
         assert report.status == "failed"
         assert "403" in report.error
         assert "DATE RMM1 RMM2" in report.error
+
+
+def test_pre_block_text_strips_inline_markup():
+    from tlaloc.sources import pre_block_text
+
+    html = '<html><pre><b><a href="/es">en Espa&ntilde;ol</a></b>\n000 ABNT20 KNHC\nA &lt; B</pre></html>'
+    assert pre_block_text(html) == "en Español\n000 ABNT20 KNHC\nA < B"
+    assert pre_block_text("<p>no product here</p>") is None

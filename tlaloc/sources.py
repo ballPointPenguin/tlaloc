@@ -16,6 +16,7 @@ import re
 import traceback
 from dataclasses import dataclass
 from datetime import date, datetime, timedelta, timezone
+from html import unescape
 from typing import Callable, Literal, Sequence
 from urllib.parse import urljoin, urlsplit
 
@@ -513,6 +514,15 @@ NHC_TWO_PAGES = {
     "East Pacific": "https://www.nhc.noaa.gov/text/MIATWOEP.shtml",
 }
 PRE_BLOCK_RE = re.compile(r"<pre>(.*?)</pre>", re.DOTALL | re.IGNORECASE)
+HTML_TAG_RE = re.compile(r"<[^>]+>")
+
+
+def pre_block_text(html: str) -> str | None:
+    """The text of the first <pre> block with any inline markup (links, bold) removed."""
+    match = PRE_BLOCK_RE.search(html)
+    if not match:
+        return None
+    return unescape(HTML_TAG_RE.sub("", match.group(1))).strip()
 
 
 def collect_tropical_outlooks() -> SourceReport:
@@ -530,9 +540,9 @@ def collect_tropical_outlooks() -> SourceReport:
         except SourceError as exc:
             errors.append(f"{basin}: {exc}")
             continue
-        match = PRE_BLOCK_RE.search(html)
-        if match:
-            sections.append(f"--- {basin} ---\n{match.group(1).strip()}")
+        text = pre_block_text(html)
+        if text:
+            sections.append(f"--- {basin} ---\n{text}")
         else:
             errors.append(f"{basin}: no <pre> product block found at {url}")
     if not sections:
@@ -597,10 +607,10 @@ def _nhc_product_url(storm: dict, field: str, product: str) -> str | None:
 
 def _fetch_nhc_product(url: str) -> str:
     html = fetch_text(url, MAX_TEXT_CHARS * 2)
-    match = PRE_BLOCK_RE.search(html)
-    if not match:
+    text = pre_block_text(html)
+    if not text:
         raise SourceError(f"no <pre> product block found at {url}")
-    return match.group(1).strip()[:NHC_PRODUCT_MAX_CHARS]
+    return text[:NHC_PRODUCT_MAX_CHARS]
 
 
 def collect_active_storms() -> SourceReport:
