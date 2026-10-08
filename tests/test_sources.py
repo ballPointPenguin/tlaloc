@@ -279,3 +279,96 @@ class TestTeleconnectionFreshness:
         assert report.status == "ok"
         assert "STALE" in report.raw_text
         assert "8 days old" in report.raw_text
+
+
+class TestActiveStorms:
+    STORM = {
+        "id": "al092026",
+        "binNumber": "AT4",
+        "name": "Isaias",
+        "classification": "HU",
+        "intensity": "75",
+        "pressure": "975",
+        "latitude": "25.1N",
+        "longitude": "86.2W",
+        "movementDir": 350,
+        "movementSpeed": 8,
+        "lastUpdate": "2026-10-08T21:00:00.000Z",
+        "publicAdvisory": {"url": "https://www.nhc.noaa.gov/text/MIATCPAT4.shtml"},
+    }
+
+    def test_describe_storm_uses_available_fields(self):
+        from tlaloc.sources import describe_active_storm
+
+        line = describe_active_storm(self.STORM)
+        assert line.startswith("Hurricane Isaias")
+        assert "75 kt" in line and "975 mb" in line and "25.1N, 86.2W" in line
+
+    def test_describe_storm_tolerates_missing_fields(self):
+        from tlaloc.sources import describe_active_storm
+
+        assert describe_active_storm({"name": "Simon", "classification": "TS"}) == (
+            "Tropical Storm Simon"
+        )
+
+    def test_product_url_prefers_nhc_link_then_builds_from_bin(self):
+        from tlaloc.sources import _nhc_product_url
+
+        assert _nhc_product_url(self.STORM, "publicAdvisory", "TCP").endswith("MIATCPAT4.shtml")
+        assert _nhc_product_url(self.STORM, "forecastDiscussion", "TCD") == (
+            "https://www.nhc.noaa.gov/text/MIATCDAT4.shtml"
+        )
+        assert _nhc_product_url({}, "forecastDiscussion", "TCD") is None
+
+    def test_no_active_storms_is_a_note_not_a_failure(self, monkeypatch):
+        from tlaloc import sources
+
+        monkeypatch.setattr(sources, "fetch_json", lambda url: {"activeStorms": []})
+        report = sources.collect_active_storms()
+        assert report.status == "ok"
+        assert report.raw_text == sources.NO_ACTIVE_STORMS_TEXT
+
+    def test_unreadable_advisory_still_reports_the_storm(self, monkeypatch):
+        from tlaloc import sources
+
+        def no_text(url, max_chars):
+            raise sources.SourceError("down")
+
+        monkeypatch.setattr(sources, "fetch_json", lambda url: {"activeStorms": [self.STORM]})
+        monkeypatch.setattr(sources, "fetch_text", no_text)
+        report = sources.collect_active_storms()
+        assert report.status == "ok"
+        assert "Hurricane Isaias" in report.raw_text
+        assert "Public advisory unavailable" in report.raw_text
+
+    def test_index_failure_fails_the_source(self, monkeypatch):
+        from tlaloc import sources
+
+        def boom(url):
+            raise sources.SourceError("403")
+
+        monkeypatch.setattr(sources, "fetch_json", boom)
+        assert sources.collect_active_storms().status == "failed"
+
+
+class TestEroCollectors:
+    def test_failure_names_what_the_page_offers(self, monkeypatch):
+        from tlaloc import sources
+
+        monkeypatch.setattr(sources, "image_url_exists", lambda url: False)
+        monkeypatch.setattr(
+            sources,
+            "fetch_text",
+            lambda url, max_chars: '<img src="/qpf/new_ero_day1.png"><img src="/logo.png">',
+        )
+        report = sources.collect_ero_day1()
+        assert report.status == "failed"
+        assert "new_ero_day1.png" in report.error
+
+
+def test_pre_block_text_strips_inline_markup():
+    from tlaloc.sources import pre_block_text
+
+    html = '<html><pre><b><a href="/es">en Espa&ntilde;ol</a></b>\n000 ABNT20 KNHC\nA &lt; B</pre></html>'
+    assert pre_block_text(html) == "en Español\n000 ABNT20 KNHC\nA < B"
+    assert pre_block_text("<p>no product here</p>") is None

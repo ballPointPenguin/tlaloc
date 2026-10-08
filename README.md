@@ -29,10 +29,12 @@ collect  ->  interpret (one Claude call per source)  ->  synthesize (one meta ca
 | 6-10 Day Temperature Outlook | chart | NOAA CPC |
 | 6-10 Day 500 mb Height Outlook (ensemble-mean anomalies) | chart | NOAA CPC |
 | 8-14 Day 500 mb Height Outlook (ensemble-mean anomalies) | chart | NOAA CPC |
+| Excessive Rainfall Outlook, Days 1 and 2 | chart | NOAA WPC |
 | Short Range Forecast Discussion | text | NOAA WPC via api.weather.gov |
 | Day 1 Convective Outlook | text | NOAA SPC via api.weather.gov |
 | Mesoscale Discussions (last 6 h; absence noted) | text | NOAA SPC via api.weather.gov |
 | Tropical Weather Outlooks (ATL + EPAC) | text | NOAA NHC |
+| Active storm advisories and discussions (absence noted) | text | NOAA NHC (`CurrentStorms.json`) |
 | Oceanic Niño Index table | data | NOAA CPC |
 | Daily teleconnection indices (PNA, AO, NAO) | data | NOAA CPC |
 
@@ -151,7 +153,12 @@ Add a collector in `tlaloc/sources.py` that returns a `SourceReport`, register i
 `SourceError` (or returns `report.fail(...)`). Run `--collect-only` before opening a
 PR: it is the only check that a new URL is actually live.
 
-Wanted but not yet added, for lack of a stable public still-image endpoint: a 500 mb
-height-anomaly Hovmöller (the cleanest single test of whether a wave is phase-locked
-or progressing), ensemble spaghetti and cluster plots, and dynamic-tropopause/PV
-maps. The extended-range height outlooks above are the closest available substitute.
+Wanted but not yet added:
+
+- The MJO phase/amplitude (RMM) index. Its only public text feed (Australian BoM) returns
+  403 to our user-agent, and CPC's own MJO file is a different product (a
+  velocity-potential index by longitude and pentad), not RMM.
+- For lack of a stable public still-image endpoint: a 500 mb height-anomaly Hovmöller (the
+  cleanest single test of whether a wave is phase-locked or progressing), ensemble
+  spaghetti and cluster plots, and dynamic-tropopause/PV maps. The extended-range height
+  outlooks above are the closest available substitute.

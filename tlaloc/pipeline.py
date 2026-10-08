@@ -21,6 +21,9 @@ def print_status(reports) -> None:
         print(f"  [{marker}] {report.key:<16} {report.title}  {detail}")
         if report.error:
             print(f"         {report.error}")
+        elif report.kind == "text" and report.raw_text:
+            preview = " ".join(report.raw_text.split())[:150]
+            print(f"         {preview}")
 
 
 def run(collect_only: bool = False, dry_run_dir: str | None = None) -> int:

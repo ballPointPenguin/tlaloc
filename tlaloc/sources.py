@@ -16,6 +16,7 @@ import re
 import traceback
 from dataclasses import dataclass
 from datetime import date, datetime, timedelta, timezone
+from html import unescape
 from typing import Callable, Literal, Sequence
 from urllib.parse import urljoin, urlsplit
 
@@ -41,6 +42,8 @@ class SourceReport:
     raw_text: str | None = None
     # Filled in by the interpretation stage
     summary: str | None = None
+    # Word budget for this text source's distillation; None means the default.
+    summary_words: int | None = None
 
     def fail(self, error: str) -> "SourceReport":
         self.status = "failed"
@@ -376,6 +379,65 @@ def collect_cpc_814day_500mb() -> SourceReport:
     )
 
 
+# WPC's Excessive Rainfall Outlook: the flooding counterpart to SPC's severe
+# outlook. Days 1 and 2 are fetched because a tropical or frontal rain event is
+# usually decided a day or two out. The filenames below are WPC's long-standing
+# ones; if they move, the failure message lists what the product page offers.
+WPC_ERO_PAGE = "https://www.wpc.ncep.noaa.gov/qpf/excess_rain.shtml"
+WPC_ERO_DAYS = {
+    1: ("ero_day1", ("https://www.wpc.ncep.noaa.gov/qpf/94ewbg.gif",)),
+    2: ("ero_day2", ("https://www.wpc.ncep.noaa.gov/qpf/98ewbg.gif",)),
+}
+
+
+def _collect_direct_image(
+    report: SourceReport, candidates: Sequence[str], discovery_page: str
+) -> SourceReport:
+    """Fetch the first candidate URL that serves an image.
+
+    On failure the error names every image the product page references, so a
+    CI collect-only run shows where a moved chart went.
+    """
+    try:
+        url = resolve_first_available_image(candidates, probe=image_url_exists)
+        data, media_type = fetch_image_base64(url)
+    except SourceError as exc:
+        try:
+            referenced = extract_page_image_urls(
+                discovery_page, fetch_text(discovery_page, MAX_PAGE_CHARS)
+            )
+            offered = ", ".join(referenced[:MAX_REPORTED_PAGE_IMAGES]) or "none"
+        except SourceError as page_exc:
+            offered = f"page unreadable ({page_exc})"
+        return report.fail(f"{exc}; {discovery_page} references: {offered}")
+    report.display_url = url
+    report.image_base64 = data
+    report.image_media_type = media_type
+    return report
+
+
+def _collect_ero(day: int) -> SourceReport:
+    key, candidates = WPC_ERO_DAYS[day]
+    return _collect_direct_image(
+        SourceReport(
+            key=key,
+            title=f"Excessive Rainfall Outlook (Day {day})",
+            kind="image",
+            credit="NOAA Weather Prediction Center",
+        ),
+        candidates,
+        WPC_ERO_PAGE,
+    )
+
+
+def collect_ero_day1() -> SourceReport:
+    return _collect_ero(1)
+
+
+def collect_ero_day2() -> SourceReport:
+    return _collect_ero(2)
+
+
 # ---------------------------------------------------------------------------
 # Text sources
 # ---------------------------------------------------------------------------
@@ -452,6 +514,15 @@ NHC_TWO_PAGES = {
     "East Pacific": "https://www.nhc.noaa.gov/text/MIATWOEP.shtml",
 }
 PRE_BLOCK_RE = re.compile(r"<pre>(.*?)</pre>", re.DOTALL | re.IGNORECASE)
+HTML_TAG_RE = re.compile(r"<[^>]+>")
+
+
+def pre_block_text(html: str) -> str | None:
+    """The text of the first <pre> block with any inline markup (links, bold) removed."""
+    match = PRE_BLOCK_RE.search(html)
+    if not match:
+        return None
+    return unescape(HTML_TAG_RE.sub("", match.group(1))).strip()
 
 
 def collect_tropical_outlooks() -> SourceReport:
@@ -469,14 +540,117 @@ def collect_tropical_outlooks() -> SourceReport:
         except SourceError as exc:
             errors.append(f"{basin}: {exc}")
             continue
-        match = PRE_BLOCK_RE.search(html)
-        if match:
-            sections.append(f"--- {basin} ---\n{match.group(1).strip()}")
+        text = pre_block_text(html)
+        if text:
+            sections.append(f"--- {basin} ---\n{text}")
         else:
             errors.append(f"{basin}: no <pre> product block found at {url}")
     if not sections:
         return report.fail("; ".join(errors) or "no outlooks retrieved")
     report.raw_text = "\n\n".join(sections)[:MAX_TEXT_CHARS]
+    return report
+
+
+# Active tropical cyclones. The outlooks above say what might form; this is what
+# NHC is already issuing advisories on, with the intensity, track and hazard
+# detail that otherwise reaches the synthesis only second-hand.
+NHC_CURRENT_STORMS_URL = "https://www.nhc.noaa.gov/CurrentStorms.json"
+NHC_TEXT_URL = "https://www.nhc.noaa.gov/text/MIA{product}{bin}.shtml"
+NHC_MAX_STORMS = 4
+NHC_PRODUCT_MAX_CHARS = 7_000
+NHC_SUMMARY_WORDS = 250
+NO_ACTIVE_STORMS_TEXT = (
+    "NHC lists no active tropical cyclones right now (no advisories are being issued)."
+)
+NHC_CLASSIFICATIONS = {
+    "HU": "Hurricane",
+    "TS": "Tropical Storm",
+    "TD": "Tropical Depression",
+    "STS": "Subtropical Storm",
+    "STD": "Subtropical Depression",
+    "PTC": "Potential Tropical Cyclone",
+    "PC": "Post-Tropical Cyclone",
+}
+
+
+def describe_active_storm(storm: dict) -> str:
+    """One header line per storm from CurrentStorms.json, tolerant of missing fields."""
+    code = str(storm.get("classification", "")).strip()
+    label = NHC_CLASSIFICATIONS.get(code, code or "Tropical cyclone")
+    name = storm.get("name") or storm.get("id") or "unnamed"
+    parts = [f"{label} {name}"]
+    if storm.get("intensity") not in (None, ""):
+        parts.append(f"max sustained winds {storm['intensity']} kt")
+    if storm.get("pressure") not in (None, ""):
+        parts.append(f"minimum pressure {storm['pressure']} mb")
+    lat = storm.get("latitude") or storm.get("latitudeNumeric")
+    lon = storm.get("longitude") or storm.get("longitudeNumeric")
+    if lat not in (None, "") and lon not in (None, ""):
+        parts.append(f"position {lat}, {lon}")
+    if storm.get("movementDir") not in (None, "") and storm.get("movementSpeed") not in (None, ""):
+        parts.append(f"moving {storm['movementDir']} deg at {storm['movementSpeed']}")
+    if storm.get("lastUpdate"):
+        parts.append(f"as of {storm['lastUpdate']}")
+    return ", ".join(parts)
+
+
+def _nhc_product_url(storm: dict, field: str, product: str) -> str | None:
+    """The advisory/discussion page for a storm: NHC's own link, else built from its bin."""
+    link = storm.get(field)
+    if isinstance(link, dict) and isinstance(link.get("url"), str) and link["url"].startswith("http"):
+        return link["url"]
+    bin_number = storm.get("binNumber")
+    if isinstance(bin_number, str) and bin_number.strip():
+        return NHC_TEXT_URL.format(product=product, bin=bin_number.strip().upper())
+    return None
+
+
+def _fetch_nhc_product(url: str) -> str:
+    html = fetch_text(url, MAX_TEXT_CHARS * 2)
+    text = pre_block_text(html)
+    if not text:
+        raise SourceError(f"no <pre> product block found at {url}")
+    return text[:NHC_PRODUCT_MAX_CHARS]
+
+
+def collect_active_storms() -> SourceReport:
+    """Advisories and discussions for each active tropical cyclone.
+
+    No active storms is a normal state (and itself signal), so it is reported as
+    a note rather than a failure. A storm whose advisory text can't be fetched
+    still contributes its header line from the index.
+    """
+    report = SourceReport(
+        key="nhc_storms",
+        title="NHC Active Storm Advisories",
+        kind="text",
+        credit="NOAA National Hurricane Center",
+        summary_words=NHC_SUMMARY_WORDS,
+    )
+    try:
+        data = fetch_json(NHC_CURRENT_STORMS_URL)
+    except SourceError as exc:
+        return report.fail(str(exc))
+    storms = [s for s in (data.get("activeStorms") or []) if isinstance(s, dict)]
+    if not storms:
+        report.raw_text = NO_ACTIVE_STORMS_TEXT
+        return report
+    sections = []
+    for storm in storms[:NHC_MAX_STORMS]:
+        block = [f"=== {describe_active_storm(storm)} ==="]
+        for field, product, label in (
+            ("publicAdvisory", "TCP", "Public advisory"),
+            ("forecastDiscussion", "TCD", "Forecast discussion"),
+        ):
+            url = _nhc_product_url(storm, field, product)
+            if not url:
+                continue
+            try:
+                block.append(f"--- {label} ---\n{_fetch_nhc_product(url)}")
+            except SourceError as exc:
+                block.append(f"--- {label} unavailable: {exc} ---")
+        sections.append("\n\n".join(block))
+    report.raw_text = "\n\n".join(sections)
     return report
 
 
@@ -725,10 +899,13 @@ COLLECTORS: list[Callable[[], SourceReport]] = [
     collect_cpc_610day_outlook,
     collect_cpc_610day_500mb,
     collect_cpc_814day_500mb,
+    collect_ero_day1,
+    collect_ero_day2,
     collect_wpc_discussion,
     collect_spc_outlook,
     collect_mesoscale_discussions,
     collect_tropical_outlooks,
+    collect_active_storms,
     collect_enso_state,
     collect_teleconnection_indices,
 ]
