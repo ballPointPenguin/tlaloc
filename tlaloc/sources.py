@@ -398,7 +398,7 @@ def _collect_direct_image(
     CI collect-only run shows where a moved chart went.
     """
     try:
-        url = resolve_first_available_image(candidates)
+        url = resolve_first_available_image(candidates, probe=image_url_exists)
         data, media_type = fetch_image_base64(url)
     except SourceError as exc:
         try:
