@@ -886,112 +886,6 @@ def collect_teleconnection_indices() -> SourceReport:
     return report
 
 
-# The Real-time Multivariate MJO (RMM) index of the Australian Bureau of
-# Meteorology: the standard phase/amplitude diagnostic for where tropical
-# convection is being enhanced along the equator. It frames the tropical
-# cyclone and two-week-pattern questions the rest of the backbone can't, and like
-# the teleconnections it is supplementary context, never a conclusion on its own.
-# BoM's server returns 403 to our bot user-agent (observed in CI), so a NOAA-hosted
-# copy is tried too. Candidates are parsed with the same "year month day RMM1 RMM2
-# phase amplitude" reader; a candidate in any other layout is reported with its
-# opening lines so the next collect-only run shows what shape it actually has.
-MJO_URLS = (
-    "https://www.bom.gov.au/climate/mjo/graphics/rmm.74toRealtime.txt",
-    "https://www.cpc.ncep.noaa.gov/products/precip/CWlink/daily_mjo_index/proj_norm_order.ascii",
-)
-# The table runs daily from 1974 (~1.2 MB), so it has to come down whole for the
-# tail to be the latest data.
-MJO_MAX_CHARS = 3_000_000
-MJO_RECENT_DAYS = 10
-MJO_STALE_DAYS = 3
-# Active MJO events have amplitude >= 1 (outside the unit circle of the phase diagram).
-MJO_ACTIVE_AMPLITUDE = 1.0
-MJO_PHASE_REGIONS = {
-    1: "Western Hemisphere/Africa",
-    2: "Indian Ocean",
-    3: "Indian Ocean",
-    4: "Maritime Continent",
-    5: "Maritime Continent",
-    6: "western Pacific",
-    7: "western Pacific",
-    8: "Western Hemisphere/Africa",
-}
-
-
-def parse_rmm_series(text: str) -> list[tuple[date, float, float, int, float]]:
-    """Parse the RMM table into (day, RMM1, RMM2, phase, amplitude) in order.
-
-    Rows read "year month day RMM1 RMM2 phase amplitude ..."; BoM marks missing
-    days with 1.E36 and phase 999, and the header and notes are free text.
-    """
-    series = []
-    for line in text.splitlines():
-        parts = line.split()
-        if len(parts) < 7:
-            continue
-        try:
-            day = date(int(parts[0]), int(parts[1]), int(parts[2]))
-            rmm1, rmm2, phase, amp = (
-                float(parts[3]), float(parts[4]), int(float(parts[5])), float(parts[6])
-            )
-        except ValueError:
-            continue
-        if abs(rmm1) > 1e5 or abs(rmm2) > 1e5 or abs(amp) > 1e5 or phase not in MJO_PHASE_REGIONS:
-            continue
-        series.append((day, rmm1, rmm2, phase, amp))
-    return series
-
-
-def summarize_mjo(series: list[tuple[date, float, float, int, float]], today: date) -> str:
-    recent = series[-MJO_RECENT_DAYS:]
-    if not recent:
-        raise SourceError("MJO table contained no usable rows")
-    day, rmm1, rmm2, phase, amp = recent[-1]
-    state = (
-        "active (outside the unit circle)"
-        if amp >= MJO_ACTIVE_AMPLITUDE
-        else "weak (inside the unit circle; little MJO signal)"
-    )
-    lines = [
-        "Real-time Multivariate MJO (RMM) index, Australian Bureau of Meteorology.",
-        f"Latest {day.isoformat()}: phase {phase} ({MJO_PHASE_REGIONS[phase]}), "
-        f"amplitude {amp:.2f}, {state}; RMM1 {rmm1:+.2f}, RMM2 {rmm2:+.2f}.",
-        "Recent days, oldest to newest (phase/amplitude): "
-        + ", ".join(f"{d.month}/{d.day}: {p}/{a:.2f}" for d, _r1, _r2, p, a in recent),
-    ]
-    age = (today - day).days
-    if age > MJO_STALE_DAYS:
-        lines.append(
-            f"WARNING: STALE — the newest value is {age} days old ({day.isoformat()}); "
-            "do not treat it as current."
-        )
-    return "\n".join(lines)
-
-
-def collect_mjo() -> SourceReport:
-    report = SourceReport(
-        key="mjo",
-        title="Madden-Julian Oscillation (RMM Index)",
-        kind="text",
-        credit="Australian Bureau of Meteorology",
-    )
-    errors = []
-    for url in MJO_URLS:
-        try:
-            text = fetch_text(url, MJO_MAX_CHARS)
-        except SourceError as exc:
-            errors.append(str(exc))
-            continue
-        series = parse_rmm_series(text)
-        if not series:
-            opening = " | ".join(text.splitlines()[:3])[:240]
-            errors.append(f"{url}: no RMM rows recognised; file opens with: {opening!r}")
-            continue
-        report.raw_text = summarize_mjo(series, datetime.now(timezone.utc).date())
-        return report
-    return report.fail("; ".join(errors))
-
-
 # ---------------------------------------------------------------------------
 # Registry
 # ---------------------------------------------------------------------------
@@ -1014,7 +908,6 @@ COLLECTORS: list[Callable[[], SourceReport]] = [
     collect_active_storms,
     collect_enso_state,
     collect_teleconnection_indices,
-    collect_mjo,
 ]
 
 

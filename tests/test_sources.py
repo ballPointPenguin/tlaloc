@@ -351,41 +351,6 @@ class TestActiveStorms:
         assert sources.collect_active_storms().status == "failed"
 
 
-class TestMjo:
-    TABLE = "\n".join([
-        "RMM index, rows: year month day RMM1 RMM2 phase amplitude status",
-        "1974 6 1 1.2 -0.4 5 1.26 Final",
-        "1974 6 2 1.E36 1.E36 999 1.E36 missing",
-    ] + [
-        f"2026 10 {d} {0.2 * d:.2f} -0.50 {1 + d % 8} {0.3 * d:.2f} Prelim" for d in range(1, 9)
-    ])
-
-    def test_parse_skips_header_and_missing_rows(self):
-        from tlaloc.sources import parse_rmm_series
-
-        series = parse_rmm_series(self.TABLE)
-        assert len(series) == 9
-        assert series[0][0] == date(1974, 6, 1) and series[0][3] == 5
-        assert series[-1][0] == date(2026, 10, 8)
-
-    def test_summary_reports_phase_amplitude_and_staleness(self):
-        from tlaloc.sources import parse_rmm_series, summarize_mjo
-
-        series = parse_rmm_series(self.TABLE)
-        fresh = summarize_mjo(series, date(2026, 10, 9))
-        assert "Latest 2026-10-08: phase 1 (Western Hemisphere/Africa)" in fresh
-        assert "active (outside the unit circle)" in fresh
-        assert "STALE" not in fresh
-        stale = summarize_mjo(series, date(2026, 10, 20))
-        assert "STALE" in stale and "12 days old" in stale
-
-    def test_weak_amplitude_is_labeled_weak(self):
-        from tlaloc.sources import summarize_mjo
-
-        text = summarize_mjo([(date(2026, 10, 8), 0.1, 0.1, 3, 0.4)], date(2026, 10, 8))
-        assert "weak (inside the unit circle" in text
-
-
 class TestEroCollectors:
     def test_failure_names_what_the_page_offers(self, monkeypatch):
         from tlaloc import sources
@@ -399,39 +364,6 @@ class TestEroCollectors:
         report = sources.collect_ero_day1()
         assert report.status == "failed"
         assert "new_ero_day1.png" in report.error
-
-
-class TestMjoCollector:
-    BOM_TABLE = "\n".join(
-        f"2026 10 {d} 0.5 -0.5 {1 + d % 8} 1.2 Prelim" for d in range(1, 9)
-    )
-
-    def test_falls_back_to_the_second_host_when_the_first_is_blocked(self, monkeypatch):
-        from tlaloc import sources
-
-        def fake_fetch(url, max_chars):
-            if "bom.gov.au" in url:
-                raise sources.SourceError("HTTP Error 403: Forbidden")
-            return self.BOM_TABLE
-
-        monkeypatch.setattr(sources, "fetch_text", fake_fetch)
-        report = sources.collect_mjo()
-        assert report.status == "ok"
-        assert "Latest 2026-10-08" in report.raw_text
-
-    def test_unrecognised_layout_reports_its_opening_lines(self, monkeypatch):
-        from tlaloc import sources
-
-        def fake_fetch(url, max_chars):
-            if "bom.gov.au" in url:
-                raise sources.SourceError("HTTP Error 403: Forbidden")
-            return "DATE RMM1 RMM2\n20261008 0.5 0.1\n"
-
-        monkeypatch.setattr(sources, "fetch_text", fake_fetch)
-        report = sources.collect_mjo()
-        assert report.status == "failed"
-        assert "403" in report.error
-        assert "DATE RMM1 RMM2" in report.error
 
 
 def test_pre_block_text_strips_inline_markup():
