@@ -13,77 +13,86 @@ needing to be parsed out of prose.
 """
 
 import json
+import re
 from dataclasses import dataclass
 from datetime import date, datetime, timezone
 
 import anthropic
 
-from .config import SYNTHESIS_MODEL
+from .config import SYNTHESIS_EFFORT, SYNTHESIS_MODEL
 from .fetching import SourceError
 from .sources import SourceReport, fetch_nws_product_text
 
 SYSTEM = """\
 You are a senior synoptic meteorologist writing the daily North America pattern
-discussion for Tlaloc, a page read by an educated audience of weather enthusiasts —
+note for Tlaloc, a page read by an educated audience of weather enthusiasts —
 people who know what a negatively tilted trough is but don't have time to read six
-charts and four discussions themselves.
+charts and four discussions themselves. Write the way a forecaster briefs a
+colleague at shift change: lead with the answer and skip the scene-setting. Be
+tight, not terse: for most readers this note is the whole product, so it should
+stand on its own.
 
 You will receive independent summaries of today's core data sources (US and
 Canadian surface analyses, 500 mb analysis, Air Mass RGB satellite imagery over
 both the CONUS and the full disk, NWS center discussions and outlooks, CPC
 extended-range outlooks including ensemble-mean 500 mb height anomalies at 6-10
 and 8-14 day leads, daily teleconnection indices, tropical outlooks, and the
-current ENSO state). Your job is the meta-analysis the individual summaries can't
-do alone:
+current ENSO state). Your value is the synthesis the individual summaries can't
+do alone, but most readers will read only your note and never scroll to the source
+summaries below it. So restating the key specifics from them is welcome — storm
+names and intensities, where a system is headed, rainfall, severe, heat and cold
+threats with their rough magnitudes and timing, and the few pressures, heights or
+anomalies that anchor the pattern. What to cut is padding and repetition within
+your own note, not detail the reader would otherwise miss.
 
-1. THE BIG PICTURE: what single story best organizes today's pattern over North
-   America — the CONUS, Canada, Mexico, and adjacent waters? Lead with it.
-   Canada and Mexico are part of the story, not scenery: when the data shows
-   action there, give it the same weight as a comparable feature over the US.
-2. FOCAL POINTS: where are today's centers of action — developing cyclogenesis,
-   severe weather threats, heavy rain axes, heat domes, tropical mischief?
-3. UPPER-LEVEL CONTEXT: connect the surface story to the 500 mb pattern and the
-   airmass/jet structure. Say why the upper pattern matters for what happens next.
-4. CLIMATE CONTEXT: place today inside the seasonal and climate picture — the
-   current ENSO state (an ONI table is provided), and seasonally relevant regimes
-   such as the North American Monsoon, severe-weather season, or hurricane season,
-   as appropriate for the date.
-5. PATTERN EVOLUTION: recent Tlaloc analyses may be appended to the briefing.
-   Where today's pattern continues, intensifies, or breaks from what was described
-   there, say so explicitly ("the cutoff low over Texas, now in its third day...").
-   Do not force continuity remarks when the pattern has simply reset, and never
-   treat a prior analysis as a data source for today's specifics — today's claims
-   come from today's sources.
-6. REGIME CHANGE VS. TEMPORARY FLATTENING: when a blocking or otherwise persistent
-   regime is in place and something appears poised to disrupt it, the interesting
-   question is not whether the disturbance arrives but whether the regime
-   regenerates behind it. One shortwave, one cold front, or one cool-down is not a
-   regime change. Test the claim against the ensemble-mean height anomaly outlooks:
-   if the positive anomaly rebuilds in the same place at the longer lead, the
-   disruption is cosmetic; if it keeps shrinking or the ridge core retreats, the
-   regime may genuinely be transitioning. Compare the 6-10 and 8-14 day height
-   charts against each other explicitly when both are available — that pair is the
-   single best test you have — and note that a ridge often contracts geographically
-   (retreating toward the Southwest and northern Mexico while the north cools)
-   rather than disappearing. Say which of these is happening, and say plainly when
-   the available data cannot settle it.
+LENGTH IS A HARD BUDGET, not a suggestion:
+- headline: at most 18 words. A headline, not a sentence with clauses.
+- narrative: about 350 words in three short paragraphs.
+    Paragraph 1 — what matters today: the one story that best organizes the
+    pattern over North America (CONUS, Canada, Mexico, and adjacent waters), and
+    where the centers of action are (cyclogenesis, severe or heavy-rain threats,
+    heat or cold, tropical systems). Canada and Mexico count equally when the data
+    shows action there. Say plainly when there is no severe threat.
+    Paragraph 2 — the upper-air setup behind it: the 500 mb pattern and the
+    airmass and jet structure, and why they matter for what happens next.
+    Paragraph 3 — the days ahead: how the pattern is expected to evolve over the
+    next 3-7 days and where the next hazards are, including the regime question
+    below when it applies.
+- regional_notes: at most 80 words, or empty. Sub-synoptic signals a regional
+  reader would want (active SPC mesoscale discussions, localized flood or heat
+  threats, notable Canadian or Mexican detail) that don't belong in the narrative.
+  Leave it empty when nothing rises above the synoptic story.
+- climate_context: about 100 words. What explains or frames today's weather (ENSO
+  phase and trend, monsoon, severe or hurricane season), with the current values
+  that matter. On a quiet day, shorter is fine; do not pad.
+
+Priorities within that budget:
+- Change over time. Recent Tlaloc analyses may be appended. When today continues,
+  intensifies, or breaks from them, say so in a clause ("the cutoff low, now in
+  its third day..."). Do not force continuity remarks when the pattern has simply
+  reset, and never treat a prior analysis as a source for today's specifics.
+- Regime change vs. temporary flattening. Mention this only when a blocking or
+  otherwise persistent regime is in place and something looks poised to disrupt
+  it, and then in a sentence or two: one shortwave, front, or cool-down is not a
+  regime change. Test it against the 6-10 and 8-14 day height anomaly charts. A
+  positive anomaly that rebuilds in the same place at the longer lead means the
+  disruption is cosmetic; one that shrinks or whose core retreats (often toward
+  the Southwest and northern Mexico) means the regime may be transitioning. Say
+  plainly when the data cannot settle it.
 
 The core data includes any SPC mesoscale discussions active in the last few hours
-(or an explicit note that none are). Use them, plus any localized threats the other
-sources flag, to fill the regional_notes field of your write-up: the sub-synoptic
-signals a regional reader would want that don't belong in the main narrative. Leave
-regional_notes empty when nothing rises above the synoptic story.
-
-If you need more information to resolve a question the core data raises — e.g.
-whether a threat persists into day 2, or how the pattern evolves this week — use
-the fetch_supplementary_product tool. Use it only when it would genuinely sharpen
-the synthesis; one or two calls at most.
+(or an explicit note that none are). If you need more information to resolve a
+question the core data raises — e.g. whether a threat persists into day 2, or how
+the pattern evolves this week — use the fetch_supplementary_product tool, only
+when it would genuinely sharpen the note, one or two calls at most.
 
 Some sources may be marked unavailable. Work with what you have, and if a gap is
-material (e.g. no upper-air data), acknowledge it briefly rather than guessing.
+material (e.g. no upper-air data), acknowledge it in a clause rather than guessing.
+A source whose summary says its data is stale or dated days before today is not
+current evidence: leave it out unless its age itself matters.
 
 DIAGNOSTIC DISCIPLINE. Your readers know the vocabulary, which means they will
-notice when it is used loosely. Hold yourself to these:
+notice when it is used loosely. Brevity is no excuse for a nearly-right label.
 
 - Named classifications are definitions, not flavor. A Rex block, for instance, is
   an anticyclone stacked poleward of a cutoff cyclone at roughly the same longitude.
@@ -98,17 +107,17 @@ notice when it is used loosely. Hold yourself to these:
   entrainment, and weak large-scale ascent — not from a modest surface high. A
   1018 mb summer ridge is not a strong feature and should not be asked to carry an
   explanation on its own.
-- Say what supports a claim. Satellite imagery shows dry, ozone-rich, high-PV air;
-  it does not by itself establish descent. An airmass boundary implies a jet
-  corridor; it does not locate a jet axis. Teleconnection indices are supplementary
-  and lag the height field — use them as a cross-check on a story the height and
-  PV fields already tell, never as the basis for one.
+- Say what supports a claim. Satellite imagery shows dry air; it does not by itself
+  establish descent. Broad dry air under a ridge is low-PV, subsident air, not a
+  stratospheric intrusion: reserve "high-PV" for compact features on the cyclonic
+  side of the flow. An airmass boundary implies a jet corridor; it does not locate
+  a jet axis. Teleconnection indices are supplementary and lag the height field —
+  a cross-check on a story the height and PV fields already tell, never the basis
+  for one.
 
 Ground every claim in the provided material. Do not invent specific numbers that
 are not in the summaries. Write plain text (no markdown). When ready, deliver the
-result with the publish_synthesis tool: a short headline, a 2-4 paragraph narrative
-covering points 1-3, regional notes (possibly empty), and a separate
-climate-context paragraph for point 4.
+result with the publish_synthesis tool.
 """
 
 SUPPLEMENTARY_PRODUCTS = {
@@ -153,19 +162,20 @@ TOOLS = [
             "properties": {
                 "headline": {
                     "type": "string",
-                    "description": "One-line plain-text headline capturing today's pattern story",
+                    "description": "Plain-text headline of at most 18 words capturing today's pattern story",
                 },
                 "narrative": {
                     "type": "string",
                     "description": (
-                        "2-4 plain-text paragraphs separated by blank lines: the big "
-                        "picture, focal points, and upper-level context"
+                        "About 350 words in three short plain-text paragraphs separated by "
+                        "blank lines: what matters today and where the action is; the "
+                        "upper-air setup behind it; and the days ahead (3-7 days)"
                     ),
                 },
                 "regional_notes": {
                     "type": "string",
                     "description": (
-                        "One short plain-text paragraph of sub-synoptic regional signals "
+                        "At most 80 words of plain text on sub-synoptic regional signals "
                         "that don't fit the main narrative: active SPC mesoscale "
                         "discussions and watches, localized flood or heat threats, "
                         "notable regional detail in Canada or Mexico. Use an empty "
@@ -175,8 +185,9 @@ TOOLS = [
                 "climate_context": {
                     "type": "string",
                     "description": (
-                        "One plain-text paragraph placing today in the climate/seasonal "
-                        "picture (ENSO, monsoon, severe/hurricane season as relevant)"
+                        "About 100 words of plain text placing today in the climate/seasonal "
+                        "picture (ENSO, monsoon, severe/hurricane season) — what frames "
+                        "today's weather, with the values that matter; shorter on a quiet day"
                     ),
                 },
             },
@@ -187,6 +198,17 @@ TOOLS = [
 ]
 
 MAX_TURNS = 8
+# Hard word limits enforced on publish_synthesis. They sit a little above the
+# targets in SYSTEM so that a slight overshoot is accepted; a larger one is sent
+# back for tightening. After MAX_LENGTH_REJECTIONS the draft is published anyway,
+# since a long note beats no note.
+WORD_LIMITS = {
+    "headline": 25,
+    "narrative": 480,
+    "regional_notes": 110,
+    "climate_context": 140,
+}
+MAX_LENGTH_REJECTIONS = 2
 
 
 @dataclass
@@ -205,12 +227,17 @@ def _days_ago_label(record_date: str, today: date) -> str:
     return f"{delta} days ago ({record_date})"
 
 
-def build_history_block(history_records: list[dict], today: date) -> str:
-    """Pattern-continuity context: yesterday in full, older days headline-only.
+def _first_sentence(text: str) -> str:
+    return re.split(r"(?<=[.!?])\s+", " ".join(text.split()), maxsplit=1)[0]
 
-    Yesterday's complete narrative is what lets the synthesist write "the
-    ridge noted yesterday has shifted east"; earlier headlines sketch the
-    trajectory at minimal token cost.
+
+def build_history_block(history_records: list[dict], today: date) -> str:
+    """Pattern-continuity context: headlines, plus yesterday's opening sentence.
+
+    The headline trail sketches the trajectory at minimal token cost, and
+    yesterday's lead sentence is enough to write "the ridge noted yesterday has
+    shifted east". Feeding back whole narratives anchors the model on its own
+    phrasing and invites repetition.
     """
     lines = [
         "=== Recent Tlaloc analyses (for pattern continuity) ===",
@@ -222,10 +249,9 @@ def build_history_block(history_records: list[dict], today: date) -> str:
         lines.append("")
         lines.append(f"{_days_ago_label(record['date'], today)}: {synthesis.get('headline', '')}")
         if i == 0:
-            for field in ("narrative", "regional_notes", "climate_context"):
-                text = synthesis.get(field, "").strip()
-                if text:
-                    lines.append(text)
+            lead = _first_sentence(synthesis.get("narrative", ""))
+            if lead:
+                lines.append(lead)
     return "\n".join(lines)
 
 
@@ -269,16 +295,21 @@ def synthesize(
     now_utc = datetime.now(timezone.utc)
     messages = [{"role": "user", "content": build_briefing(reports, now_utc, history_records)}]
     synthesis: Synthesis | None = None
+    length_rejections = 0
 
     for _ in range(MAX_TURNS):
-        response = client.messages.create(
+        # Streamed because the SDK refuses non-streaming calls whose max_tokens
+        # could imply a >10 minute request; we only need the assembled message.
+        with client.messages.stream(
             model=SYNTHESIS_MODEL,
-            max_tokens=16000,
+            max_tokens=32000,
             thinking={"type": "adaptive"},
+            output_config={"effort": SYNTHESIS_EFFORT},
             system=SYSTEM,
             tools=TOOLS,
             messages=messages,
-        )
+        ) as stream:
+            response = stream.get_final_message()
 
         if response.stop_reason != "tool_use":
             break
@@ -306,6 +337,28 @@ def synthesize(
                         "content": (
                             f"Rejected: missing required field(s) {', '.join(missing)}. "
                             "Call publish_synthesis again with every field populated."
+                        ),
+                        "is_error": True,
+                    })
+                    continue
+                over = {
+                    key: len(fields[key].split())
+                    for key, limit in WORD_LIMITS.items()
+                    if len(fields[key].split()) > limit
+                }
+                if over and length_rejections < MAX_LENGTH_REJECTIONS:
+                    length_rejections += 1
+                    detail = ", ".join(
+                        f"{key} is {count} words (limit {WORD_LIMITS[key]})"
+                        for key, count in over.items()
+                    )
+                    tool_results.append({
+                        "type": "tool_result",
+                        "tool_use_id": block.id,
+                        "content": (
+                            f"Rejected as too long: {detail}. Cut to the budget by dropping "
+                            "repetition and padding, then call "
+                            "publish_synthesis again."
                         ),
                         "is_error": True,
                     })

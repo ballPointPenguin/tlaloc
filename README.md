@@ -94,10 +94,20 @@ jargon.
   which sources are missing so it doesn't overreach. If too few sources survive
   (fewer than 1 chart or 2 total), the run aborts *without touching the page* —
   yesterday's analysis stays up rather than publishing something thin.
-- **Models.** Chart interpretation uses `claude-sonnet-4-6` (vision), text
-  distillation uses `claude-haiku-4-5`, and the once-daily synthesis uses
-  `claude-opus-4-8` with adaptive thinking. Override with `TLALOC_VISION_MODEL`,
-  `TLALOC_TEXT_MODEL`, `TLALOC_SYNTHESIS_MODEL`.
+- **Models.** Chart interpretation uses `claude-sonnet-5-5` (vision), text
+  distillation uses `claude-haiku-5-5`, and the once-daily synthesis uses
+  `claude-opus-5-5` with adaptive thinking. Override with `TLALOC_VISION_MODEL`,
+  `TLALOC_TEXT_MODEL`, `TLALOC_SYNTHESIS_MODEL`; synthesis thinking depth is
+  `TLALOC_SYNTHESIS_EFFORT` (default `high`) and `TLALOC_TEXT_EFFORT` (default `medium`). Vision calls run with
+  `thinking: between_tools` so Sonnet 5.5's default thinking can't eat the token budget.
+- **Length is a budget, enforced.** Most readers only read the synthesis, so it has to
+  stand alone: the prompt sets word targets (headline ≤18 words, narrative ~350 in
+  three short paragraphs — today, upper-air setup, days ahead — regional notes ≤80,
+  climate ~100) and explicitly welcomes restating key specifics from the source
+  summaries, while cutting padding. `publish_synthesis` drafts that overshoot
+  `WORD_LIMITS` in `synthesize.py` are sent back for tightening twice, then published
+  anyway. Only yesterday's opening sentence (plus older headlines) is fed back for
+  continuity, so the note doesn't echo its own phrasing.
 
 ## Running
 
@@ -110,6 +120,17 @@ uv run python -m tlaloc --collect-only
 # Full run: fetch, interpret, synthesize, and rewrite index.html
 ANTHROPIC_API_KEY=... uv run python -m tlaloc
 ```
+
+```sh
+# Full run with real Claude calls, but written to .dry-run/ (gitignored) instead of
+# the repo, so nothing touches the production page or archive
+ANTHROPIC_API_KEY=... uv run python -m tlaloc --dry-run
+open .dry-run/index.html
+```
+
+On GitHub, run the workflow manually (Actions → Daily Synoptic Analysis → Run workflow,
+choosing your branch) with **dry_run** ticked: it does the full run and uploads
+`tlaloc-dry-run` as a downloadable artifact instead of committing.
 
 ```sh
 # Lint and unit tests

@@ -8,7 +8,7 @@ synthesis stage works from.
 
 import anthropic
 
-from .config import TEXT_MODEL, VISION_MODEL
+from .config import TEXT_EFFORT, TEXT_MODEL, VISION_MODEL
 from .sources import SourceReport
 
 VISION_SYSTEM = """\
@@ -175,11 +175,14 @@ TEXT_SYSTEM = """\
 You distill official weather and climate products — forecast discussions, outlooks,
 or data tables — for a meteorological briefing. For discussions and outlooks, extract
 the synoptically significant content: the systems and hazards being discussed, where
-the forecaster's attention is focused, and any notable uncertainty. For data tables,
-state the current value and recent trend plainly (e.g. for an ONI table, the current
-ENSO phase and which way it is drifting). Drop boilerplate, headers, and
-administrative text, and don't comment on the product's format — just brief its
-content. Plain text only, no markdown, at most 120 words.
+the forecaster's attention is focused, and any notable uncertainty. Keep the
+specifics a downstream writer would need — named systems and their intensities,
+locations, timing, risk categories, and the key numbers — rather than generalizing
+them away. For data tables, state the current value and recent trend plainly (e.g.
+for an ONI table, the current ENSO phase and which way it is drifting). Always keep a product's
+as-of date when it is stated, and any warning that the data is stale or out of
+date. Drop boilerplate, headers, and administrative text, and don't comment on the product's
+format — just brief its content. Plain text only, no markdown, at most 150 words.
 """
 
 
@@ -188,6 +191,10 @@ def interpret_image(client: anthropic.Anthropic, report: SourceReport) -> str:
     response = client.messages.create(
         model=VISION_MODEL,
         max_tokens=1024,
+        # Sonnet 5.5 thinks by default, and thinking tokens count against
+        # max_tokens; between_tools (the lowest setting) keeps this a plain
+        # text call, as it was on earlier models.
+        thinking={"type": "between_tools"},
         system=VISION_SYSTEM,
         messages=[
             {
@@ -212,7 +219,10 @@ def interpret_image(client: anthropic.Anthropic, report: SourceReport) -> str:
 def summarize_text(client: anthropic.Anthropic, report: SourceReport) -> str:
     response = client.messages.create(
         model=TEXT_MODEL,
-        max_tokens=512,
+        # Thinking tokens count against max_tokens; leave room so a reply is
+        # never cut off before any text.
+        max_tokens=4096,
+        output_config={"effort": TEXT_EFFORT},
         system=TEXT_SYSTEM,
         messages=[
             {

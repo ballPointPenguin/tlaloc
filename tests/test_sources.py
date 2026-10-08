@@ -1,6 +1,6 @@
 """Tests for the pure logic in tlaloc.sources (no network access)."""
 
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 
 import pytest
 
@@ -230,3 +230,52 @@ class TestPreBlockRegex:
 
     def test_no_match_without_pre_block(self):
         assert PRE_BLOCK_RE.search("<html><body>nothing here</body></html>") is None
+
+
+class TestTeleconnectionFreshness:
+    @staticmethod
+    def table(last_day: date, value: float = 0.5) -> str:
+        rows = []
+        for i in range(20, -1, -1):
+            day = last_day - timedelta(days=i)
+            rows.append(f"{day.year} {day.month} {day.day} {value}")
+        return "\n".join(rows)
+
+    def run_collector(self, monkeypatch, tables_by_host):
+        from tlaloc import sources
+
+        def fake_fetch(url, max_chars):
+            for host, text in tables_by_host.items():
+                if url.startswith(host):
+                    if text is None:
+                        raise sources.SourceError("down")
+                    return text
+            raise sources.SourceError("unknown host")
+
+        monkeypatch.setattr(sources, "fetch_text", fake_fetch)
+        return sources.collect_teleconnection_indices()
+
+    def test_prefers_the_fresher_host_and_skips_warning(self, monkeypatch):
+        from tlaloc import sources
+
+        today = datetime.now(timezone.utc).date()
+        stale_host, fresh_host = sources.CPC_DAILY_INDEX_HOSTS
+        report = self.run_collector(monkeypatch, {
+            stale_host: self.table(today - timedelta(days=9), 0.1),
+            fresh_host: self.table(today - timedelta(days=1), 0.9),
+        })
+        assert report.status == "ok"
+        assert "+0.90" in report.raw_text
+        assert "STALE" not in report.raw_text
+
+    def test_flags_stale_data_when_every_host_is_old(self, monkeypatch):
+        from tlaloc import sources
+
+        today = datetime.now(timezone.utc).date()
+        hosts = sources.CPC_DAILY_INDEX_HOSTS
+        report = self.run_collector(
+            monkeypatch, {h: self.table(today - timedelta(days=8)) for h in hosts}
+        )
+        assert report.status == "ok"
+        assert "STALE" in report.raw_text
+        assert "8 days old" in report.raw_text

@@ -35,7 +35,7 @@ def record_from_run(
             "headline": synthesis.headline,
             "narrative": synthesis.narrative,
             "climate_context": synthesis.climate_context,
-            "regional_notes": getattr(synthesis, "regional_notes", ""),
+            "regional_notes": synthesis.regional_notes,
         },
         "sources": [
             {

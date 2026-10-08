@@ -3,6 +3,10 @@ name: Daily Synoptic Analysis
 on:
   workflow_dispatch:
     inputs:
+      dry_run:
+        description: "Full run with Claude calls, but upload the result as an artifact instead of committing"
+        type: boolean
+        default: false
       collect_only:
         description: "Only check data sources (no Claude calls, no commit)"
         type: boolean
@@ -21,11 +25,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.ref_name }}
 
-      - uses: astral-sh/setup-uv@v6
+      - uses: astral-sh/setup-uv@v7
 
       - name: Install dependencies
         run: uv sync
@@ -42,14 +46,27 @@ jobs:
         if: github.event_name == 'pull_request' || inputs.collect_only == true
         run: uv run python -m tlaloc --collect-only
 
+      - name: Dry run (nothing committed)
+        if: inputs.dry_run == true
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: uv run python -m tlaloc --dry-run
+
+      - name: Upload dry-run output
+        if: inputs.dry_run == true
+        uses: actions/upload-artifact@v7
+        with:
+          name: tlaloc-dry-run
+          path: .dry-run/
+
       - name: Run synoptic analysis
-        if: github.event_name != 'pull_request' && inputs.collect_only != true
+        if: github.event_name != 'pull_request' && inputs.collect_only != true && inputs.dry_run != true
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: uv run python -m tlaloc
 
       - name: Commit and push
-        if: github.event_name != 'pull_request' && inputs.collect_only != true
+        if: github.event_name != 'pull_request' && inputs.collect_only != true && inputs.dry_run != true
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
