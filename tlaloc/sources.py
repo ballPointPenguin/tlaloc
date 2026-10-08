@@ -881,7 +881,14 @@ def collect_teleconnection_indices() -> SourceReport:
 # convection is being enhanced along the equator. It frames the tropical
 # cyclone and two-week-pattern questions the rest of the backbone can't, and like
 # the teleconnections it is supplementary context, never a conclusion on its own.
-MJO_URL = "https://www.bom.gov.au/climate/mjo/graphics/rmm.74toRealtime.txt"
+# BoM's server returns 403 to our bot user-agent (observed in CI), so a NOAA-hosted
+# copy is tried too. Candidates are parsed with the same "year month day RMM1 RMM2
+# phase amplitude" reader; a candidate in any other layout is reported with its
+# opening lines so the next collect-only run shows what shape it actually has.
+MJO_URLS = (
+    "https://www.bom.gov.au/climate/mjo/graphics/rmm.74toRealtime.txt",
+    "https://www.cpc.ncep.noaa.gov/products/precip/CWlink/daily_mjo_index/proj_norm_order.ascii",
+)
 # The table runs daily from 1974 (~1.2 MB), so it has to come down whole for the
 # tail to be the latest data.
 MJO_MAX_CHARS = 3_000_000
@@ -958,12 +965,21 @@ def collect_mjo() -> SourceReport:
         kind="text",
         credit="Australian Bureau of Meteorology",
     )
-    try:
-        series = parse_rmm_series(fetch_text(MJO_URL, MJO_MAX_CHARS))
+    errors = []
+    for url in MJO_URLS:
+        try:
+            text = fetch_text(url, MJO_MAX_CHARS)
+        except SourceError as exc:
+            errors.append(str(exc))
+            continue
+        series = parse_rmm_series(text)
+        if not series:
+            opening = " | ".join(text.splitlines()[:3])[:240]
+            errors.append(f"{url}: no RMM rows recognised; file opens with: {opening!r}")
+            continue
         report.raw_text = summarize_mjo(series, datetime.now(timezone.utc).date())
-    except SourceError as exc:
-        return report.fail(str(exc))
-    return report
+        return report
+    return report.fail("; ".join(errors))
 
 
 # ---------------------------------------------------------------------------

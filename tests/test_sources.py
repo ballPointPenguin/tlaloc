@@ -399,3 +399,36 @@ class TestEroCollectors:
         report = sources.collect_ero_day1()
         assert report.status == "failed"
         assert "new_ero_day1.png" in report.error
+
+
+class TestMjoCollector:
+    BOM_TABLE = "\n".join(
+        f"2026 10 {d} 0.5 -0.5 {1 + d % 8} 1.2 Prelim" for d in range(1, 9)
+    )
+
+    def test_falls_back_to_the_second_host_when_the_first_is_blocked(self, monkeypatch):
+        from tlaloc import sources
+
+        def fake_fetch(url, max_chars):
+            if "bom.gov.au" in url:
+                raise sources.SourceError("HTTP Error 403: Forbidden")
+            return self.BOM_TABLE
+
+        monkeypatch.setattr(sources, "fetch_text", fake_fetch)
+        report = sources.collect_mjo()
+        assert report.status == "ok"
+        assert "Latest 2026-10-08" in report.raw_text
+
+    def test_unrecognised_layout_reports_its_opening_lines(self, monkeypatch):
+        from tlaloc import sources
+
+        def fake_fetch(url, max_chars):
+            if "bom.gov.au" in url:
+                raise sources.SourceError("HTTP Error 403: Forbidden")
+            return "DATE RMM1 RMM2\n20261008 0.5 0.1\n"
+
+        monkeypatch.setattr(sources, "fetch_text", fake_fetch)
+        report = sources.collect_mjo()
+        assert report.status == "failed"
+        assert "403" in report.error
+        assert "DATE RMM1 RMM2" in report.error
