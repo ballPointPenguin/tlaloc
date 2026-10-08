@@ -17,7 +17,10 @@ ARCHIVE_DIR = REPO_ROOT / "archive"
 # Vision interpretation of individual charts/imagery.
 VISION_MODEL = os.environ.get("TLALOC_VISION_MODEL", "claude-sonnet-5-5")
 # Distillation of long text products (forecast discussions, outlooks).
-TEXT_MODEL = os.environ.get("TLALOC_TEXT_MODEL", "claude-haiku-4-5")
+TEXT_MODEL = os.environ.get("TLALOC_TEXT_MODEL", "claude-haiku-5-5")
+# Haiku 5.5 thinks adaptively by default; "medium" is the guide's recommendation for
+# plain text tasks (thinking off or "low" tends to leak reasoning into replies).
+TEXT_EFFORT = os.environ.get("TLALOC_TEXT_EFFORT", "medium")
 # The final meta-synthesis across all source summaries.
 SYNTHESIS_MODEL = os.environ.get("TLALOC_SYNTHESIS_MODEL", "claude-opus-5-5")
 
