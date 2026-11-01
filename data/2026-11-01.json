@@ -1,0 +1,183 @@
+{
+  "schema_version": 1,
+  "date": "2026-11-01",
+  "generated_at": "2026-11-01T13:35:33Z",
+  "synthesis": {
+    "headline": "Southwest flood threat peaks as ejecting trough spawns Plains cyclone and two nights of severe storms",
+    "narrative": "The western trough behind four days of Southwest flash flooding is finally lifting out, and as it goes it sets up a two-day run of severe weather and rapid cyclone development over the Plains. Today WPC has a Moderate excessive rainfall risk over southern Utah, northern Arizona and western Colorado. Storm totals of 2-4 inches on upslope terrain will fall on saturated soils as a low off Baja merges with the trough. Tonight SPC's Slight risk runs from New Mexico into the southern High Plains. A fast, organized line can bring gusts over 70 mph in east-central New Mexico and line-embedded tornadoes, which are rare overnight this late in the season. Thick cloud and a stable boundary layer are the limiting factors. On Monday a deep surface low develops over central Nebraska. SPC's Day 2 Slight risk covers Oklahoma, north Texas and south-central to eastern Kansas: supercells along the dryline after 21Z with a few tornadoes and a conditional EF2 risk, then a damaging-wind line overnight. In the East, a strong 1034 mb high keeps things dry and New England colder than normal, but its onshore flow is pushing heavy rain onto Florida's east coast.\n\nAt 500 mb the trough is open and positively tilted, with its axis near the California-Oregon coast and its base off Baja. On Air Mass RGB, dry upper-level air wraps around its western flank. A 60-65 kt jet streak over Southern California points southwest to northeast toward the northern Plains. Monday's stronger speed max crosses New Mexico into Kansas and Oklahoma and drives the Plains cyclone, while a 50-60 kt low-level jet carries mid-60s dewpoints north. Colder air behind the system brings heavy snow to the Central Rockies Tuesday under a Winter Storm Warning. Farther north, a 75-80+ kt northern-stream jet runs over Ontario and Quebec, and several lows are strung across Canada.\n\nThe cold front reaches the Mid/Lower Mississippi Valley Tuesday, then the Ohio/Tennessee Valleys and Southeast Wednesday, where WPC already has a Marginal rainfall risk. It reaches the Mid-Atlantic and Northeast Thursday and moves offshore late week, with cooler, drier air behind it. The main uncertainty is how the northern and southern streams phase, which controls how strong the low gets and where the heaviest rain falls. The western regime breaks rather than reloads. CPC's 6-10 and 8-14 day charts rebuild the trough over the Gulf of Alaska (about -15 to -21 dam) and put the ridge over the northern Plains and central Canada (+9 to +15 dam). That sends the Pacific storm track into British Columbia and the Northwest and favors above-normal temperatures across nearly the whole CONUS for November 6-10, with 70-90% odds along the northern border.",
+    "climate_context": "A strong El Niño frames this pattern. The Oceanic Niño Index reached +2.16°C for July-September, up from -0.39 last winter, and is still rising, though more slowly. A warm-season El Niño tends to strengthen the subtropical jet and the moisture supply into the Southwest, which fits this week's Baja-fed flooding. The Atlantic is quiet, with no tropical development expected over the next 7 days as hurricane season winds down. Early November is the Plains' secondary severe season, when strong jets can make up for marginal moisture, as they will tonight and Monday. The teleconnection indices are a month stale and are left out.",
+    "regional_notes": "Florida's Atlantic coast is under a Slight excessive rainfall risk today and Monday, with isolated to scattered flash flooding from persistent onshore flow. A small Marginal rainfall risk covers the eastern Dakotas and northwest Minnesota today. Monday's Marginal risk stretches from Minnesota to north Texas along the developing front. There are no active SPC mesoscale discussions. In the Central Pacific, NHC gives a disturbance well southeast of Hawaii a 50% chance of becoming a depression within 7 days."
+  },
+  "sources": [
+    {
+      "key": "surface",
+      "title": "Surface Analysis",
+      "kind": "image",
+      "credit": "NOAA Weather Prediction Center",
+      "status": "ok",
+      "display_url": "https://www.wpc.ncep.noaa.gov/sfc/namussfcwbg.gif",
+      "summary": "This 0900Z analysis for 1 November 2026 is dominated by a strong 1034 mb high over the Northeast and western Atlantic coast, with a weaker 1021 mb high near the Mississippi Valley and a 1014-1018 mb high over the southern Plains, so the East is under broad ridging while the active weather sits in the West and northern tier. The lows are modest: a 1015 mb center near the Minnesota/Dakotas area with a cold front trailing south and a warm front arcing east across the Upper Midwest, a pair of 1002-1010 mb lows over the northern Rockies and Intermountain West, and 1005-1009 mb lows near the Pacific Northwest coast and northern California. A deeper-looking system (about 1006 mb, with a 1008 contour) sits off the West Coast with a cold front and warm front wrapping around it, and a 996 mb low is plotted in the far northwest corner of the domain, presumably in the Gulf of Alaska region.\n\nPressure gradients are tightest across the Rockies and northern Plains, where isobars are packed between the western lows and the central highs, and along the Pacific coast ahead of the offshore frontal system. Gradients are slack across the Southeast, Gulf Coast and much of the central US, where the 1018-1021 mb highs and widely spaced isobars suggest light winds, consistent with the sparse wind barbs there. Note that the 1034 mb Northeast high is the one genuinely strong anticyclone on the chart; the 1014-1021 mb centers farther west are unremarkable in themselves.\n\nFrontal structure: the cold front extending south-southwest from the Minnesota-area low and the warm front to its east are the main boundaries across the interior, while multiple cold fronts (blue triangles) and a stationary or occluded segment (alternating symbols) stretch across the Intermountain West and Pacific Northwest. Lift and moisture focus is most plausibly along those western and northern-tier fronts and near the lows, where the surface convergence is concentrated. Dewpoints are highest, in the 70s, along the Gulf Coast and Florida, but there is no strong surface boundary there to organize lift in this analysis.",
+      "error": null
+    },
+    {
+      "key": "eccc_surface",
+      "title": "Canadian Surface Analysis",
+      "kind": "image",
+      "credit": "Environment and Climate Change Canada",
+      "status": "ok",
+      "display_url": "https://weather.gc.ca/data/analysis/947_100.gif",
+      "summary": "This CMC surface analysis, valid 00Z on 1 November 2026, is drawn on a polar projection, so the upper half of the frame is the high Arctic and the provinces sit in the lower-central portion. The deepest feature is a large low near 978-981 hPa at the far upper left, apparently over the Alaska and Bering Sea side of the domain, with a cold front curving south and east out of its circulation; its tight, closely packed isobars mark the strongest gradient on the chart. A second deep low near 978-981 hPa sits in the upper-center, apparently over the Arctic Ocean or Canadian Archipelago, but the coastline detail is too dense to place it more precisely, so treat that location as uncertain.\n\nAcross the Canadian mainland, a 987 hPa low near the center-left and a 994 hPa low with a front just east of it appear over western and northwestern Canada. Lows near 986-988 and 995 hPa form a chain farther east in the central interior. The frontal boundary along the left side trails south toward a 1001 hPa low and a 1005 hPa low near the Pacific coast of the United States, so the system links the Canadian Prairies to the western US only loosely, through a trough and front rather than one organized cyclone.\n\nHighs of 1019-1020 hPa sit over the northern Plains and Rockies region, and a 1033 hPa high over the eastern US controls the southeast. A 1004 hPa weak high sits over the interior of the Canadian shield. Over the Great Lakes and Ontario-Quebec sector, a cold front arcs from the Lakes region southwest toward the Gulf, with isobars packed along it, suggesting a sharp wind shift but not necessarily strong lift. Cloud and moisture fields are not plotted, so any focus for precipitation can only be implied by the fronts and low centers.\n\nOverall the chart shows a broad, active westerly pattern north of the border with multiple lows strung across Canada and a modest ridge of high pressure holding over the US.",
+      "error": null
+    },
+    {
+      "key": "upper_500mb",
+      "title": "500 mb Analysis",
+      "kind": "image",
+      "credit": "College of DuPage NEXLAB",
+      "status": "ok",
+      "display_url": "https://weather.cod.edu/wxdata/upper/US/500/US500.20261101.12.gif",
+      "summary": "The 1200 UTC 1 November 2026 analysis shows a strongly amplified wave pattern, with a ridge-trough couplet across the western half of the continent and a weaker, flatter flow over the east. Heights are labeled in decameters, ranging from about 520-530 dam in the northeast Pacific and far northwestern corner of the domain to near 588-592 dam over the Gulf Coast and Florida, so the subtropical ridge remains strong along the southern tier. The 576-582 dam contours bow far north across the Plains and Midwest, which suggests a broad ridge there, but the plotted field does not show a closed high of any consequence.\n\nThe dominant feature is a deep long-wave trough just off the West Coast, with its axis near or slightly west of the California-Oregon coast. The 552 dam contour and lower values wrap down the Pacific coast, and the \"H\" in the upper left appears to mark a height center on the chart, though I am not confident of its meaning in that location. I cannot clearly confirm a closed low circulation from the contours, so I would call this an open, positively tilted trough with its base extending southwestward off Baja, rather than a cutoff. The tilt is positive (NE-SW), with the axis leaning from the Pacific Northwest toward the southwest.\n\nA well-defined jet streak is shaded in the southwest, with wind speeds peaking near 60-65 kt (yellow shading) over Southern California and the Southwest and decreasing northeastward through green shading. The streak is oriented SW to NE, ahead of the trough, and the implied jet corridor runs across the Rockies toward the northern Plains and Great Lakes. A second, stronger wind maximum appears across southern Canada and the Northeast, with shading reaching dark red (roughly 75-80 kt or more) near the top of the chart over Ontario/Quebec, and 50-60 kt reaching the New England coast. That belt marks the northern-stream jet in zonal to slightly northwesterly flow.\n\nOver the central and eastern US, contours are packed more loosely and run west-southwest to east-northeast, indicating relatively flat, progressive flow, with no obvious blocking. The overall setup is a progressive eastern regime downstream of an amplified western trough, with the pattern looking more like a ridge-trough couplet than a Rex block, since no high sits poleward of a cutoff low.",
+      "error": null
+    },
+    {
+      "key": "airmass",
+      "title": "Air Mass RGB (GOES-19)",
+      "kind": "image",
+      "credit": "NOAA NESDIS / GOES East",
+      "status": "ok",
+      "display_url": "https://cdn.star.nesdis.noaa.gov/GOES19/ABI/CONUS/AirMass/20263051321_GOES19-ABI-CONUS-AirMass-2500x1500.jpg",
+      "summary": "This 13:21Z air mass composite on 1 November shows a large, cloud-capped trough over the western and northern Rockies and Great Basin, with a sharp red-to-orange dry band hugging its western flank from the Pacific Northwest coast southward off California and Baja. That narrow, elongated dry streamer with purple and magenta beyond it is the classic signature of dry upper-tropospheric air wrapping the cyclonic side of the trough, and the contrast with the cloud shield to its east marks the likely jet corridor, running southwest to northeast from off California toward the northern Plains and Great Lakes. A thinner dry ribbon, tan to orange, runs north-south along the Mississippi Valley from Missouri toward Arkansas, behind the line of convection, suggesting a surface front and dry air pushing in behind it.\n\nThe most organized deep convection is a broken line of bright white tops from the lower Mississippi Valley and Tennessee Valley through Alabama and the Florida Panhandle, with the coldest, most intense cells near the northeastern Gulf coast and northern Florida. More cellular cold-topped clusters extend across the Florida peninsula and the western Atlantic east of Florida and the Bahamas, in moist green air.\n\nThe Gulf of Mexico and Mexico are broadly green to olive, indicating moist tropical air with little cloud over the western Gulf. The Northeast and the Atlantic are a mix of blue, brown and purple, with mostly clear skies and dry air aloft. Strong cyclonic curvature is evident over the northern Rockies and southern Canada, where the cloud shield shows comma-like structure, though the chart alone cannot fix the exact trough axis.",
+      "error": null
+    },
+    {
+      "key": "airmass_fd",
+      "title": "Air Mass RGB Full Disk (GOES-19)",
+      "kind": "image",
+      "credit": "NOAA NESDIS / GOES East",
+      "status": "ok",
+      "display_url": "https://cdn.star.nesdis.noaa.gov/GOES19/ABI/FD/AirMass/20263051320_GOES19-ABI-FD-AirMass-1808x1808.jpg",
+      "summary": "This GOES-19 Air Mass RGB from 13:20Z on 1 November 2026 shows a sharp airmass boundary arcing across the northwest Atlantic, east of the Canadian Maritimes. A bright white cloud band curls from the Labrador Sea and Newfoundland region southward and then southwest, with a dark olive-brown dry slot on its western flank. The shape suggests a deep occluded cyclone near the top of the disk; the cloud band tracing the cold-front side of it, and the adjacent dry air, implies strong cyclonic flow aloft, though the surface low position cannot be read from this product.\n\nOver interior Canada and the northern Plains, saturated purple and blue tones indicate cold, dry upper-tropospheric air behind the trough, with a white cloud shield over the northern Rockies and northern Plains marking a separate disturbance. The sharp contrast between purple and green across the northern U.S. and southern Canada implies a polar jet corridor, though the jet axis is not plotted here and would need wind data to place precisely.\n\nThe tropical band is well organized. A nearly continuous line of convective cloud stretches west to east across the eastern Pacific near the left limb, consistent with an active ITCZ, with scattered bright clusters farther west and south. Deep convection is also visible off Costa Rica, Panama, and northwestern Colombia, and another cluster sits over the western Amazon basin near the Peru-Brazil border. A second band of convective cloud extends along the equatorial Atlantic toward the right limb, near the coast of northeastern South America.\n\nBroad olive-orange areas over the Gulf of Mexico, the Caribbean, and the subtropical Atlantic reflect dry upper-tropospheric air under the subtropical ridge, consistent with subsidence rather than a stratospheric intrusion. Cloud clusters over Florida and the adjacent western Atlantic mark a frontal or convective zone. Note that some warm tones near the limb, notably along the southern Atlantic and southeast Pacific edges, are exaggerated by viewing geometry.",
+      "error": null
+    },
+    {
+      "key": "cpc_610day",
+      "title": "CPC 6-10 Day Temperature Outlook",
+      "kind": "image",
+      "credit": "NOAA Climate Prediction Center",
+      "status": "ok",
+      "display_url": "https://www.cpc.ncep.noaa.gov/products/predictions/610day/610temp.new.gif",
+      "summary": "This is the CPC 6-10 day temperature outlook valid November 6-10, 2026, and it shows above-normal temperatures favored across essentially the entire contiguous United States, with no below-normal area anywhere on the lower-48 map. Probabilities are highest across the northern tier, where a bullseye of 70-80% sits over Montana, North Dakota and Minnesota, with a small core reaching 80-90% along the northern border of North Dakota and northwestern Minnesota. A broad 60-70% shield covers the West Coast, Great Basin, northern Rockies, Great Lakes, Ohio Valley and the Northeast, with California, Nevada and the Pacific Northwest all in that category.\n\nProbabilities decline steadily toward the south-central states. A 50-60% band runs from Utah and Colorado through Kansas, Missouri, Kentucky and the Carolinas, and the weakest signal, 33-40% leaning above, is centered on Texas, eastern New Mexico and western Oklahoma. The Gulf Coast, Southeast and Florida sit in the 40-50% leaning-above category. Alaska follows a similar gradient, with 60-70% in the east and southeast and weaker 33-50% values toward the west and north. Hawaii is mostly 50-70% above, while a few small Aleutian locations show a weak below-normal lean.\n\nNote that these are probabilities of terciles, not temperature departures, so the map says how confident forecasters are in the sign of the anomaly, not its size. The pattern, with confidence peaking along the Canadian border and fading toward Texas, is consistent with a mild Pacific-origin flow across the northern tier and a weaker or more uncertain signal where cold air intrusions from the north would most likely occur. The widespread warm lean suggests the forecast tools favor persistence of a ridged western and central pattern with limited Arctic air delivery, though a probability map alone cannot show the actual upper-level height field. The weak signal over the southern Plains is where I would watch for a breakdown, since modest shifts in trough placement there would flip the lean quickly.",
+      "error": null
+    },
+    {
+      "key": "cpc_610day_500mb",
+      "title": "CPC 6-10 Day 500 mb Height Outlook",
+      "kind": "image",
+      "credit": "NOAA Climate Prediction Center",
+      "status": "ok",
+      "display_url": "https://www.cpc.ncep.noaa.gov/products/predictions/610day/610day.03.gif",
+      "summary": "This is the CPC 6-10 day 500 mb height and anomaly outlook, made 31 Oct 2026 and valid Nov 6-10. Heights (solid green) are labeled in meters, e.g. 5700 and 5820, which is 570 and 582 dam, and the anomaly dashes (red positive, blue negative) are also labeled in meters, so the \"150\" and \"90\" labels are 15 and 9 dam, not 150 m departures at the scale of dam.\n\nThe dominant feature is a broad, deep negative anomaly over the Gulf of Alaska and the northeast Pacific, with the strongest blue dashes labeled around -150 and -210 in meters (roughly -15 to -21 dam) near 50-55N off the British Columbia coast. Heights there are packed with tight, closely spaced contours (5220 to 5400 m, i.e. 522 to 540 dam), implying a strong height gradient and a vigorous jet on the trough's southern flank. A second negative center sits over the northeast Atlantic and south of Greenland's east side, with weaker blue dashes. Positive anomalies cover the center and east of the continent: a broad red region from the northern Rockies and Plains through the Great Lakes, with labels of 150 and 90 (15 and 9 dam), plus a separate positive center over the Canadian Arctic Archipelago and Baffin Bay region labeled near 90 and 30.\n\nThe trough axis lies along or just off the Pacific coast, with the ridge axis downstream, inferred from the contour bulge, running from the southern Plains northward through the Canadian Prairies into the Arctic. The 5700 and 5760 m contours bow well north over the central US, consistent with ridging there. The purple zero-anomaly line sits near or just inland of the Pacific Northwest coast and dips southeast across the Intermountain West before bending back toward Texas. That means positive anomalies are not holding over far western North America; they are retreating eastward, with the western zero line pushed to the coast and the ridge shifted into the central and eastern continent.\n\nThe flow looks amplified over the Pacific and Canada but relatively zonal and fast across the northern tier of the US, where contours run mostly west-southwest to east-northeast under the 5400-5640 m lines. This suggests mild conditions across the central and eastern US, with Pacific systems strongly directed into British Columbia and the northwestern states.",
+      "error": null
+    },
+    {
+      "key": "cpc_814day_500mb",
+      "title": "CPC 8-14 Day 500 mb Height Outlook",
+      "kind": "image",
+      "credit": "NOAA Climate Prediction Center",
+      "status": "ok",
+      "display_url": "https://www.cpc.ncep.noaa.gov/products/predictions/814day/814day.03.gif",
+      "summary": "This is the CPC 8-14 day 500 mb heights and departures chart (made Oct 31, valid Nov 8-14, 2026). Solid green contours are mean heights, labeled in meters (5340 to 5820 m, i.e. 534-582 dam, at 60 m intervals), and the dashed lines are departures from normal, also in meters: red positive, blue negative, purple zero. The chart's own units are meters, so a \"-180\" label is 18 dam, not an extreme value.\n\nThe dominant feature is a large negative departure over the eastern North Pacific and Gulf of Alaska, with blue contours labeled down to about -180 m (roughly -18 dam) west of British Columbia and a closed height minimum near 5230 m (523 dam) over the Beaufort Sea/northern Alaska sector. The height contours there are tightly packed southward along the West Coast, implying a strong zonal flow into the Pacific coast of North America.\n\nPositive departures run as a broad belt from the Arctic near the pole through the Canadian Arctic Archipelago and central Canada, extending southward across the northern and central Plains, with labeled values of about 30 m near 60N over the eastern Arctic and roughly 90 m over central Canada, the largest positive values on the chart. That 90 label is the one number I would treat cautiously since the red contours there are crowded, but it points to a clear ridge anomaly (about +9 dam) over central Canada. Heights over western Canada proper are not strongly positive, because the zero line sits near the British Columbia coast and the strongest positive values are east of the northern Rockies.\n\nThe ridge axis, read from the northward bulge of the contours and the red dashed axis near 100W, runs roughly north-south from the Canadian Prairies into the northern and central Plains, so the ridge core appears centered over central Canada and the Plains rather than retreated into the Southwest or northern Mexico. A trough is implied over the Atlantic seaboard and Maritimes, where blue departures appear east of the Great Lakes, with heights dropping toward the east.",
+      "error": null
+    },
+    {
+      "key": "ero_day1",
+      "title": "Excessive Rainfall Outlook (Day 1)",
+      "kind": "image",
+      "credit": "NOAA Weather Prediction Center",
+      "status": "ok",
+      "display_url": "https://www.wpc.ncep.noaa.gov/qpf/94ewbg.gif",
+      "summary": "This Day 1 outlook, valid 12Z Sunday Nov 1 to 12Z Monday Nov 2, 2026, shows three of the four categories: Marginal (green), Slight (yellow, outlined orange) and Moderate (red). No High risk area is drawn. The highest category, Moderate, is confined to the interior Southwest, with two red areas: a larger one in the Four Corners vicinity, apparently over southern Utah and northern Arizona, and a smaller one just to its northeast, apparently in western Colorado. A broad Slight risk wraps around both, extending from roughly central Utah south across northern Arizona and into western New Mexico, with a Marginal shield reaching further into Nevada, Idaho, western Wyoming, Colorado and eastern New Mexico.\n\nA second Slight area hugs the Florida Peninsula, mainly the east coast and the southeastern part of the state. A broad Marginal region covers the central Gulf Coast, spanning southern Louisiana, Mississippi, Alabama and the western Florida Panhandle, and joins the Florida Slight area along the peninsula. A third, isolated Marginal area sits over the eastern Dakotas and northwestern Minnesota.\n\nThe chart itself does not name the driver, but the geometry suggests different mechanisms. The Southwest pattern is consistent with a slow-moving upper-level disturbance interacting with high terrain, since the risk follows the Colorado Plateau and adjacent mountains. The Gulf Coast and Florida coastal axis looks more like a frontal or moisture-convergence zone along the coast, though nothing here points to a tropical system. The Dakotas area is small and low-risk, and its cause cannot be determined from this chart.",
+      "error": null
+    },
+    {
+      "key": "ero_day2",
+      "title": "Excessive Rainfall Outlook (Day 2)",
+      "kind": "image",
+      "credit": "NOAA Weather Prediction Center",
+      "status": "ok",
+      "display_url": "https://www.wpc.ncep.noaa.gov/qpf/98ewbg.gif",
+      "summary": "This Day 2 outlook, valid 12Z Monday November 2 to 12Z Tuesday November 3, 2026, shows only the two lowest categories, with no Moderate or High risk drawn anywhere. The dominant feature is a large Marginal (green, at least 5%) area running from the northern Plains and Upper Midwest southward through the central Plains and into Texas. It appears to cover eastern South Dakota, much of Minnesota, Iowa, western Wisconsin and the Upper Michigan side of Lake Superior, then narrows through eastern Nebraska, Kansas and Missouri and tapers to a tongue over western Oklahoma and north Texas. A notch along the western edge near the Nebraska and South Dakota border gives the boundary an irregular outline.\n\nThe second area is a narrow strip along the east coast of Florida, where a Marginal zone encloses a thin Slight (at least 15%) corridor and a yellow inner band. The Slight risk hugs the Atlantic coastline from roughly the northeast Florida coast down toward the southeast peninsula. The color scheme for the Slight area looks like orange and yellow outlines on this chart, so I am going by the labeled SLGT text rather than the shading alone.\n\nThe north-south elongation of the central US Marginal area is consistent with a slow-moving frontal boundary or axis of moisture convergence, though the chart itself shows only risk categories and not the front. I cannot say from this chart how the area has changed since Day 1, since no Day 1 outlook is shown here.",
+      "error": null
+    },
+    {
+      "key": "wpc_discussion",
+      "title": "WPC Short Range Forecast Discussion",
+      "kind": "text",
+      "credit": "NOAA Weather Prediction Center",
+      "status": "ok",
+      "display_url": null,
+      "summary": "As of 258 AM EST Sun Nov 1 2026 (valid to 12Z Tue Nov 3):\n\nToday: A low off Baja California merging with an upper trough brings widespread unsettled weather to the interior West. Storm totals of 2-4 inches on upslope terrain in the Southwest and Four Corners could cause flash flooding on already saturated soils.\n\nMonday: A strong, deep cyclone rapidly spins up over the Central High Plains. The Northern Plains see rising winds and showers with embedded storms. Central and Southern Plains storms may turn severe later Monday, with locally heavy rain possible.\n\nTuesday: A sweeping cold front moves unsettled weather into the Mid/Lower Mississippi Valley. The Central Rockies get heavy snow on the back side of the system under a Winter Storm Warning and several Winter Weather Advisories.\n\nFlorida: Onshore flow from an East Coast high brings heavy rain to the Peninsula's east coast Sunday and Monday, with isolated to scattered flash flooding.\n\nEast: Dry under the high pressure, colder than normal in New England and milder to the south.",
+      "error": null
+    },
+    {
+      "key": "spc_outlook",
+      "title": "SPC Day 1 Convective Outlook",
+      "kind": "text",
+      "credit": "NOAA Storm Prediction Center",
+      "status": "ok",
+      "display_url": null,
+      "summary": "SPC Day 1 Convective Outlook, issued 0652 AM CST Sun Nov 01 2026, valid 1300Z Nov 01 to 1200Z Nov 02. A slight risk of severe thunderstorms covers parts of the southern High Plains.\n\nA shortwave trough moves quickly northeast, reaching the AZ/NM border this evening and central KS by 12Z Monday, with strong southwesterly flow aloft. Dewpoints rise into the low 60s across eastern NM.\n\nSevere thunderstorms are expected this evening into tonight from New Mexico northeast into the southern High Plains, bringing damaging wind gusts and a tornado threat. A more isolated severe threat is possible in the Desert Southwest this afternoon, including southeast and south-central Arizona, mainly from strong gusts with a small tornado risk.\n\nStorm-relative shear of 55 to 65 kt (0-6 km) supports a fast-developing organized line moving east-northeast across central and eastern NM tonight and into the TX Panhandle early Monday. Isolated gusts over 70 mph are possible, most likely over east-central NM. Line-embedded tornadoes are a seasonally rare overnight risk for the southern High Plains.\n\nUncertainty: widespread clouds limit heating across AZ and NM, and a linear storm mode plus likely stable low levels may offset the favorable low-level wind profiles for tornadoes.",
+      "error": null
+    },
+    {
+      "key": "spc_mesoscale",
+      "title": "SPC Mesoscale Discussions",
+      "kind": "text",
+      "credit": "NOAA Storm Prediction Center",
+      "status": "ok",
+      "display_url": null,
+      "summary": "No SPC Mesoscale Discussions have been issued in the past 6 hours. No organized convective threat is currently being actively monitored by the Storm Prediction Center. No as-of time or staleness warning was included with this product.",
+      "error": null
+    },
+    {
+      "key": "tropics",
+      "title": "NHC Tropical Weather Outlooks",
+      "kind": "text",
+      "credit": "NOAA National Hurricane Center",
+      "status": "ok",
+      "display_url": null,
+      "summary": "Atlantic (issued 700 AM EST Sun Nov 1 2026): The National Hurricane Center expects no tropical cyclone formation in the North Atlantic, Caribbean Sea, or Gulf of America during the next 7 days.\n\nEastern and Central Pacific (issued 400 AM PST Sun Nov 1 2026): A broad area of low pressure is forecast to develop well southeast of the Hawaiian Islands in a couple of days. Environmental conditions appear generally favorable for gradual development, and a tropical depression could form by the middle to end of the week as the system moves west to west-northwest across the Central Pacific. Formation chances are near 0 percent through 48 hours and medium at 50 percent through 7 days.",
+      "error": null
+    },
+    {
+      "key": "nhc_storms",
+      "title": "NHC Active Storm Advisories",
+      "kind": "text",
+      "credit": "NOAA National Hurricane Center",
+      "status": "ok",
+      "display_url": null,
+      "summary": "NHC currently lists no active tropical cyclones, and no advisories are being issued. No systems are being tracked in the product at this time, so there are no named storms, intensities, locations, or forecast tracks to report. No as-of time was included with this status.",
+      "error": null
+    },
+    {
+      "key": "enso",
+      "title": "ENSO State (Oceanic Niño Index)",
+      "kind": "text",
+      "credit": "NOAA Climate Prediction Center",
+      "status": "ok",
+      "display_url": null,
+      "summary": "The Oceanic Niño Index shows a strong El Niño in the most recent season in the table, JAS 2026, at +2.16°C. The index has risen steadily from -0.39°C in DJF 2026, which was cool-side, through neutral values in early spring, to +0.46 in MAM, +0.95 in AMJ, and +1.39 in MJJ. The rate of rise slowed slightly over the last two seasons (+1.80 in JJA, +2.16 in JAS), but the trend is still warming. The \"TOTAL\" column gives absolute Niño-3.4 SST, rising from 26.15°C to 29.12°C over the same period.\n\nThe product states no as-of date, so the table's currency cannot be confirmed from the text itself; the latest row should be checked against the issuing date before it is cited as current.",
+      "error": null
+    },
+    {
+      "key": "teleconnections",
+      "title": "Teleconnection Indices (PNA, AO, NAO)",
+      "kind": "text",
+      "credit": "NOAA Climate Prediction Center",
+      "status": "ok",
+      "display_url": null,
+      "summary": "WARNING: All three indices are stale. The newest values are dated 2026-09-30, 32 days old, and CPC has not updated the table. Do not treat them as current. These are observed values, and summer teleconnections are weak, so treat them as directional support only.\n\nPNA (positive favors western North American ridging with eastern troughing): +0.12 on 2026-09-30. The 7-day mean is -0.41, up from -1.51 in the prior week, so the index has been rising and has moved from clearly negative to near neutral.\n\nAO (negative favors high-latitude blocking): -0.26 on 2026-09-30. The 7-day mean is +0.04, down from +1.73 in the prior week, so the index has been falling sharply from strongly positive toward neutral and slightly negative.\n\nNAO (influences whether an eastern cutoff can escape): -0.78 on 2026-09-30, the most negative value in the 14-day window. The 7-day mean is -0.15, down from +0.28, so the index is falling.",
+      "error": null
+    }
+  ]
+}
